@@ -25,23 +25,22 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(const QString& strHost, int nPort, QWidget* pwgt = 0);
+    explicit MainWindow(const QString& strHost, int nPort);
     ~MainWindow();
 
 private:
     void CreateGraph();
     void CreatePlot(QVector<InfoChannel> *arrData);
     Ui::MainWindow *ui;
+    QCPGraph *graph1;
     QCPDataMap  *mapData;
     QCustomPlot *customPlot;
     QTcpSocket* m_pTcpSocket;
     quint16     m_nNextBlockSize;
 
 private slots:
-    void slotReadyRead   (                            );
-    void slotError       (QAbstractSocket::SocketError);
-    void slotSendToServer(                            );
-    void slotConnected   (                            );
+    void slotReadyRead   ();
+    void slotConnected   ();
 };
 
 #endif // MAINWINDOW_H
