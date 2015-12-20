@@ -29,14 +29,15 @@ public:
     ~MainWindow();
 
 private:
+    Ui::MainWindow *ui;
     void CreateGraph();
     void CreatePlot(QVector<InfoChannel> *arrData);
-    Ui::MainWindow *ui;
-    QCPGraph *graph1;
     QCPDataMap  *mapData;
+    QCPGraph *graph1;
     QCustomPlot *customPlot;
     QTcpSocket* m_pTcpSocket;
     quint16     m_nNextBlockSize;
+    int arraySize;
 
 private slots:
     void slotReadyRead   ();
