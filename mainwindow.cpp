@@ -3,9 +3,10 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow(const QString& strHost,int nPort) : m_nNextBlockSize(0), arraySize(100), ui(new Ui::MainWindow)
+MainWindow::MainWindow(const QString& strHost,int nPort) : m_nNextBlockSize(0), arraySize(1000), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setWindowTitle("Mutomo Client");
     setCentralWidget(ui->tabWidget);
 
     m_pTcpSocket = new QTcpSocket(this);
@@ -20,8 +21,9 @@ MainWindow::MainWindow(const QString& strHost,int nPort) : m_nNextBlockSize(0), 
     graph1->setData(arrX, arrY);
 
     mapData = graph1->data();
-
-    ui->customPlot->xAxis->setRange(0, 100);
+    ui->customPlot->xAxis->setLabel("Номер канала");
+    ui->customPlot->yAxis->setLabel("Частота, HZ");
+    ui->customPlot->xAxis->setRange(0, 1000);
     ui->customPlot->yAxis->setRange(0, 100);
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
     ui->customPlot->replot();
