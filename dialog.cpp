@@ -8,28 +8,7 @@ Dialog::Dialog(QWidget *parent) : QDialog(parent), ui(new Ui::Dialog)
     ui->setupUi(this);
     ui->ip_lineEdit->setInputMask("000.000.000.000;_");
 
-    QFile file("/home/kopylov/projects/TMutomo-develope/IPAdress.txt");
-    if(file.open(QIODevice::ReadOnly |QIODevice::Text))
-        {
-            while(!file.atEnd())
-            {
-                //читаем строку
-                QString str = file.readLine();
-                //Делим строку на слова разделенные пробелом
-                QStringList lst = str.split(" ");
-                  // выводим первых три слова
-                qDebug() << str;
-
-
-                QListWidgetItem *pIt;
-                pIt = new QListWidgetItem(str, ui->listWidget);
-            }
-
-        }
-        else
-        {
-            qDebug()<< "Не смог открыть файл";
-        }
+    ReadFromFile();
 }
 
 Dialog::~Dialog()
@@ -46,10 +25,35 @@ void Dialog::on_pb_add_clicked()
 {
    QString text = ui->ip_lineEdit->text();
 
-   QFile file("/home/kopylov/projects/TMutomo-develope/IPAdress.txt");
-   if (file.open(QIODevice::Append))
+   QFile file1("/home/kopylov/projects/TMutomo-develope/IPAdress.txt");
+   if(file1.open(QIODevice::WriteOnly |QIODevice::Text | QIODevice::Append))
    {
-      file.write(text);
+   QTextStream out(&file1);
+   out << text << "\n";
+   QListWidgetItem *pIt;
+   pIt = new QListWidgetItem(text, ui->listWidget);
    }
-   file.close();
+   file1.close();
+}
+
+void Dialog::ReadFromFile()
+{
+        QString tempstr;
+        QStringList list;
+        QTextStream stream;
+        QFile fileProtocol("/home/kopylov/projects/TMutomo-develope/IPAdress.txt");
+        stream.setDevice(&fileProtocol);
+
+        if(fileProtocol.open(QIODevice::ReadWrite|QIODevice::Text))
+        {
+            qDebug()<<"Мы зашли сюда";
+        while(!stream.atEnd())
+        {
+            tempstr = stream.readLine();
+            list.append(tempstr);
+            QListWidgetItem *pIt;
+            pIt = new QListWidgetItem(tempstr, ui->listWidget);
+        }
+        }
+        fileProtocol.close();
 }
