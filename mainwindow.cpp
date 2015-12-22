@@ -3,16 +3,11 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow(const QString& strHost,int nPort) : m_nNextBlockSize(0), ui(new Ui::MainWindow)
+MainWindow::MainWindow() : m_nNextBlockSize(0), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     setWindowTitle("Mutomo Client");
     setCentralWidget(ui->tabWidget);
-
-    m_pTcpSocket = new QTcpSocket(this);
-    m_pTcpSocket->connectToHost(strHost, nPort);
-    connect(m_pTcpSocket, SIGNAL(connected()), SLOT(slotConnected()));
-    connect(m_pTcpSocket, SIGNAL(readyRead()), SLOT(slotReadyRead()));
 
     graph1 = ui->customPlot->addGraph();
     mapData = graph1->data();
@@ -23,6 +18,12 @@ MainWindow::MainWindow(const QString& strHost,int nPort) : m_nNextBlockSize(0), 
     ui->customPlot->yAxis->setRange(0, 100);
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
     ui->customPlot->replot();
+
+    ip_dialog = new IPDialog();
+    CreateConnections();
+
+    QString str = "192.168.10.1";
+    connectToHost(str);
 }
 
 MainWindow::~MainWindow()
@@ -68,11 +69,11 @@ void MainWindow::slotReadyRead()
             in >> tmpInfoChan.nm_channel;
             in >> tmpInfoChan.freq;
             arrData.append( tmpInfoChan);
-            qDebug() << "freq" << arrData.at(i).freq;
+            //qDebug() << "freq" << arrData.at(i).freq;
         }
 
-        //CreatePlot(&arrData);
-        qDebug() << "Size:" << arrData.size();
+        CreatePlot(&arrData);
+        //qDebug() << "Size:" << arrData.size();
         m_nNextBlockSize = 0;
     }
 }
@@ -84,10 +85,26 @@ void MainWindow::slotConnected()
 
 void MainWindow::on_actionConnect_to_triggered()
 {
-    Dialog dialog (this);
-    dialog.setModal(true);
-    if (dialog.exec() == QDialog::Accepted)
+    //ip_dialog = new IPDialog(this);
+    ip_dialog->setModal(true);
+    if (ip_dialog->exec() == QDialog::Accepted)
     {
-
     }
+}
+
+void MainWindow::connectToHost(QString str)
+{
+    strHost = str;
+    qDebug() << "Main dialog ip:" << strHost;
+    m_pTcpSocket = new QTcpSocket(this);
+    m_pTcpSocket->connectToHost(strHost, nPort);
+    connect(m_pTcpSocket, SIGNAL(connected()), SLOT(slotConnected()));
+    connect(m_pTcpSocket, SIGNAL(readyRead()), SLOT(slotReadyRead()));
+}
+
+void MainWindow::CreateConnections()
+{
+    qDebug() << "CC";
+
+    connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
 }

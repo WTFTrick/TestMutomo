@@ -3,7 +3,7 @@
 #include <QtNetwork>
 #include <QtGui>
 
-Dialog::Dialog(QWidget *parent) : QDialog(parent), ui(new Ui::Dialog)
+IPDialog::IPDialog(QWidget *parent) : QDialog(parent), ui(new Ui::IPDialog)
 {
     ui->setupUi(this);
     ui->ip_lineEdit->setInputMask("000.000.000.000;_");
@@ -11,17 +11,17 @@ Dialog::Dialog(QWidget *parent) : QDialog(parent), ui(new Ui::Dialog)
     ReadFromFile();
 }
 
-Dialog::~Dialog()
+IPDialog::~IPDialog()
 {
     delete ui;
 }
 
-void Dialog::on_pb_close_clicked()
+void IPDialog::on_pb_close_clicked()
 {
     close();
 }
 
-void Dialog::on_pb_add_clicked()
+void IPDialog::on_pb_add_clicked()
 {
    QString text = ui->ip_lineEdit->text();
 
@@ -36,7 +36,7 @@ void Dialog::on_pb_add_clicked()
    ipFile.close();
 }
 
-void Dialog::ReadFromFile()
+void IPDialog::ReadFromFile()
 {
         QString tempstr;
         QStringList list;
@@ -57,7 +57,7 @@ void Dialog::ReadFromFile()
         ipFile.close();
 }
 
-void Dialog::on_pb_del_clicked()
+void IPDialog::on_pb_del_clicked()
 {
     QListWidgetItem *it = ui->listWidget->item(ui->listWidget->currentRow());
     QString st1 = ui->listWidget->item(ui->listWidget->currentRow())->text();
@@ -80,8 +80,10 @@ void Dialog::on_pb_del_clicked()
     delete it;
 }
 
-void Dialog::on_pb_connect_clicked()
+void IPDialog::on_pb_connect_clicked()
 {
-    QString st = ui->listWidget->item(ui->listWidget->currentRow())->text();
-    qDebug() << st;
+    QString ip = "0.0.0.0";
+    ip = ui->listWidget->item(ui->listWidget->currentRow())->text();
+    qDebug() << "Modal dialog ip:" << ip;
+    emit sendData(ip);
 }
