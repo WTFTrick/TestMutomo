@@ -3,7 +3,7 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow(const QString& strHost,int nPort) : m_nNextBlockSize(0), arraySize(1000), ui(new Ui::MainWindow)
+MainWindow::MainWindow(const QString& strHost,int nPort) : m_nNextBlockSize(0), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     setWindowTitle("Mutomo Client");
@@ -14,13 +14,9 @@ MainWindow::MainWindow(const QString& strHost,int nPort) : m_nNextBlockSize(0), 
     connect(m_pTcpSocket, SIGNAL(connected()), SLOT(slotConnected()));
     connect(m_pTcpSocket, SIGNAL(readyRead()), SLOT(slotReadyRead()));
 
-    QVector<double> arrX(arraySize);
-    QVector<double> arrY(arraySize);
-
     graph1 = ui->customPlot->addGraph();
-    graph1->setData(arrX, arrY);
-
     mapData = graph1->data();
+
     ui->customPlot->xAxis->setLabel("Номер канала");
     ui->customPlot->yAxis->setLabel("Частота, HZ");
     ui->customPlot->xAxis->setRange(0, 1000);
@@ -73,6 +69,7 @@ void MainWindow::slotReadyRead()
             in >> tmpInfoChan.freq;
             arrData.append( tmpInfoChan);
         }
+
         CreatePlot(&arrData);
         m_nNextBlockSize = 0;
     }
@@ -81,4 +78,14 @@ void MainWindow::slotReadyRead()
 void MainWindow::slotConnected()
 {
     //qDebug() << "Received the connected() signal";
+}
+
+void MainWindow::on_actionConnect_to_triggered()
+{
+    Dialog dialog (this);
+    dialog.setModal(true);
+    if (dialog.exec() == QDialog::Accepted)
+    {
+
+    }
 }

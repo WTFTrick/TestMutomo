@@ -5,6 +5,8 @@
 #include <QWidget>
 #include <QTcpSocket>
 #include <qcustomplot.h>
+#include <dialog.h>
+#include <qfile.h>
 
 struct InfoChannel
 {
@@ -33,15 +35,15 @@ private:
     void CreateGraph();
     void CreatePlot(QVector<InfoChannel> *arrData);
     QCPDataMap  *mapData;
-    QCPGraph *graph1;
+    QCPGraph    *graph1;
     QCustomPlot *customPlot;
     QTcpSocket* m_pTcpSocket;
-    quint16     m_nNextBlockSize;
-    int arraySize;
+    quint32     m_nNextBlockSize;
 
 private slots:
     void slotReadyRead   ();
     void slotConnected   ();
+    void on_actionConnect_to_triggered();
 };
 
 #endif // MAINWINDOW_H
