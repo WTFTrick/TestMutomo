@@ -68,16 +68,18 @@ void MainWindow::slotReadyRead()
             in >> tmpInfoChan.nm_channel;
             in >> tmpInfoChan.freq;
             arrData.append( tmpInfoChan);
+            qDebug() << "freq" << arrData.at(i).freq;
         }
 
-        CreatePlot(&arrData);
+        //CreatePlot(&arrData);
+        qDebug() << "Size:" << arrData.size();
         m_nNextBlockSize = 0;
     }
 }
 
 void MainWindow::slotConnected()
 {
-    //qDebug() << "Received the connected() signal";
+    qDebug() << "Received the connected() signal";
 }
 
 void MainWindow::on_actionConnect_to_triggered()

@@ -25,6 +25,10 @@ private slots:
     void on_pb_add_clicked();
     void ReadFromFile();
 
+    void on_pb_del_clicked();
+
+    void on_pb_connect_clicked();
+
 private:
     Ui::Dialog *ui;
     QLineEdit *ip_lineEdit;
