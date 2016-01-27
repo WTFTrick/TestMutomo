@@ -3,26 +3,23 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow(const QString& strHost,int nPort) : m_nNextBlockSize(0), ui(new Ui::MainWindow)
+MainWindow::MainWindow() : m_nNextBlockSize(0), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     setWindowTitle("Mutomo Client");
     setCentralWidget(ui->tabWidget);
-
-    m_pTcpSocket = new QTcpSocket(this);
-    m_pTcpSocket->connectToHost(strHost, nPort);
-    connect(m_pTcpSocket, SIGNAL(connected()), SLOT(slotConnected()));
-    connect(m_pTcpSocket, SIGNAL(readyRead()), SLOT(slotReadyRead()));
 
     graph1 = ui->customPlot->addGraph();
     mapData = graph1->data();
 
     ui->customPlot->xAxis->setLabel("Номер канала");
     ui->customPlot->yAxis->setLabel("Частота, HZ");
-    ui->customPlot->xAxis->setRange(0, 1000);
+    ui->customPlot->xAxis->setRange(0, 2500);
     ui->customPlot->yAxis->setRange(0, 100);
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
     ui->customPlot->replot();
+
+    connectToHost("10.162.1.110");
 }
 
 MainWindow::~MainWindow()
@@ -39,10 +36,19 @@ void MainWindow::CreatePlot(QVector<InfoChannel> *arrData)
     ui->customPlot->replot();
 }
 
+void MainWindow::CreatePlot(QVector<double> *arrData)
+{
+    for (double i = 0; i < arrData->size(); i++)
+    {
+        mapData->operator [](i) = QCPData(i, arrData->at(i));
+    }
+    ui->customPlot->replot();
+}
+
 void MainWindow::slotReadyRead()
 {
     QDataStream in(m_pTcpSocket);
-    in.setVersion(QDataStream::Qt_4_5);
+    in.setVersion(QDataStream::Qt_5_4);
     for (;;)
     {
 
@@ -63,16 +69,24 @@ void MainWindow::slotReadyRead()
         QVector<InfoChannel> arrData;
         InfoChannel tmpInfoChan;
         arrData.clear();
+
+        double  freq = 0;
+        QVector<double> arrFreq;
         for (int i = 0; i < m_nNextBlockSize/4; i++ )
         {
+            in >> freq;
+            arrFreq.append( freq );
+            /*
             in >> tmpInfoChan.nm_channel;
             in >> tmpInfoChan.freq;
             arrData.append( tmpInfoChan);
-            qDebug() << "freq" << arrData.at(i).freq;
+            */
+            if (freq > 0 )
+                qDebug() << i << ") freq =" << freq;
         }
 
-        //CreatePlot(&arrData);
-        qDebug() << "Size:" << arrData.size();
+        CreatePlot( &arrFreq );
+        qDebug() << "Size:" << arrFreq.size();
         m_nNextBlockSize = 0;
     }
 }
@@ -84,10 +98,27 @@ void MainWindow::slotConnected()
 
 void MainWindow::on_actionConnect_to_triggered()
 {
-    Dialog dialog (this);
-    dialog.setModal(true);
-    if (dialog.exec() == QDialog::Accepted)
-    {
+    IPDialog ip_dialog;
+    ip_dialog.setModal(true);
 
+    //ip_dialog = new IPDialog(this);
+    ip_dialog.setModal(true);
+    if (ip_dialog.exec() == QDialog::Accepted)
+    {
     }
+}
+
+void MainWindow::connectToHost(QString str)
+{
+    strHost = str;
+    //qDebug() << "mainwindow ip:" << strHost;
+    m_pTcpSocket = new QTcpSocket(this);
+    m_pTcpSocket->connectToHost(strHost, nPort);
+    connect(m_pTcpSocket, SIGNAL(connected()), SLOT(slotConnected()));
+    connect(m_pTcpSocket, SIGNAL(readyRead()), SLOT(slotReadyRead()));
+}
+
+void MainWindow::CreateConnections()
+{
+    //connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(recieveData(QString)));
 }
