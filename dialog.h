@@ -4,7 +4,8 @@
 #include <QDialog>
 #include <QLineEdit>
 #include <QWidget>
-#include "mainwindow.h"
+#include <qfile.h>
+#include <QListWidget>
 
 namespace Ui
 {
@@ -32,6 +33,9 @@ signals:
 private:
     Ui::IPDialog *ui;
     QLineEdit *ip_lineEdit;
+    QFile ipFile;
+
+
 };
 
 #endif // DIALOG_H
