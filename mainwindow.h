@@ -35,22 +35,25 @@ private:
     Ui::MainWindow *ui;
     QString strHost;
     int nPort = 2323;
-    void CreateGraph();
-    void CreatePlot(QVector<InfoChannel> *arrData);
     QCPDataMap  *mapData;
     QCPGraph    *graph1;
     QCustomPlot *customPlot;
     QTcpSocket* m_pTcpSocket;
     quint32     m_nNextBlockSize;
     IPDialog* ip_dialog;
+
+    void CreatePlot(QVector<InfoChannel> *arrData);
+    void CreatePlot(QVector<double> *arrData);
     void CreateConnections();
 
 
+
 private slots:
-    void slotReadyRead   ();
-    void slotConnected   ();
+    void slotReadyRead();
+    void slotConnected();
     void on_actionConnect_to_triggered();
     void connectToHost(QString str);
+
 };
 
 #endif // MAINWINDOW_H

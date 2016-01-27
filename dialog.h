@@ -34,7 +34,8 @@ private:
     Ui::IPDialog *ui;
     QLineEdit *ip_lineEdit;
     QFile ipFile;
-    //QListWidget *listWidget;
+
+
 };
 
 #endif // DIALOG_H

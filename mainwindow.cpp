@@ -19,11 +19,10 @@ MainWindow::MainWindow() : m_nNextBlockSize(0), ui(new Ui::MainWindow)
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
     ui->customPlot->replot();
 
-    ip_dialog = new IPDialog();
-    CreateConnections();
+    ip_dialog = new IPDialog( this );
 
-    QString str = "0.0.0.0";
-    connectToHost(str);
+    connectToHost("10.162.1.110");
+    CreateConnections();
 }
 
 MainWindow::~MainWindow()
@@ -41,14 +40,24 @@ void MainWindow::CreatePlot(QVector<InfoChannel> *arrData)
     ui->customPlot->replot();
 }
 
+void MainWindow::CreatePlot(QVector<double> *arrData)
+{
+    for (double i = 0; i < arrData->size(); i++)
+    {
+        mapData->operator [](i) = QCPData(i, arrData->at(i));
+    }
+    ui->customPlot->replot();
+}
+
 void MainWindow::slotReadyRead()
 {
     //Reading data from server
+    //qDebug() << "slotReadyRead()";
+
     QDataStream in(m_pTcpSocket);
-    in.setVersion(QDataStream::Qt_4_5);
+    in.setVersion(QDataStream::Qt_5_4);
     for (;;)
     {
-
         if (!m_nNextBlockSize)
         {
             if (m_pTcpSocket->bytesAvailable() < sizeof(quint32))
@@ -66,16 +75,26 @@ void MainWindow::slotReadyRead()
         QVector<InfoChannel> arrData;
         InfoChannel tmpInfoChan;
         arrData.clear();
+
+        double  freq = 0;
+        QVector<double> arrFreq;
         for (int i = 0; i < m_nNextBlockSize/4; i++ )
         {
+            in >> freq;
+            arrFreq.append( freq );
+            /*
             in >> tmpInfoChan.nm_channel;
             in >> tmpInfoChan.freq;
             arrData.append( tmpInfoChan);
-            //qDebug() << "Frequency:" << arrData.at(i).freq;
+            */
+
+            if (freq > 0 )
+                qDebug() << i << ") freq =" << freq;
         }
 
-        CreatePlot(&arrData);
-        //qDebug() << "Size of array:" << arrData.size();
+        CreatePlot( &arrFreq );
+        qDebug() << "Size:" << arrFreq.size();
+
         m_nNextBlockSize = 0;
     }
 }
@@ -91,7 +110,6 @@ void MainWindow::on_actionConnect_to_triggered()
 {
     //Connect button action
 
-    //ip_dialog = new IPDialog(this);
     ip_dialog->setModal(true);
     if (ip_dialog->exec() == QDialog::Accepted)
     {
@@ -102,7 +120,8 @@ void MainWindow::connectToHost(QString str)
 {
     //Connecting to server
     strHost = str;
-    qDebug() << "Main dialog ip:" << strHost;
+    qDebug() << "mainwindow ip:" << strHost;
+
     m_pTcpSocket = new QTcpSocket(this);
     m_pTcpSocket->connectToHost(strHost, nPort);
     connect(m_pTcpSocket, SIGNAL(connected()), SLOT(slotConnected()));
