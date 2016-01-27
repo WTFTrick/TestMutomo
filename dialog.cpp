@@ -7,6 +7,7 @@ IPDialog::IPDialog(QWidget *parent) : QDialog(parent), ui(new Ui::IPDialog)
 {
     ui->setupUi(this);
     QRegExp rx("\\d+");
+
     ui->ip_lineEdit->setValidator( new QIntValidator(0, 255, this) );
     ui->ip_lineEdit->setInputMask("000.000.000.000;_");
     ipFile.setFileName("./IPAdress.txt");
@@ -133,7 +134,7 @@ void IPDialog::on_pb_connect_clicked()
 {
     QString ip = "0.0.0.0";
     ip = ui->listWidget->item(ui->listWidget->currentRow())->text();
-    qDebug() << "Modal dialog ip:" << ip;
+    //qDebug() << "Modal dialog ip:" << ip;
     emit sendData(ip);
     close();
 }
