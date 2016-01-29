@@ -19,7 +19,6 @@ MainWindow::MainWindow() : m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWi
     ui->customPlot->yAxis->setRange(0, 100);
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
 
-
     /* Ticks and Grid features
     ui->customPlot->xAxis->setAutoTickStep(false);
     ui->customPlot->xAxis->setTickStep(200);
@@ -38,16 +37,9 @@ MainWindow::MainWindow() : m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWi
     tickHLine->start->setCoords(i,0);
     tickHLine->end->setCoords(i,30);
     tickHLine->setPen(QPen(QColor(0, 255, 0), 3));
-
-    NumberOfBoardi++;
-    QString NOB = QString("%1").arg(NumberOfBoardi);
-    QCPItemText *NumberOfBoard = new QCPItemText(ui->customPlot);
-    ui->customPlot->addItem(NumberOfBoard);
-    NumberOfBoard->position->setCoords(i + 24, 7);
-    NumberOfBoard->setText(NOB);
-    NumberOfBoard->setFont(QFont(font().family(), 9));
-    NumberOfBoard->setPadding(QMargins(8, 0, 0, 0));
     }
+
+    NumberOfBoard = new QCPItemText(ui->customPlot);
 
     // Colour and width of graph
     QPen graphPen;
@@ -256,16 +248,48 @@ void MainWindow::yAxisChanged(QCPRange newRange)
     }
 }
 
+void MainWindow::AxisChanged(QCPRange newRange)
+{
+    double upperBound = 1200; // note: code assumes lowerBound < upperBound
+    QCPRange fixedRange(newRange);
+    //qDebug() << fixedRange.size();
+    if (fixedRange.size() > upperBound)
+    {
+      for (int i = 1; i < LinesCount*LinesCount ; i = i + LinesCount)
+      {
+      NumberOfBoard->position->setCoords(i + 24, 7);
+      QString null = "    ";
+      NumberOfBoard->setText(null);
+      NumberOfBoard->setFont(QFont(font().family(), 0));
+      ui->customPlot->replot();
+      }
+    }
+    else
+    {
+        int NumberOfBoardi = 0;
+        for (int i = 1; i < LinesCount*LinesCount ; i = i + LinesCount)
+        {
+        NumberOfBoardi++;
+        QString NOB = QString("%1").arg(NumberOfBoardi);
+        //qDebug() << NumberOfBoardi;
+        NumberOfBoard->position->setCoords(i + 24, 7);
+        NumberOfBoard->setText(NOB);
+        NumberOfBoard->setFont(QFont(font().family(), 10));
+        NumberOfBoard->setPadding(QMargins(8, 0, 0, 0));
+        ui->customPlot->replot();
+        }
+    }
+}
+
 void MainWindow::CreateConnections()
 {
     //qDebug() << "CreateConnections";
 
     // Connections between mainWindow and modal dialog ('connect to...')
-
     connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
-
     connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
     connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
+    connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(AxisChanged(QCPRange)));
     connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
     connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(yAxisChanged(QCPRange)));
 }

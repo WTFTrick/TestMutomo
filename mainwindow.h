@@ -42,6 +42,7 @@ private:
     quint32     m_nNextBlockSize;
     int LinesCount;
     IPDialog* ip_dialog;
+    QCPItemText *NumberOfBoard;
 
     void CreatePlot(QVector<InfoChannel> *arrData);
     void CreatePlot(QVector<quint32> *arrData);
@@ -57,6 +58,7 @@ private slots:
     void on_actionConnect_to_triggered();
     void connectToHost(QString str);
 
+    void AxisChanged(QCPRange newRange);
     void xAxisChanged(QCPRange newRange);
     void yAxisChanged(QCPRange newRange);
     void on_pb_ZoomIn_clicked();
