@@ -43,8 +43,6 @@ private:
     int LinesCount;
     IPDialog* ip_dialog;
 
-    void mousePress();
-    void mouseWheel();
     void CreatePlot(QVector<InfoChannel> *arrData);
     void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
@@ -52,11 +50,15 @@ private:
 
 
 private slots:
+    void mousePress();
+    void mouseWheel();
     void slotReadyRead();
     void slotConnected();
     void on_actionConnect_to_triggered();
     void connectToHost(QString str);
 
+    void on_pb_ZoomIn_clicked();
+    void on_pb_ZoomOut_clicked();
 };
 
 #endif // MAINWINDOW_H

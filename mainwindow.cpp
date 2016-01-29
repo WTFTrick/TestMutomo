@@ -16,22 +16,22 @@ MainWindow::MainWindow() : m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWi
 
     ui->customPlot->xAxis->setLabel("Номер канала");
     ui->customPlot->yAxis->setLabel("Частота, HZ");
-    ui->customPlot->xAxis->setRange(0, 2500);
-    ui->customPlot->yAxis->setRange(0, 100);
+    ui->customPlot->xAxis->setRange(-100, 2500);
+    ui->customPlot->yAxis->setRange(-10, 100);
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
 
+    /* Ticks and Grid features
     ui->customPlot->xAxis->setAutoTickStep(false);
     ui->customPlot->xAxis->setTickStep(200);
-
     ui->customPlot->yAxis->setAutoTickStep(false);
     ui->customPlot->yAxis->setTickStep(10);
-
     ui->customPlot->xAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1.25, Qt::DotLine));
     ui->customPlot->yAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1.25, Qt::DotLine));
+    */
 
-
-    // Add QCPItemLine
+    // Add QCPItemLine and QCPItemText
     double Colour = 0;
+    int NumberOfBoardi = 0;
     for (int i = 1; i < LinesCount*LinesCount ; i = i + LinesCount)
     {
     Colour += 3;
@@ -39,8 +39,20 @@ MainWindow::MainWindow() : m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWi
     ui->customPlot->addItem(tickHLine);
     tickHLine->start->setCoords(i,0);
     tickHLine->end->setCoords(i,50);
-    tickHLine->setPen(QPen(QColor(255 - Colour,  20 + Colour, 147 - Colour), 3));
+    tickHLine->setPen(QPen(QColor(255 - Colour,  20 + Colour, 147 - Colour), 1.5));
+
+    NumberOfBoardi++;
+    QString NOB = QString("%1").arg(NumberOfBoardi);
+
+    QCPItemText *NumberOfBoard = new QCPItemText(ui->customPlot);
+    ui->customPlot->addItem(NumberOfBoard);
+    NumberOfBoard->position->setCoords(i - 3, -1);
+    NumberOfBoard->setText(NOB);
+    NumberOfBoard->setFont(QFont(font().family(), 9));
+    NumberOfBoard->setPadding(QMargins(8, 0, 0, 0));
+
     }
+
 
     /*ui->customPlot->yAxis2->setVisible(true);
     ui->customPlot->xAxis2->setVisible(true);
@@ -48,9 +60,6 @@ MainWindow::MainWindow() : m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWi
     ui->customPlot->addGraph(ui->customPlot->xAxis2,ui->customPlot->yAxis2);*/
 
     ui->customPlot->replot();
-
-    connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
-    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
 
 
     ip_dialog = new IPDialog( this );
@@ -177,6 +186,16 @@ void MainWindow::connectToHost(QString str)
     connect(m_pTcpSocket, SIGNAL(readyRead()), SLOT(slotReadyRead()));
 }
 
+void MainWindow::mousePress()
+{
+    ui->customPlot->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+}
+
+void MainWindow::mouseWheel()
+{
+    ui->customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+}
+
 void MainWindow::CreateConnections()
 {
     //qDebug() << "CreateConnections";
@@ -184,30 +203,21 @@ void MainWindow::CreateConnections()
     // Connections between mainWindow and modal dialog ('connect to...')
 
     connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
+
+    connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
+    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
 }
 
-void MainWindow::mousePress()
+void MainWindow::on_pb_ZoomIn_clicked()
 {
-  // if an axis is selected, only allow the direction of that axis to be dragged
-  // if no axis is selected, both directions may be dragged
-
-  if (ui->customPlot->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->customPlot->axisRect()->setRangeDrag(ui->customPlot->xAxis->orientation());
-  else if (ui->customPlot->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->customPlot->axisRect()->setRangeDrag(ui->customPlot->yAxis->orientation());
-  else
-    ui->customPlot->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+    ui->customPlot->xAxis->scaleRange(0.85, ui->customPlot->xAxis->range().center());
+    ui->customPlot->yAxis->scaleRange(0.85, ui->customPlot->yAxis->range().center());
+    ui->customPlot->replot();
 }
 
-void MainWindow::mouseWheel()
+void MainWindow::on_pb_ZoomOut_clicked()
 {
-  // if an axis is selected, only allow the direction of that axis to be zoomed
-  // if no axis is selected, both directions may be zoomed
-
-  if (ui->customPlot->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->customPlot->axisRect()->setRangeZoom(ui->customPlot->xAxis->orientation());
-  else if (ui->customPlot->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    ui->customPlot->axisRect()->setRangeZoom(ui->customPlot->yAxis->orientation());
-  else
-    ui->customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+    ui->customPlot->xAxis->scaleRange(1.17, ui->customPlot->xAxis->range().center());
+    ui->customPlot->yAxis->scaleRange(1.17, ui->customPlot->yAxis->range().center());
+    ui->customPlot->replot();
 }
