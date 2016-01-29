@@ -57,6 +57,8 @@ private slots:
     void on_actionConnect_to_triggered();
     void connectToHost(QString str);
 
+    void xAxisChanged(QCPRange newRange);
+    void yAxisChanged(QCPRange newRange);
     void on_pb_ZoomIn_clicked();
     void on_pb_ZoomOut_clicked();
     void on_pb_ResetRange_clicked();

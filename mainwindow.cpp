@@ -19,6 +19,7 @@ MainWindow::MainWindow() : m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWi
     ui->customPlot->yAxis->setRange(0, 100);
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
 
+
     /* Ticks and Grid features
     ui->customPlot->xAxis->setAutoTickStep(false);
     ui->customPlot->xAxis->setTickStep(200);
@@ -35,7 +36,7 @@ MainWindow::MainWindow() : m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWi
     QCPItemLine *tickHLine=new QCPItemLine(ui->customPlot);
     ui->customPlot->addItem(tickHLine);
     tickHLine->start->setCoords(i,0);
-    tickHLine->end->setCoords(i,50);
+    tickHLine->end->setCoords(i,30);
     tickHLine->setPen(QPen(QColor(0, 255, 0), 3));
 
     NumberOfBoardi++;
@@ -190,18 +191,6 @@ void MainWindow::mouseWheel()
     ui->customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
 }
 
-void MainWindow::CreateConnections()
-{
-    //qDebug() << "CreateConnections";
-
-    // Connections between mainWindow and modal dialog ('connect to...')
-
-    connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
-
-    connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
-    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
-}
-
 void MainWindow::on_pb_ZoomIn_clicked()
 {
     ui->customPlot->xAxis->scaleRange(0.85, ui->customPlot->xAxis->range().center());
@@ -221,4 +210,62 @@ void MainWindow::on_pb_ResetRange_clicked()
     ui->customPlot->xAxis->setRange(0, 2500);
     ui->customPlot->yAxis->setRange(0, 100);
     ui->customPlot->replot();
+}
+
+void MainWindow::xAxisChanged(QCPRange newRange)
+{
+    double lowerBound = 0;
+    double upperBound = 2531;
+    QCPRange fixedRange(newRange);
+    if (fixedRange.lower < lowerBound)
+    {
+      fixedRange.lower = lowerBound;
+      fixedRange.upper = lowerBound + newRange.size();
+      if (fixedRange.upper > upperBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
+        fixedRange.upper = upperBound;
+      ui->customPlot->xAxis->setRange(fixedRange);
+    } else if (fixedRange.upper > upperBound)
+    {
+      fixedRange.upper = upperBound;
+      fixedRange.lower = upperBound - newRange.size();
+      if (fixedRange.lower < lowerBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
+        fixedRange.lower = lowerBound;
+      ui->customPlot->xAxis->setRange(fixedRange);
+    }
+}
+
+void MainWindow::yAxisChanged(QCPRange newRange)
+{
+    double lowerBound = 0;
+    double upperBound = 150; // note: code assumes lowerBound < upperBound
+    QCPRange fixedRange(newRange);
+    if (fixedRange.lower < lowerBound)
+    {
+      fixedRange.lower = lowerBound;
+      fixedRange.upper = lowerBound + newRange.size();
+      if (fixedRange.upper > upperBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
+        fixedRange.upper = upperBound;
+      ui->customPlot->yAxis->setRange(fixedRange); // adapt this line to use your plot/axis
+    } else if (fixedRange.upper > upperBound)
+    {
+      fixedRange.upper = upperBound;
+      fixedRange.lower = upperBound - newRange.size();
+      if (fixedRange.lower < lowerBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
+        fixedRange.lower = lowerBound;
+      ui->customPlot->yAxis->setRange(fixedRange); // adapt this line to use your plot/axis
+    }
+}
+
+void MainWindow::CreateConnections()
+{
+    //qDebug() << "CreateConnections";
+
+    // Connections between mainWindow and modal dialog ('connect to...')
+
+    connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
+
+    connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
+    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
+    connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
+    connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(yAxisChanged(QCPRange)));
 }
