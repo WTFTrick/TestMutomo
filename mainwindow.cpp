@@ -13,11 +13,10 @@ MainWindow::MainWindow() : m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWi
     mapData = graph1->data();
 
     ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom );
-
     ui->customPlot->xAxis->setLabel("Номер канала");
     ui->customPlot->yAxis->setLabel("Частота, HZ");
-    ui->customPlot->xAxis->setRange(-100, 2500);
-    ui->customPlot->yAxis->setRange(-10, 100);
+    ui->customPlot->xAxis->setRange(0, 2500);
+    ui->customPlot->yAxis->setRange(0, 100);
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
 
     /* Ticks and Grid features
@@ -30,41 +29,36 @@ MainWindow::MainWindow() : m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWi
     */
 
     // Add QCPItemLine and QCPItemText
-    double Colour = 0;
     int NumberOfBoardi = 0;
     for (int i = 1; i < LinesCount*LinesCount ; i = i + LinesCount)
     {
-    Colour += 3;
     QCPItemLine *tickHLine=new QCPItemLine(ui->customPlot);
     ui->customPlot->addItem(tickHLine);
     tickHLine->start->setCoords(i,0);
     tickHLine->end->setCoords(i,50);
-    tickHLine->setPen(QPen(QColor(255 - Colour,  20 + Colour, 147 - Colour), 1.5));
+    tickHLine->setPen(QPen(QColor(0, 255, 0), 3));
 
     NumberOfBoardi++;
     QString NOB = QString("%1").arg(NumberOfBoardi);
-
     QCPItemText *NumberOfBoard = new QCPItemText(ui->customPlot);
     ui->customPlot->addItem(NumberOfBoard);
-    NumberOfBoard->position->setCoords(i - 3, -1);
+    NumberOfBoard->position->setCoords(i + 24, 7);
     NumberOfBoard->setText(NOB);
     NumberOfBoard->setFont(QFont(font().family(), 9));
     NumberOfBoard->setPadding(QMargins(8, 0, 0, 0));
-
     }
 
-
-    /*ui->customPlot->yAxis2->setVisible(true);
-    ui->customPlot->xAxis2->setVisible(true);
-    ui->customPlot->yAxis2->scaleRange(-400,400);
-    ui->customPlot->addGraph(ui->customPlot->xAxis2,ui->customPlot->yAxis2);*/
-
+    // Colour and width of graph
+    QPen graphPen;
+    graphPen.setColor(QColor(0, 0, 0));
+    graphPen.setWidthF(0.5);
+    ui->customPlot->graph()->setPen(graphPen);
     ui->customPlot->replot();
-
 
     ip_dialog = new IPDialog( this );
 
-    connectToHost("10.162.1.110");
+    connectToHost("0.0.0.0");
+    //Mutomo host = "10.162.1.110"
     CreateConnections();
 }
 
@@ -219,5 +213,12 @@ void MainWindow::on_pb_ZoomOut_clicked()
 {
     ui->customPlot->xAxis->scaleRange(1.17, ui->customPlot->xAxis->range().center());
     ui->customPlot->yAxis->scaleRange(1.17, ui->customPlot->yAxis->range().center());
+    ui->customPlot->replot();
+}
+
+void MainWindow::on_pb_ResetRange_clicked()
+{
+    ui->customPlot->xAxis->setRange(0, 2500);
+    ui->customPlot->yAxis->setRange(0, 100);
     ui->customPlot->replot();
 }

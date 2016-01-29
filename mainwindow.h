@@ -59,6 +59,7 @@ private slots:
 
     void on_pb_ZoomIn_clicked();
     void on_pb_ZoomOut_clicked();
+    void on_pb_ResetRange_clicked();
 };
 
 #endif // MAINWINDOW_H
