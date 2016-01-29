@@ -40,10 +40,13 @@ private:
     QCustomPlot *customPlot;
     QTcpSocket* m_pTcpSocket;
     quint32     m_nNextBlockSize;
+    int LinesCount;
     IPDialog* ip_dialog;
 
+    void mousePress();
+    void mouseWheel();
     void CreatePlot(QVector<InfoChannel> *arrData);
-    void CreatePlot(QVector<double> *arrData);
+    void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
 
 
