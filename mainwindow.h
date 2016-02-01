@@ -51,9 +51,8 @@ private:
     void CreatePlot(QVector<InfoChannel> *arrData);
     void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
-
     void resizeEvent(QResizeEvent* event);
-
+    void changeEvent(QEvent *event);
 
 private slots:
     void ScaleChanged();
@@ -63,7 +62,6 @@ private slots:
     void slotConnected();
     void on_actionConnect_to_triggered();
     void connectToHost(QString str);
-    void RangeChanged(QCPRange newRange);
     void xAxisChanged(QCPRange newRange);
     void yAxisChanged(QCPRange newRange);
     void on_pb_ZoomIn_clicked();

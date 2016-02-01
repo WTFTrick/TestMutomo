@@ -6,6 +6,7 @@
 MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49), LinesCount(48), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     setWindowTitle("Mutomo Client");
     setCentralWidget(ui->tabWidget);
 
@@ -22,7 +23,8 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
 
 
     fVisibleLabels = false;
-    CreateLines();
+
+    //CreateLines();
 
     // Colour and width of graph
     QPen graphPen;
@@ -30,7 +32,6 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
     graphPen.setWidthF(0.5);
     ui->customPlot->graph()->setPen(graphPen);
     ui->customPlot->replot();
-
 
     ip_dialog = new IPDialog( this );
 
@@ -172,25 +173,24 @@ void MainWindow::on_pb_ZoomIn_clicked()
 {
     ui->customPlot->xAxis->scaleRange(0.85, ui->customPlot->xAxis->range().lower);
     ui->customPlot->yAxis->scaleRange(0.85, ui->customPlot->yAxis->range().lower);
-    ScaleChanged();
-    ui->customPlot->replot();
 
+    //ScaleChanged();
 }
 
 void MainWindow::on_pb_ZoomOut_clicked()
 {
     ui->customPlot->xAxis->scaleRange(1.17, ui->customPlot->xAxis->range().center());
     ui->customPlot->yAxis->scaleRange(1.17, ui->customPlot->yAxis->range().center());
-    ScaleChanged();
-    ui->customPlot->replot();
+
+    //ScaleChanged();
 }
 
 void MainWindow::on_pb_ResetRange_clicked()
 {
     ui->customPlot->xAxis->setRange(0, 2500);
     ui->customPlot->yAxis->setRange(0, 100);
-    ScaleChanged();
-    ui->customPlot->replot();
+
+    //ScaleChanged();
 }
 
 void MainWindow::xAxisChanged(QCPRange newRange)
@@ -237,42 +237,27 @@ void MainWindow::yAxisChanged(QCPRange newRange)
     }
 }
 
-void MainWindow::RangeChanged(QCPRange newRange)
-{
-    double Bound = 1900;
-    //QCPRange fixedRange(newRange);
-    //qDebug() << fixedRange.size();
-    QCPRange CurrentRange = ui->customPlot->xAxis->range();
-    if (CurrentRange.size() > Bound)
-    {
-        //qDebug() << "kek";
-    }
-    else
-    {
-
-    }
-}
-
 void MainWindow::ScaleChanged()
 {
-    short Bound = 1900;
-    QCPRange CurrentRange = ui->customPlot->xAxis->range();
-    if (CurrentRange.size() > Bound)
-    {
-        fVisibleLabels = false;
-        ui->customPlot->clearItems();
-        CreateLines();
-    }
-    else
-    {
+    const unsigned char PixelLimit = 19;
+    double px_size = ui->customPlot->xAxis->coordToPixel(ChannelsOnBoard) - ui->customPlot->xAxis->coordToPixel(0);
+    //qDebug() << "px_size =" << px_size;
+
+    if (px_size > PixelLimit)
         fVisibleLabels = true;
-        ui->customPlot->clearItems();
-        CreateLines();
-    }
+    else
+        if (px_size < PixelLimit)
+            fVisibleLabels = false;
+
+    CreateLines();
 }
 
 void MainWindow::CreateLines()
 {
+    // delete items
+    ui->customPlot->clearItems();
+
+
     // Add QCPItemLine and QCPItemText
     unsigned char CounterOfBoards = 0;           // Counter for boards
     const unsigned char nmBoards = 48;          //  Number of boards
@@ -303,6 +288,8 @@ void MainWindow::CreateLines()
         }
     }
     //qDebug() << "fVisibleLabels=" << fVisibleLabels;
+
+    ui->customPlot->replot();
 }
 
 void MainWindow::CreateConnections()
@@ -313,9 +300,13 @@ void MainWindow::CreateConnections()
     connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
     connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
     connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
-    connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(RangeChanged(QCPRange)));
     connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
     connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(yAxisChanged(QCPRange)));
+
+    // scaled plot
+    connect(ui->pb_ZoomIn, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
+    connect(ui->pb_ZoomOut, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
+    connect(ui->pb_ResetRange, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
 
 
 }
@@ -323,21 +314,21 @@ void MainWindow::CreateConnections()
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
-    const unsigned char PixelLimit = 19;
-    double px_size = ui->customPlot->xAxis->coordToPixel(ChannelsOnBoard) - ui->customPlot->xAxis->coordToPixel(0);
-    qDebug() << "px_size =" << px_size;
 
-    if (px_size > PixelLimit)
-    {
-        fVisibleLabels = true;
-        ui->customPlot->clearItems();
-        CreateLines();
-    }
-    else if (px_size < PixelLimit)
-    {
-        fVisibleLabels = false;
-        ui->customPlot->clearItems();
-        CreateLines();
-    }
-
+    ScaleChanged();
 }
+
+void MainWindow::changeEvent(QEvent *event)
+{
+    if(event->type() == QEvent::WindowStateChange)
+    {
+
+        if(isMaximized())
+        {
+            ScaleChanged();
+        }
+    }
+    event->accept();
+}
+
+
