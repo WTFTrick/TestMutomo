@@ -3,7 +3,7 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow() : m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWindow)
+MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     setWindowTitle("Mutomo Client");
@@ -17,29 +17,37 @@ MainWindow::MainWindow() : m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWi
     ui->customPlot->yAxis->setLabel("Частота, HZ");
     ui->customPlot->xAxis->setRange(0, 2500);
     ui->customPlot->yAxis->setRange(0, 100);
+
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
 
-    /* Ticks and Grid features
-    ui->customPlot->xAxis->setAutoTickStep(false);
-    ui->customPlot->xAxis->setTickStep(200);
-    ui->customPlot->yAxis->setAutoTickStep(false);
-    ui->customPlot->yAxis->setTickStep(10);
-    ui->customPlot->xAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1.25, Qt::DotLine));
-    ui->customPlot->yAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1.25, Qt::DotLine));
-    */
-
     // Add QCPItemLine and QCPItemText
-    int NumberOfBoardi = 0;
-    for (int i = 1; i < LinesCount*LinesCount ; i = i + LinesCount)
-    {
-    QCPItemLine *tickHLine=new QCPItemLine(ui->customPlot);
-    ui->customPlot->addItem(tickHLine);
-    tickHLine->start->setCoords(i,0);
-    tickHLine->end->setCoords(i,30);
-    tickHLine->setPen(QPen(QColor(0, 255, 0), 3));
-    }
 
-    NumberOfBoard = new QCPItemText(ui->customPlot);
+    unsigned char CounterOfBoards = 0;           // Counter for boards
+    const unsigned char nmBoards = 48;          //  Number of boards
+    const unsigned char ChannelsOnBoard = 49;   // Count of channels on board
+    const char line_height = 30;
+    const char width_line = 3;
+    const double label_center_x = ChannelsOnBoard/2;
+    const char label_center_y = 7;
+
+    uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
+    for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
+    {
+        QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
+        ui->customPlot->addItem(tickHLine);
+        tickHLine->start->setCoords(i, 0);
+        tickHLine->end->setCoords(i, line_height);
+        tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
+
+        CounterOfBoards++;
+        QString NOB = QString("%1").arg(CounterOfBoards);
+        QCPItemText *NumberOfBoard = new QCPItemText(ui->customPlot);
+        NumberOfBoard->position->setCoords(i + label_center_x, label_center_y);
+        NumberOfBoard->setText(NOB);
+        NumberOfBoard->setFont(QFont(font().family(), 10));
+        //NumberOfBoard->
+        //NumberOfBoard->setPadding(QMargins(10, 0, 0, 0));
+    }
 
     // Colour and width of graph
     QPen graphPen;
@@ -185,8 +193,8 @@ void MainWindow::mouseWheel()
 
 void MainWindow::on_pb_ZoomIn_clicked()
 {
-    ui->customPlot->xAxis->scaleRange(0.85, ui->customPlot->xAxis->range().center());
-    ui->customPlot->yAxis->scaleRange(0.85, ui->customPlot->yAxis->range().center());
+    ui->customPlot->xAxis->scaleRange(0.85, ui->customPlot->xAxis->range().lower);
+    ui->customPlot->yAxis->scaleRange(0.85, ui->customPlot->yAxis->range().lower);
     ui->customPlot->replot();
 }
 
@@ -248,37 +256,24 @@ void MainWindow::yAxisChanged(QCPRange newRange)
     }
 }
 
-void MainWindow::AxisChanged(QCPRange newRange)
+void MainWindow::RangeChanged(QCPRange newRange)
 {
-    double upperBound = 1200; // note: code assumes lowerBound < upperBound
+    double Bound = 1900;
     QCPRange fixedRange(newRange);
     //qDebug() << fixedRange.size();
-    if (fixedRange.size() > upperBound)
+    if (fixedRange.size() > Bound)
     {
-      for (int i = 1; i < LinesCount*LinesCount ; i = i + LinesCount)
-      {
-      NumberOfBoard->position->setCoords(i + 24, 7);
-      QString null = "    ";
-      NumberOfBoard->setText(null);
-      NumberOfBoard->setFont(QFont(font().family(), 0));
-      ui->customPlot->replot();
-      }
+
     }
     else
     {
-        int NumberOfBoardi = 0;
-        for (int i = 1; i < LinesCount*LinesCount ; i = i + LinesCount)
-        {
-        NumberOfBoardi++;
-        QString NOB = QString("%1").arg(NumberOfBoardi);
-        //qDebug() << NumberOfBoardi;
-        NumberOfBoard->position->setCoords(i + 24, 7);
-        NumberOfBoard->setText(NOB);
-        NumberOfBoard->setFont(QFont(font().family(), 10));
-        NumberOfBoard->setPadding(QMargins(8, 0, 0, 0));
-        ui->customPlot->replot();
-        }
+
     }
+}
+
+void MainWindow::ScaleChanged()
+{
+
 }
 
 void MainWindow::CreateConnections()
@@ -289,7 +284,7 @@ void MainWindow::CreateConnections()
     connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
     connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
     connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
-    connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(AxisChanged(QCPRange)));
+    connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(RangeChanged(QCPRange)));
     connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
     connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(yAxisChanged(QCPRange)));
 }

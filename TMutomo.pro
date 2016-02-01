@@ -25,6 +25,6 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui \
     dialog.ui
 
-CONFIG += mobility
+CONFIG += mobility c++11
 MOBILITY = 
 

@@ -34,15 +34,14 @@ public:
 private:
     Ui::MainWindow *ui;
     QString strHost;
-    int nPort = 2323;
+    int nPort;
     QCPDataMap  *mapData;
     QCPGraph    *graph1;
     QCustomPlot *customPlot;
     QTcpSocket* m_pTcpSocket;
     quint32     m_nNextBlockSize;
-    int LinesCount;
+    int LinesCount;                         // ...
     IPDialog* ip_dialog;
-    QCPItemText *NumberOfBoard;
 
     void CreatePlot(QVector<InfoChannel> *arrData);
     void CreatePlot(QVector<quint32> *arrData);
@@ -51,14 +50,14 @@ private:
 
 
 private slots:
+    void ScaleChanged();
     void mousePress();
     void mouseWheel();
     void slotReadyRead();
     void slotConnected();
     void on_actionConnect_to_triggered();
     void connectToHost(QString str);
-
-    void AxisChanged(QCPRange newRange);
+    void RangeChanged(QCPRange newRange);
     void xAxisChanged(QCPRange newRange);
     void yAxisChanged(QCPRange newRange);
     void on_pb_ZoomIn_clicked();
