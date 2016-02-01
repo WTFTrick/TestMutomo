@@ -3,7 +3,7 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),LinesCount(48), ui(new Ui::MainWindow)
+MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49), LinesCount(48), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     setWindowTitle("Mutomo Client");
@@ -20,34 +20,9 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),LinesCount(48), ui(n
 
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
 
-    // Add QCPItemLine and QCPItemText
 
-    unsigned char CounterOfBoards = 0;           // Counter for boards
-    const unsigned char nmBoards = 48;          //  Number of boards
-    const unsigned char ChannelsOnBoard = 49;   // Count of channels on board
-    const char line_height = 30;
-    const char width_line = 3;
-    const double label_center_x = ChannelsOnBoard/2;
-    const char label_center_y = 7;
-
-    uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
-    for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
-    {
-        QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
-        ui->customPlot->addItem(tickHLine);
-        tickHLine->start->setCoords(i, 0);
-        tickHLine->end->setCoords(i, line_height);
-        tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
-
-        CounterOfBoards++;
-        QString NOB = QString("%1").arg(CounterOfBoards);
-        QCPItemText *NumberOfBoard = new QCPItemText(ui->customPlot);
-        NumberOfBoard->position->setCoords(i + label_center_x, label_center_y);
-        NumberOfBoard->setText(NOB);
-        NumberOfBoard->setFont(QFont(font().family(), 10));
-        //NumberOfBoard->
-        //NumberOfBoard->setPadding(QMargins(10, 0, 0, 0));
-    }
+    fVisibleLabels = false;
+    CreateLines();
 
     // Colour and width of graph
     QPen graphPen;
@@ -55,6 +30,7 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),LinesCount(48), ui(n
     graphPen.setWidthF(0.5);
     ui->customPlot->graph()->setPen(graphPen);
     ui->customPlot->replot();
+
 
     ip_dialog = new IPDialog( this );
 
@@ -189,19 +165,23 @@ void MainWindow::mousePress()
 void MainWindow::mouseWheel()
 {
     ui->customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+    ScaleChanged();
 }
 
 void MainWindow::on_pb_ZoomIn_clicked()
 {
     ui->customPlot->xAxis->scaleRange(0.85, ui->customPlot->xAxis->range().lower);
     ui->customPlot->yAxis->scaleRange(0.85, ui->customPlot->yAxis->range().lower);
+    ScaleChanged();
     ui->customPlot->replot();
+
 }
 
 void MainWindow::on_pb_ZoomOut_clicked()
 {
     ui->customPlot->xAxis->scaleRange(1.17, ui->customPlot->xAxis->range().center());
     ui->customPlot->yAxis->scaleRange(1.17, ui->customPlot->yAxis->range().center());
+    ScaleChanged();
     ui->customPlot->replot();
 }
 
@@ -209,6 +189,7 @@ void MainWindow::on_pb_ResetRange_clicked()
 {
     ui->customPlot->xAxis->setRange(0, 2500);
     ui->customPlot->yAxis->setRange(0, 100);
+    ScaleChanged();
     ui->customPlot->replot();
 }
 
@@ -259,11 +240,12 @@ void MainWindow::yAxisChanged(QCPRange newRange)
 void MainWindow::RangeChanged(QCPRange newRange)
 {
     double Bound = 1900;
-    QCPRange fixedRange(newRange);
+    //QCPRange fixedRange(newRange);
     //qDebug() << fixedRange.size();
-    if (fixedRange.size() > Bound)
+    QCPRange CurrentRange = ui->customPlot->xAxis->range();
+    if (CurrentRange.size() > Bound)
     {
-
+        //qDebug() << "kek";
     }
     else
     {
@@ -273,7 +255,54 @@ void MainWindow::RangeChanged(QCPRange newRange)
 
 void MainWindow::ScaleChanged()
 {
+    short Bound = 1900;
+    QCPRange CurrentRange = ui->customPlot->xAxis->range();
+    if (CurrentRange.size() > Bound)
+    {
+        fVisibleLabels = false;
+        ui->customPlot->clearItems();
+        CreateLines();
+    }
+    else
+    {
+        fVisibleLabels = true;
+        ui->customPlot->clearItems();
+        CreateLines();
+    }
+}
 
+void MainWindow::CreateLines()
+{
+    // Add QCPItemLine and QCPItemText
+    unsigned char CounterOfBoards = 0;           // Counter for boards
+    const unsigned char nmBoards = 48;          //  Number of boards
+    const char line_height = 30;
+    const char width_line = 3;
+    const short label_center_x = ChannelsOnBoard / 2;
+    const char label_center_y = 7;
+
+    uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
+    for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
+    {
+        QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
+        ui->customPlot->addItem(tickHLine);
+        tickHLine->start->setCoords(i, 0);
+        tickHLine->end->setCoords(i, line_height);
+        tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
+
+        CounterOfBoards++;
+        QString NOB = QString("%1").arg(CounterOfBoards);
+        if (fVisibleLabels)
+        {
+            QCPItemText *NumberOfBoard = new QCPItemText(ui->customPlot);
+            ui->customPlot->addItem(NumberOfBoard);
+            NumberOfBoard->position->setCoords(i + label_center_x, label_center_y);
+            NumberOfBoard->setText(NOB);
+            NumberOfBoard->setFont(QFont(font().family(), 10));
+            //NumberOfBoard->setPadding(QMargins(10, 0, 0, 0));
+        }
+    }
+    //qDebug() << "fVisibleLabels=" << fVisibleLabels;
 }
 
 void MainWindow::CreateConnections()
@@ -287,4 +316,28 @@ void MainWindow::CreateConnections()
     connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(RangeChanged(QCPRange)));
     connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
     connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(yAxisChanged(QCPRange)));
+
+
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+    const unsigned char PixelLimit = 19;
+    double px_size = ui->customPlot->xAxis->coordToPixel(ChannelsOnBoard) - ui->customPlot->xAxis->coordToPixel(0);
+    qDebug() << "px_size =" << px_size;
+
+    if (px_size > PixelLimit)
+    {
+        fVisibleLabels = true;
+        ui->customPlot->clearItems();
+        CreateLines();
+    }
+    else if (px_size < PixelLimit)
+    {
+        fVisibleLabels = false;
+        ui->customPlot->clearItems();
+        CreateLines();
+    }
+
 }

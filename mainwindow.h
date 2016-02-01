@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QWidget>
 #include <QTcpSocket>
+#include <QResizeEvent>
+
 #include <qcustomplot.h>
 
 
@@ -42,11 +44,15 @@ private:
     quint32     m_nNextBlockSize;
     int LinesCount;                         // ...
     IPDialog* ip_dialog;
+    bool fVisibleLabels;
+    const unsigned char ChannelsOnBoard;
 
+    void CreateLines();
     void CreatePlot(QVector<InfoChannel> *arrData);
     void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
 
+    void resizeEvent(QResizeEvent* event);
 
 
 private slots:
