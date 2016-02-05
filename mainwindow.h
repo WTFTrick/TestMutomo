@@ -67,6 +67,7 @@ private slots:
     void on_pb_ZoomIn_clicked();
     void on_pb_ZoomOut_clicked();
     void on_pb_ResetRange_clicked();
+    void MousePress(QCPAbstractItem* item, QMouseEvent* event);
 };
 
 #endif // MAINWINDOW_H

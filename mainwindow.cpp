@@ -302,6 +302,8 @@ void MainWindow::CreateConnections()
     connect(ui->pb_ZoomIn, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
     connect(ui->pb_ZoomOut, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
     connect(ui->pb_ResetRange, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
+    // mouse click on some area of plot
+    connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MousePress(QCPAbstractItem* , QMouseEvent*)));
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -323,4 +325,17 @@ void MainWindow::changeEvent(QEvent *event)
     event->accept();
 }
 
+void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)
+{
+    if (item)
+    {
+        qDebug() << "ItemClick";
+    }
+
+    //double x = ui->customPlot->xAxis->pixelToCoord(event->pos().x());
+    //double y = ui->customPlot->yAxis->pixelToCoord(event->pos().y());
+    //qDebug() << "X:" << x;
+    //qDebug() << "Y:" << y;
+
+}
 
