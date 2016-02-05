@@ -21,7 +21,6 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
 
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
 
-
     fVisibleLabels = false;
 
     //CreateLines();
@@ -173,7 +172,6 @@ void MainWindow::on_pb_ZoomIn_clicked()
 {
     ui->customPlot->xAxis->scaleRange(0.85, ui->customPlot->xAxis->range().lower);
     ui->customPlot->yAxis->scaleRange(0.85, ui->customPlot->yAxis->range().lower);
-
     //ScaleChanged();
 }
 
@@ -181,7 +179,6 @@ void MainWindow::on_pb_ZoomOut_clicked()
 {
     ui->customPlot->xAxis->scaleRange(1.17, ui->customPlot->xAxis->range().center());
     ui->customPlot->yAxis->scaleRange(1.17, ui->customPlot->yAxis->range().center());
-
     //ScaleChanged();
 }
 
@@ -189,7 +186,6 @@ void MainWindow::on_pb_ResetRange_clicked()
 {
     ui->customPlot->xAxis->setRange(0, 2500);
     ui->customPlot->yAxis->setRange(0, 100);
-
     //ScaleChanged();
 }
 
@@ -218,7 +214,7 @@ void MainWindow::xAxisChanged(QCPRange newRange)
 void MainWindow::yAxisChanged(QCPRange newRange)
 {
     double lowerBound = 0;
-    double upperBound = 150; // note: code assumes lowerBound < upperBound
+    double upperBound = 150;
     QCPRange fixedRange(newRange);
     if (fixedRange.lower < lowerBound)
     {
@@ -226,14 +222,14 @@ void MainWindow::yAxisChanged(QCPRange newRange)
       fixedRange.upper = lowerBound + newRange.size();
       if (fixedRange.upper > upperBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
         fixedRange.upper = upperBound;
-      ui->customPlot->yAxis->setRange(fixedRange); // adapt this line to use your plot/axis
+      ui->customPlot->yAxis->setRange(fixedRange);
     } else if (fixedRange.upper > upperBound)
     {
       fixedRange.upper = upperBound;
       fixedRange.lower = upperBound - newRange.size();
       if (fixedRange.lower < lowerBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
         fixedRange.lower = lowerBound;
-      ui->customPlot->yAxis->setRange(fixedRange); // adapt this line to use your plot/axis
+      ui->customPlot->yAxis->setRange(fixedRange);
     }
 }
 
@@ -256,7 +252,6 @@ void MainWindow::CreateLines()
 {
     // delete items
     ui->customPlot->clearItems();
-
 
     // Add QCPItemLine and QCPItemText
     unsigned char CounterOfBoards = 0;           // Counter for boards
@@ -307,8 +302,6 @@ void MainWindow::CreateConnections()
     connect(ui->pb_ZoomIn, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
     connect(ui->pb_ZoomOut, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
     connect(ui->pb_ResetRange, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
-
-
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -322,7 +315,6 @@ void MainWindow::changeEvent(QEvent *event)
 {
     if(event->type() == QEvent::WindowStateChange)
     {
-
         if(isMaximized())
         {
             ScaleChanged();
