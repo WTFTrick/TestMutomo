@@ -44,16 +44,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::CreatePlot(QVector<InfoChannel> *arrData)
-{
-    // Receiving data from server and plot it
-    for (double i = 0; i < arrData->size(); i++)
-    {
-        mapData->operator [](i) = QCPData(arrData->at(i).nm_channel, arrData->at(i).freq);
-    }
-    ui->customPlot->replot();
-}
-
 void MainWindow::CreatePlot(QVector<quint32> *arrData)
 {
     unsigned int maxY = 0;
@@ -65,10 +55,9 @@ void MainWindow::CreatePlot(QVector<quint32> *arrData)
     }
 
     // Dynamic range of x and y axis;
-
-    ui->customPlot->xAxis->setRange(0, arrData->size() + 100);
-    qDebug() << "arrData->size():" << arrData->size();
-    ui->customPlot->yAxis->setRange(0, maxY + 20);
+    //ui->customPlot->xAxis->setRange(0, arrData->size() + 100);
+    //ui->customPlot->yAxis->setRange(0, maxY + 20);
+    //qDebug() << "arrData->size():" << arrData->size();
 
     ui->customPlot->replot();
 }
@@ -95,11 +84,6 @@ void MainWindow::slotReadyRead()
             break;
         }
 
-        //------------------------------
-        QVector<InfoChannel> arrData;
-        InfoChannel tmpInfoChan;
-        arrData.clear();
-        //------------------------------
 
         quint32  freq = 0;
         QVector<quint32> arrFreq;
@@ -107,18 +91,6 @@ void MainWindow::slotReadyRead()
         {
             in >> freq;
             arrFreq.append( freq );
-
-            //qDebug() << "arrFreq.size() =" << arrFreq.size();
-
-            /*
-            in >> tmpInfoChan.nm_channel;
-            in >> tmpInfoChan.freq;
-            arrData.append( tmpInfoChan);
-            */
-
-            //if (freq > 0 )
-                //qDebug() << "i=" << i << ", freq =" << freq;
-
         }
         CreatePlot( &arrFreq );
         //qDebug() << "size:" << arrFreq.size();
@@ -127,6 +99,34 @@ void MainWindow::slotReadyRead()
 
         m_nNextBlockSize = 0;
     }
+}
+
+void MainWindow::StartServer()
+{
+    quint8 status = 1;
+    ServerControl(status);
+}
+
+void MainWindow::StopServer()
+{
+    quint8 status = 0;
+    ServerControl(status);
+}
+
+void MainWindow::ServerControl(quint8 status)
+{
+    QByteArray data;
+    QDataStream out(&data, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_4);
+
+    out << quint8(0) << status;
+    out.device()->seek(0);
+
+    // ??
+
+    out << quint8(data.size() - sizeof(quint8));
+    m_pTcpSocket->write(data);
+    qDebug() << "Data send to server";
 }
 
 void MainWindow::slotConnected()
@@ -305,6 +305,10 @@ void MainWindow::CreateConnections()
 
     // mouse click on some area of plot
     connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MousePress(QCPAbstractItem* , QMouseEvent*)));
+
+    // start/stop server buttons
+    connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(StartServer()));
+    connect(ui->pb_stopServer, SIGNAL(clicked(bool)), this, SLOT(StopServer()));
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -326,28 +330,21 @@ void MainWindow::changeEvent(QEvent *event)
     event->accept();
 }
 
+
 void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)
 {
     if (item)
     {
         if("QCPItemText" == QString(item->metaObject()->className()))
         {
-            //qDebug() << "Clicked item: " << item;
-            QCPItemTracer* tracer = new QCPItemTracer(ui->customPlot);
-
             double x = ui->customPlot->xAxis->pixelToCoord(event->x());
-            ui->customPlot->xAxis->setRange(x - 28 , x + 28);
+            double y = floor( x/ChannelsOnBoard );
+            double left = y*ChannelsOnBoard;
+            //qDebug() << y;
+            double right = left + ChannelsOnBoard;
+            ui->customPlot->xAxis->setRange(left , right);
             ui->customPlot->replot();
-
-            //item->dumpObjectInfo();
-            //qDebug() << item->registerUserData();
         }
     }
-
-    //double x = ui->customPlot->xAxis->pixelToCoord(event->pos().x());
-    //double y = ui->customPlot->yAxis->pixelToCoord(event->pos().y());
-    //qDebug() << "X:" << x;
-    //qDebug() << "Y:" << y;
-
 }
 

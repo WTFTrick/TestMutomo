@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <QTcpSocket>
 #include <QResizeEvent>
-
+#include <math.h>
 #include <qcustomplot.h>
 
 
@@ -55,6 +55,9 @@ private:
     void changeEvent(QEvent *event);
 
 private slots:
+    void StopServer();
+    void StartServer();
+    void ServerControl(quint8 status);
     void ScaleChanged();
     void mousePress();
     void mouseWheel();
