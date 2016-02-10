@@ -302,6 +302,7 @@ void MainWindow::CreateConnections()
     connect(ui->pb_ZoomIn, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
     connect(ui->pb_ZoomOut, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
     connect(ui->pb_ResetRange, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
+
     // mouse click on some area of plot
     connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MousePress(QCPAbstractItem* , QMouseEvent*)));
 }
@@ -329,7 +330,18 @@ void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)
 {
     if (item)
     {
-        qDebug() << "ItemClick";
+        if("QCPItemText" == QString(item->metaObject()->className()))
+        {
+            //qDebug() << "Clicked item: " << item;
+            QCPItemTracer* tracer = new QCPItemTracer(ui->customPlot);
+
+            double x = ui->customPlot->xAxis->pixelToCoord(event->x());
+            ui->customPlot->xAxis->setRange(x - 28 , x + 28);
+            ui->customPlot->replot();
+
+            //item->dumpObjectInfo();
+            //qDebug() << item->registerUserData();
+        }
     }
 
     //double x = ui->customPlot->xAxis->pixelToCoord(event->pos().x());
