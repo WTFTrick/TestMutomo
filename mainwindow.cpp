@@ -106,12 +106,19 @@ void MainWindow::StartServer()
 {
     quint8 status = 1;
     ServerControl(status);
+    qDebug() << "Send 'start' command to server";
+    ui->pb_stopServer->setDisabled(false);
+    ui->pb_startServer->setDisabled(true);
 }
 
 void MainWindow::StopServer()
 {
+    ui->pb_startServer->setDisabled(false);
     quint8 status = 0;
     ServerControl(status);
+    qDebug() << "Send 'stop' command to server";
+    ui->pb_stopServer->setDisabled(false);
+    ui->pb_stopServer->setDisabled(true);
 }
 
 void MainWindow::ServerControl(quint8 status)
@@ -127,7 +134,6 @@ void MainWindow::ServerControl(quint8 status)
 
     out << quint8(data.size() - sizeof(quint8));
     m_pTcpSocket->write(data);
-    qDebug() << "Data send to server";
 }
 
 void MainWindow::slotConnected()
