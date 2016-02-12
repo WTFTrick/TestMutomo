@@ -21,9 +21,10 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
 
     ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
 
-    fVisibleLabels = false;
+    ui->customPlot->addLayer("BG",ui->customPlot->layer("graph1"), QCustomPlot::limBelow);
+    ui->customPlot->setCurrentLayer("BG");
 
-    //CreateLines();
+    fVisibleLabels = false;
 
     // Colour and width of graph
     QPen graphPen;
@@ -329,7 +330,6 @@ void MainWindow::changeEvent(QEvent *event)
     }
     event->accept();
 }
-
 
 void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)
 {
