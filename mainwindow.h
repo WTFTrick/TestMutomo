@@ -8,8 +8,8 @@
 #include <math.h>
 #include <qcustomplot.h>
 
-
 #include "dialog.h"
+#include "viewconstr.h"
 
 struct InfoChannel
 {

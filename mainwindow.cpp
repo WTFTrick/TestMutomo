@@ -12,7 +12,6 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
 
     graph1 = ui->customPlot->addGraph();
     mapData = graph1->data();
-
     ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom );
     ui->customPlot->xAxis->setLabel("Номер канала");
     ui->customPlot->yAxis->setLabel("Частота, HZ");
@@ -23,21 +22,25 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
 
     ui->customPlot->addLayer("BG",ui->customPlot->layer("graph1"), QCustomPlot::limBelow);
     ui->customPlot->setCurrentLayer("BG");
+    ui->pb_stopServer->setDisabled(true);
+
+    ui->tabWidget->addTab(new viewConstr(), tr("GraphicalView"));
 
     fVisibleLabels = false;
 
     // Colour and width of graph
     QPen graphPen;
     graphPen.setColor(QColor(0, 0, 0));
-    graphPen.setWidthF(0.5);
+    graphPen.setWidthF(0.4);
     ui->customPlot->graph()->setPen(graphPen);
     ui->customPlot->replot();
 
     ip_dialog = new IPDialog( this );
 
     connectToHost("0.0.0.0");
-    //Mutomo host = "10.162.1.110"
+    //MutomoHost = "10.162.1.110"
     CreateConnections();
+
 }
 
 MainWindow::~MainWindow()
@@ -47,6 +50,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::CreatePlot(QVector<quint32> *arrData)
 {
+    ui->pb_startServer->setEnabled(false);
+    ui->pb_stopServer->setEnabled(true);
     unsigned int maxY = 0;
     for (double i = 0; i < arrData->size(); i++)
     {
@@ -113,11 +118,10 @@ void MainWindow::StartServer()
 
 void MainWindow::StopServer()
 {
-    ui->pb_startServer->setDisabled(false);
     quint8 status = 0;
     ServerControl(status);
     qDebug() << "Send 'stop' command to server";
-    ui->pb_stopServer->setDisabled(false);
+    ui->pb_startServer->setDisabled(false);
     ui->pb_stopServer->setDisabled(true);
 }
 
@@ -203,18 +207,18 @@ void MainWindow::xAxisChanged(QCPRange newRange)
     QCPRange fixedRange(newRange);
     if (fixedRange.lower < lowerBound)
     {
-      fixedRange.lower = lowerBound;
-      fixedRange.upper = lowerBound + newRange.size();
-      if (fixedRange.upper > upperBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
-        fixedRange.upper = upperBound;
-      ui->customPlot->xAxis->setRange(fixedRange);
+        fixedRange.lower = lowerBound;
+        fixedRange.upper = lowerBound + newRange.size();
+        if (fixedRange.upper > upperBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
+            fixedRange.upper = upperBound;
+        ui->customPlot->xAxis->setRange(fixedRange);
     } else if (fixedRange.upper > upperBound)
     {
-      fixedRange.upper = upperBound;
-      fixedRange.lower = upperBound - newRange.size();
-      if (fixedRange.lower < lowerBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
-        fixedRange.lower = lowerBound;
-      ui->customPlot->xAxis->setRange(fixedRange);
+        fixedRange.upper = upperBound;
+        fixedRange.lower = upperBound - newRange.size();
+        if (fixedRange.lower < lowerBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
+            fixedRange.lower = lowerBound;
+        ui->customPlot->xAxis->setRange(fixedRange);
     }
 }
 
@@ -225,18 +229,18 @@ void MainWindow::yAxisChanged(QCPRange newRange)
     QCPRange fixedRange(newRange);
     if (fixedRange.lower < lowerBound)
     {
-      fixedRange.lower = lowerBound;
-      fixedRange.upper = lowerBound + newRange.size();
-      if (fixedRange.upper > upperBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
-        fixedRange.upper = upperBound;
-      ui->customPlot->yAxis->setRange(fixedRange);
+        fixedRange.lower = lowerBound;
+        fixedRange.upper = lowerBound + newRange.size();
+        if (fixedRange.upper > upperBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
+            fixedRange.upper = upperBound;
+        ui->customPlot->yAxis->setRange(fixedRange);
     } else if (fixedRange.upper > upperBound)
     {
-      fixedRange.upper = upperBound;
-      fixedRange.lower = upperBound - newRange.size();
-      if (fixedRange.lower < lowerBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
-        fixedRange.lower = lowerBound;
-      ui->customPlot->yAxis->setRange(fixedRange);
+        fixedRange.upper = upperBound;
+        fixedRange.lower = upperBound - newRange.size();
+        if (fixedRange.lower < lowerBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
+            fixedRange.lower = lowerBound;
+        ui->customPlot->yAxis->setRange(fixedRange);
     }
 }
 
@@ -285,7 +289,7 @@ void MainWindow::CreateLines()
             ui->customPlot->addItem(NumberOfBoard);
             NumberOfBoard->position->setCoords(i + label_center_x, label_center_y);
             NumberOfBoard->setText(NOB);
-            NumberOfBoard->setFont(QFont(font().family(), 10));
+            NumberOfBoard->setFont(QFont(font().family(), 11));
             //NumberOfBoard->setPadding(QMargins(10, 0, 0, 0));
         }
     }
