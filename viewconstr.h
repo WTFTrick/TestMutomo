@@ -8,6 +8,7 @@
 #include <QGraphicsItem>
 #include <QGraphicsProxyWidget>
 #include <QComboBox>
+#include <QSpinBox>
 
 #include "mainwindow.h"
 

@@ -7,7 +7,8 @@ viewConstr::viewConstr(QWidget *parent) : count(450), step(50), QWidget(parent)
 
 void viewConstr::CreateView()
 {
-    QLabel *fileNameLabel = new QLabel(tr("viewConstr Class:"));
+    QLabel *fileNameLabel = new QLabel(tr("Graphical View:"));
+    fileNameLabel->setAlignment(Qt::AlignCenter);
     scene = new QGraphicsScene(this);
     gv = new QGraphicsView();
     gv->setScene(scene);
@@ -24,12 +25,16 @@ void viewConstr::CreateView()
     quint8 height = 30;
     quint8 empty_area = count / 2.25;
 
+
     for (int i = 0; i < count; i+=step)
     {
         if (i < 300)
         {
+            //add vector combo box / spin box
         QComboBox* cmb = new QComboBox;
         cmb->addItem("10");
+        cmb->addItem("0");
+        cmb->addItem("1");
         gpw = scene->addWidget(cmb);
         cmb->move(i+2,2);
         }
@@ -40,6 +45,9 @@ void viewConstr::CreateView()
         else
         {
             rectangle = scene->addRect(0, i, width, height, outlinePen,TBrush);
+            QSpinBox* sp = new QSpinBox;
+            gpw = scene->addWidget(sp);
+            sp->move(310,i+2);
         }
     }
 }
