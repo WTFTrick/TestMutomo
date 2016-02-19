@@ -6,6 +6,9 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QGraphicsItem>
+#include <QGraphicsProxyWidget>
+#include <QComboBox>
+
 #include "mainwindow.h"
 
 class viewConstr : public QWidget
@@ -17,6 +20,10 @@ public:
     QGraphicsView * gv;
     QGraphicsScene *scene;
     QGraphicsRectItem *rectangle;
+    QGraphicsProxyWidget* gpw;
+    QTransform transform;
+    quint16 count;
+    quint8 step;
 
 signals:
 

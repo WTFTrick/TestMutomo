@@ -1,6 +1,6 @@
 #include "viewconstr.h"
 
-viewConstr::viewConstr(QWidget *parent) : QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) : count(450), step(50), QWidget(parent)
 {
     CreateView();
 }
@@ -15,20 +15,32 @@ void viewConstr::CreateView()
     mainLayout->addWidget(fileNameLabel);
     mainLayout->addWidget(gv);
     setLayout(mainLayout);
-
     QBrush TBrush(Qt::transparent);
     QPen outlinePen(Qt::black);
     QPen TPen(Qt::transparent);
-
     outlinePen.setWidth(1);
-    for (int i = 0; i < 450; i+=50)
+
+    quint16 width = 300;
+    quint8 height = 30;
+    quint8 empty_area = count / 2.25;
+
+    for (int i = 0; i < count; i+=step)
     {
-        if (i == 200)
+        if (i < 300)
         {
-            rectangle = scene->addRect(0, i, 300, 30, TPen, TBrush);
+        QComboBox* cmb = new QComboBox;
+        cmb->addItem("10");
+        gpw = scene->addWidget(cmb);
+        cmb->move(i+2,2);
+        }
+        if (i == empty_area)
+        {
+            rectangle = scene->addRect(0, i, width, height, TPen, TBrush);
         }
         else
-            rectangle = scene->addRect(0, i, 300, 30, outlinePen,TBrush);
+        {
+            rectangle = scene->addRect(0, i, width, height, outlinePen,TBrush);
+        }
     }
 }
 
