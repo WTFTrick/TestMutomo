@@ -26,6 +26,7 @@ public:
     quint16 count;
     quint8 step;
 
+
 signals:
 
 private:

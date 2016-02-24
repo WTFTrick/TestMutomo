@@ -320,6 +320,9 @@ void MainWindow::CreateConnections()
     // start/stop server buttons
     connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(StartServer()));
     connect(ui->pb_stopServer, SIGNAL(clicked(bool)), this, SLOT(StopServer()));
+
+
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected()));
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -339,6 +342,18 @@ void MainWindow::changeEvent(QEvent *event)
         }
     }
     event->accept();
+}
+
+void MainWindow::tabSelected()
+{
+    if(ui->tabWidget->currentIndex()!=0)
+    {
+        StopServer();
+    }
+    else
+    {
+        StartServer();
+    }
 }
 
 void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)

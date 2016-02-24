@@ -11,12 +11,6 @@
 #include "dialog.h"
 #include "viewconstr.h"
 
-struct InfoChannel
-{
-    quint16 nm_channel;
-    quint16 freq;
-};
-
 namespace Ui
 {
 
@@ -48,7 +42,7 @@ private:
     const unsigned char ChannelsOnBoard;
 
     void CreateLines();
-    void CreatePlot(QVector<InfoChannel> *arrData);
+    //void CreatePlot(QVector<InfoChannel> *arrData);
     void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
     void resizeEvent(QResizeEvent* event);
@@ -71,6 +65,7 @@ private slots:
     void on_pb_ZoomOut_clicked();
     void on_pb_ResetRange_clicked();
     void MousePress(QCPAbstractItem* item, QMouseEvent* event);
+    void tabSelected();
 };
 
 #endif // MAINWINDOW_H
