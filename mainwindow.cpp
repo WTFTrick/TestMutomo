@@ -349,6 +349,7 @@ void MainWindow::tabSelected()
     if(ui->tabWidget->currentIndex()!=0)
     {
         StopServer();
+        qDebug() << "Tab Changed, stop server";
     }
     else
     {
