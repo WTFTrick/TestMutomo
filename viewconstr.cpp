@@ -1,6 +1,6 @@
 #include "viewconstr.h"
 
-viewConstr::viewConstr(QWidget *parent) : count(540), step(60), QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) : count(450), step(50), QWidget(parent)
 {
     CreateView();
 }
@@ -18,24 +18,22 @@ void viewConstr::CreateView()
        setLayout(mainLayout);
        QBrush TBrush(Qt::transparent);
        QPen outlinePen(Qt::black);
-       QPen TPen(Qt::transparent);
        outlinePen.setWidth(1);
-       TPen.setWidth(1);
 
-       quint16 width = 300;
+       int width = step * 6;
        quint8 height = 40;
-       quint8 empty_area = count / 2.25;
-       QSize FixedSize(48,28);
+       int empty_area = count / 2.25;
+       int xcb = width + 15;
+       int xsb = width + 75;
+       QSize FixedSize(44,24);
 
        for (int i = 0; i < count; i+=step)
        {
 
-
            for (int j = 0; j < count; j+=step)
            {
 
-
-               if ((i < 300) && (j != empty_area))
+               if ((i < width) && (j != empty_area))
                {
 
                    quint8 rnd = qrand() % 50;
@@ -48,7 +46,7 @@ void viewConstr::CreateView()
                        cmb->setFixedSize(FixedSize);
                        cmb->addItem(rand);
                        gpw = scene->addWidget(cmb);
-                       cmb->move(i+6,j+6);
+                       cmb->move(i+4,j+7);
                    }
 
                    QList< QSpinBox* > SpinBoxList;
@@ -58,7 +56,7 @@ void viewConstr::CreateView()
                        sp->setRange(0,50);
                        sp->setFixedSize(FixedSize);
                        gpw = scene->addWidget(sp);
-                       sp->move(365,j+6);
+                       sp->move(xsb,j+7);
                    }
 
                    QList< QComboBox* > ComboBoxList2;
@@ -69,7 +67,7 @@ void viewConstr::CreateView()
                        cmb2->addItem("X");
                        cmb2->addItem("Y");
                        gpw = scene->addWidget(cmb2);
-                       cmb2->move(315,j+6);
+                       cmb2->move(xcb,j+7);
                    }
 
 
@@ -77,7 +75,7 @@ void viewConstr::CreateView()
 
                if (i == empty_area)
                {
-                   //rectangle = scene->addRect(0, i, width, height * 10, TPen, TBrush);
+                   //qDebug() << "Empty_Area=" << empty_area;
                }
 
                else
@@ -85,7 +83,6 @@ void viewConstr::CreateView()
                    rectangle = scene->addRect(0, i, width, height, outlinePen,TBrush);
 
                }
-
 
            }
        }
