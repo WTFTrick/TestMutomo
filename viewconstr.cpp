@@ -26,16 +26,17 @@ void viewConstr::CreateView()
        int xcb = width + 15;
        int xsb = width + 75;
        QSize FixedSize(44,24);
-
-       for (int i = 0; i < count; i+=step)
+       QSize SpinBoxSize(75, 25);
+       for (int i = count; i >= 0; i = i - step)
        {
-
-           for (int j = 0; j < count; j+=step)
+           for (int j = count; j >= 0; j = j - step)
            {
+               qDebug() << "i = " << i;
+               qDebug() << "j = " << j;
 
                if ((i < width) && (j != empty_area))
                {
-
+                   qDebug() << "(i < width) && (j != empty_area)";
                    quint8 rnd = qrand() % 50;
                    QString rand = QString::number(rnd);
 
@@ -53,8 +54,9 @@ void viewConstr::CreateView()
                    SpinBoxList << new QSpinBox();
                    foreach( QSpinBox* sp, SpinBoxList)
                    {
-                       sp->setRange(0,50);
-                       sp->setFixedSize(FixedSize);
+                       sp->setRange(0,30);
+                       sp->setSuffix(" mm");
+                       sp->setFixedSize(SpinBoxSize);
                        gpw = scene->addWidget(sp);
                        sp->move(xsb,j+7);
                    }

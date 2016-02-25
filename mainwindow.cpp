@@ -353,7 +353,7 @@ void MainWindow::tabSelected()
     }
     else
     {
-        StartServer();
+        //StartServer();
     }
 }
 
