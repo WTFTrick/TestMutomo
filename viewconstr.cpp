@@ -1,17 +1,21 @@
 #include "viewconstr.h"
 
-viewConstr::viewConstr(QWidget *parent) : count(450), step(50), QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) : count(720), step(80), QWidget(parent)
 {
     CreateView();
 }
 
 void viewConstr::CreateView()
 {
+    //JSON
+    //Layers
+
        QLabel *fileNameLabel = new QLabel(tr("Graphical View:"));
        fileNameLabel->setAlignment(Qt::AlignCenter);
        scene = new QGraphicsScene(this);
        gv = new QGraphicsView();
        gv->setScene(scene);
+       gv->setAlignment(Qt::AlignCenter);
        QVBoxLayout *mainLayout = new QVBoxLayout;
        mainLayout->addWidget(fileNameLabel);
        mainLayout->addWidget(gv);
@@ -20,23 +24,31 @@ void viewConstr::CreateView()
        QPen outlinePen(Qt::black);
        outlinePen.setWidth(1);
 
-       int width = step * 6;
-       quint8 height = 40;
+       int width = step * 5;
+       quint8 height = 60;
        int empty_area = count / 2.25;
        int xcb = width + 15;
-       int xsb = width + 75;
-       QSize FixedSize(44,24);
-       QSize SpinBoxSize(75, 25);
-       for (int i = count; i >= 0; i = i - step)
+       int xsb = width + 100;
+       QSize FixedSize(60,50);
+       QSize SpinBoxSize(85, 50);
+
+
+       for (int i = 0; i < count; i = i + step)
        {
-           for (int j = count; j >= 0; j = j - step)
+           if (i != empty_area)
            {
-               qDebug() << "i = " << i;
-               qDebug() << "j = " << j;
+               rectangle = scene->addRect(0, i, width, height, outlinePen,TBrush);
+           }
+       }
+
+
+       for (int i = 0; i < count; i = i + step)
+       {
+           for (int j = 0; j < count; j = j + step)
+           {
 
                if ((i < width) && (j != empty_area))
                {
-                   qDebug() << "(i < width) && (j != empty_area)";
                    quint8 rnd = qrand() % 50;
                    QString rand = QString::number(rnd);
 
@@ -46,16 +58,19 @@ void viewConstr::CreateView()
                    {
                        cmb->setFixedSize(FixedSize);
                        cmb->addItem(rand);
+                       cmb->addItem("0");
+                       //cmb->setLayout(bx);
+                       //cmb->backgroundRole();
                        gpw = scene->addWidget(cmb);
-                       cmb->move(i+4,j+7);
+                       cmb->move(i+7,j+7);
                    }
 
                    QList< QSpinBox* > SpinBoxList;
                    SpinBoxList << new QSpinBox();
                    foreach( QSpinBox* sp, SpinBoxList)
                    {
-                       sp->setRange(0,30);
-                       sp->setSuffix(" mm");
+                       sp->setRange(0,50);
+                       //sp->setSuffix("");
                        sp->setFixedSize(SpinBoxSize);
                        gpw = scene->addWidget(sp);
                        sp->move(xsb,j+7);
@@ -71,19 +86,6 @@ void viewConstr::CreateView()
                        gpw = scene->addWidget(cmb2);
                        cmb2->move(xcb,j+7);
                    }
-
-
-               }
-
-               if (i == empty_area)
-               {
-                   //qDebug() << "Empty_Area=" << empty_area;
-               }
-
-               else
-               {
-                   rectangle = scene->addRect(0, i, width, height, outlinePen,TBrush);
-
                }
 
            }
