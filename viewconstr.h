@@ -18,6 +18,11 @@ class viewConstr : public QWidget
 public:
     explicit viewConstr(QWidget *parent = 0);
     void CreateView();
+    void CreateConnections();
+    QList< QComboBox* > ComboBoxList;
+    QList< QSpinBox* > SpinBoxList;
+    QList< QComboBox* > ComboBoxList2;
+    QPushButton* pb_toJson;
     QGraphicsView * gv;
     QGraphicsScene *scene;
     QGraphicsRectItem *rectangle;
@@ -25,7 +30,12 @@ public:
     QTransform transform;
     quint16 count;
     quint8 step;
+    QVBoxLayout *mainLayout;
+    QWidget *window ;
 
+
+public slots:
+    void ToJson();
 
 signals:
 

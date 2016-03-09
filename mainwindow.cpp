@@ -134,8 +134,6 @@ void MainWindow::ServerControl(quint8 status)
     out << quint8(0) << status;
     out.device()->seek(0);
 
-    // ??
-
     out << quint8(data.size() - sizeof(quint8));
     m_pTcpSocket->write(data);
 }
@@ -158,7 +156,6 @@ void MainWindow::on_actionConnect_to_triggered()
 void MainWindow::connectToHost(QString str)
 {
     // Connecting to server
-
     strHost = str;
     qDebug() << "Mainwindow ip:" << strHost;
 

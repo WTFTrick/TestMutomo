@@ -3,22 +3,24 @@
 viewConstr::viewConstr(QWidget *parent) : count(720), step(80), QWidget(parent)
 {
     CreateView();
+    CreateConnections();
 }
 
 void viewConstr::CreateView()
 {
     //JSON
     //Layers
-
        QLabel *fileNameLabel = new QLabel(tr("Graphical View:"));
+       pb_toJson = new QPushButton("To JSON");
        fileNameLabel->setAlignment(Qt::AlignCenter);
        scene = new QGraphicsScene(this);
        gv = new QGraphicsView();
        gv->setScene(scene);
        gv->setAlignment(Qt::AlignCenter);
-       QVBoxLayout *mainLayout = new QVBoxLayout;
+       mainLayout = new QVBoxLayout;
        mainLayout->addWidget(fileNameLabel);
        mainLayout->addWidget(gv);
+       mainLayout->addWidget(pb_toJson);
        setLayout(mainLayout);
        QBrush TBrush(Qt::transparent);
        QPen outlinePen(Qt::black);
@@ -52,10 +54,12 @@ void viewConstr::CreateView()
                    quint8 rnd = qrand() % 50;
                    QString rand = QString::number(rnd);
 
-                   QList< QComboBox* > ComboBoxList;
+                   //QList< QComboBox* > ComboBoxList;
+                   //ComboBoxList << new QComboBox();
                    ComboBoxList << new QComboBox();
                    foreach( QComboBox* cmb, ComboBoxList)
                    {
+                       cmb = new QComboBox;
                        cmb->setFixedSize(FixedSize);
                        cmb->addItem(rand);
                        cmb->addItem("0");
@@ -65,10 +69,11 @@ void viewConstr::CreateView()
                        cmb->move(i+7,j+7);
                    }
 
-                   QList< QSpinBox* > SpinBoxList;
+                   //QList< QSpinBox* > SpinBoxList;
                    SpinBoxList << new QSpinBox();
                    foreach( QSpinBox* sp, SpinBoxList)
                    {
+                       sp = new QSpinBox;
                        sp->setRange(0,50);
                        //sp->setSuffix("");
                        sp->setFixedSize(SpinBoxSize);
@@ -76,10 +81,11 @@ void viewConstr::CreateView()
                        sp->move(xsb,j+7);
                    }
 
-                   QList< QComboBox* > ComboBoxList2;
+                   //QList< QComboBox* > ComboBoxList2;
                    ComboBoxList2 << new QComboBox();
                    foreach( QComboBox* cmb2, ComboBoxList2)
                    {
+                       cmb2 = new QComboBox;
                        cmb2->setFixedSize(FixedSize);
                        cmb2->addItem("X");
                        cmb2->addItem("Y");
@@ -91,6 +97,22 @@ void viewConstr::CreateView()
            }
        }
 
+}
+
+void viewConstr::CreateConnections()
+{
+    connect(pb_toJson, SIGNAL(clicked(bool)), this, SLOT(ToJson()));
+}
+
+void viewConstr::ToJson()
+{
+    qDebug() << "ToJson";
+
+    /*QVariantMap map;
+    map.insert("1:", ComboBoxList);
+    object = QJsonObject::fromVariantMap(map);
+    document.setObject(object);
+    qDebug() << document.toJson();*/
 }
 
 
