@@ -35,6 +35,13 @@ void viewConstr::CreateView()
        QSize SpinBoxSize(85, 50);
 
 
+       QFile file("blocks.json");
+       if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+       {
+           file.write("");
+       }
+       file.close();
+
        for (int i = 0; i < count; i = i + step)
        {
            if (i != empty_area)
@@ -57,12 +64,11 @@ void viewConstr::CreateView()
                    //QList< QComboBox* > ComboBoxList;
                    //ComboBoxList << new QComboBox();
                    ComboBoxList << new QComboBox();
-                   foreach( QComboBox* cmb, ComboBoxList)
+                   foreach(cmb, ComboBoxList)
                    {
                        cmb = new QComboBox;
                        cmb->setFixedSize(FixedSize);
                        cmb->addItem(rand);
-                       cmb->addItem("0");
                        //cmb->setLayout(bx);
                        //cmb->backgroundRole();
                        gpw = scene->addWidget(cmb);
@@ -71,7 +77,7 @@ void viewConstr::CreateView()
 
                    //QList< QSpinBox* > SpinBoxList;
                    SpinBoxList << new QSpinBox();
-                   foreach( QSpinBox* sp, SpinBoxList)
+                   foreach(sp, SpinBoxList)
                    {
                        sp = new QSpinBox;
                        sp->setRange(0,50);
@@ -83,7 +89,7 @@ void viewConstr::CreateView()
 
                    //QList< QComboBox* > ComboBoxList2;
                    ComboBoxList2 << new QComboBox();
-                   foreach( QComboBox* cmb2, ComboBoxList2)
+                   foreach(cmb2, ComboBoxList2)
                    {
                        cmb2 = new QComboBox;
                        cmb2->setFixedSize(FixedSize);
@@ -108,11 +114,41 @@ void viewConstr::ToJson()
 {
     qDebug() << "ToJson";
 
-    /*QVariantMap map;
-    map.insert("1:", ComboBoxList);
-    object = QJsonObject::fromVariantMap(map);
-    document.setObject(object);
-    qDebug() << document.toJson();*/
+    QVariantMap nmb_map;
+    QVariantMap xy_cmb2;
+    QVariantMap sp_map;
+
+    foreach(cmb, ComboBoxList)
+    {
+        nmb_map.insert("Number of board", cmb->itemData(cmb->currentIndex()));
+    }
+
+    foreach(sp, SpinBoxList)
+    {
+        sp_map.insert("SpinBox", sp->value());
+    }
+
+    foreach(cmb2, ComboBoxList2)
+    {
+        xy_cmb2.insert("Coordiante", cmb2->itemData(cmb2->currentIndex()));
+    }
+
+    numberOfBoardsObject = QJsonObject::fromVariantMap(nmb_map);
+    detectorObject["Detector"] = deviceObject;
+    detectorObject["Sp"] = QJsonObject::fromVariantMap(sp_map);
+    detectorObject["Coordinate"] = QJsonObject::fromVariantMap(xy_cmb2);
+    deviceObject["Device"] = numberOfBoardsObject;
+
+    document.setObject(detectorObject);
+
+    //qDebug() << document.toJson();
+
+    QFile jsonFile("blocks.json");
+    jsonFile.open(QFile::Append);
+    QTextStream out(&jsonFile);
+    //out << document.toJson();
+    jsonFile.close();
+
 }
 
 

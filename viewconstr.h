@@ -22,6 +22,13 @@ public:
     QList< QComboBox* > ComboBoxList;
     QList< QSpinBox* > SpinBoxList;
     QList< QComboBox* > ComboBoxList2;
+    QComboBox* cmb;
+    QSpinBox* sp;
+    QComboBox* cmb2;
+    QJsonDocument document;
+    QJsonObject numberOfBoardsObject;
+    QJsonObject detectorObject;
+    QJsonObject deviceObject;
     QPushButton* pb_toJson;
     QGraphicsView * gv;
     QGraphicsScene *scene;
