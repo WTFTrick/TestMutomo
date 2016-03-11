@@ -1,6 +1,6 @@
 #include "viewconstr.h"
 
-viewConstr::viewConstr(QWidget *parent) : count(720), step(80), QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) : count(720), step(80), nmOfBoardsOnDetector(6),  QWidget(parent)
 {
     CreateView();
     CreateConnections();
@@ -8,101 +8,87 @@ viewConstr::viewConstr(QWidget *parent) : count(720), step(80), QWidget(parent)
 
 void viewConstr::CreateView()
 {
-    //JSON
-    //Layers
-       QLabel *fileNameLabel = new QLabel(tr("Graphical View:"));
-       pb_toJson = new QPushButton("To JSON");
-       fileNameLabel->setAlignment(Qt::AlignCenter);
-       scene = new QGraphicsScene(this);
-       gv = new QGraphicsView();
-       gv->setScene(scene);
-       gv->setAlignment(Qt::AlignCenter);
-       mainLayout = new QVBoxLayout;
-       mainLayout->addWidget(fileNameLabel);
-       mainLayout->addWidget(gv);
-       mainLayout->addWidget(pb_toJson);
-       setLayout(mainLayout);
-       QBrush TBrush(Qt::transparent);
-       QPen outlinePen(Qt::black);
-       outlinePen.setWidth(1);
+    QLabel *fileNameLabel = new QLabel(tr("Graphical View:"));
+    pb_toJson = new QPushButton("To JSON");
+    fileNameLabel->setAlignment(Qt::AlignCenter);
+    scene = new QGraphicsScene(this);
+    gv = new QGraphicsView();
+    gv->setScene(scene);
+    gv->setAlignment(Qt::AlignCenter);
+    mainLayout = new QVBoxLayout;
+    mainLayout->addWidget(fileNameLabel);
+    mainLayout->addWidget(gv);
+    mainLayout->addWidget(pb_toJson);
+    setLayout(mainLayout);
+    QBrush TBrush(Qt::transparent);
+    QPen outlinePen(Qt::black);
+    outlinePen.setWidth(0.5);
 
-       int width = step * 5;
-       quint8 height = 60;
-       int empty_area = count / 2.25;
-       int xcb = width + 15;
-       int xsb = width + 100;
-       QSize FixedSize(60,50);
-       QSize SpinBoxSize(85, 50);
+    int width = step * nmOfBoardsOnDetector;
+    quint8 height = 60;
+    int empty_area = count / 2.25;
+    int xcb = width + 15;
+    int xsb = width + 100;
+    QSize FixedSize(60,50);
+    QSize SpinBoxSize(85, 50);
 
+    QFile file("blocks.json");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        file.write("");
+    }
 
-       QFile file("blocks.json");
-       if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
-       {
-           file.write("");
-       }
-       file.close();
+    file.close();
 
-       for (int i = 0; i < count; i = i + step)
-       {
-           if (i != empty_area)
-           {
-               rectangle = scene->addRect(0, i, width, height, outlinePen,TBrush);
-           }
-       }
+    for (quint16 i = 0; i < count; i = i + step)
+    {
+        if (i != empty_area)
+        {
+            rectangle = scene->addRect(0, i, width, height, outlinePen,TBrush);
+            qDebug() << "Square n%";
+        }
+    }
 
+    for (quint16 i = 0; i < count; i = i + step)
+    {
 
-       for (int i = 0; i < count; i = i + step)
-       {
-           for (int j = 0; j < count; j = j + step)
-           {
+        for (quint16 j = 0; j < count; j = j + step)
+        {
 
-               if ((i < width) && (j != empty_area))
-               {
-                   quint8 rnd = qrand() % 50;
-                   QString rand = QString::number(rnd);
+            if ((i < width) && (j != empty_area))
+            {
+                quint8 numberOfBoardMT = qrand() % 50;
+                QString s_numberOfBoardMT = QString::number( numberOfBoardMT);
 
-                   //QList< QComboBox* > ComboBoxList;
-                   //ComboBoxList << new QComboBox();
-                   ComboBoxList << new QComboBox();
-                   foreach(cmb, ComboBoxList)
-                   {
-                       cmb = new QComboBox;
-                       cmb->setFixedSize(FixedSize);
-                       cmb->addItem(rand);
-                       //cmb->setLayout(bx);
-                       //cmb->backgroundRole();
-                       gpw = scene->addWidget(cmb);
-                       cmb->move(i+7,j+7);
-                   }
+                QComboBox* cmb = new QComboBox();
+                cmb->setFixedSize( FixedSize );
+                cmb->addItem(  s_numberOfBoardMT );
+                gpw = scene->addWidget( cmb );
+                cmb->move(i+7,j+7);
+                listComboBox << cmb;
 
-                   //QList< QSpinBox* > SpinBoxList;
-                   SpinBoxList << new QSpinBox();
-                   foreach(sp, SpinBoxList)
-                   {
-                       sp = new QSpinBox;
-                       sp->setRange(0,50);
-                       //sp->setSuffix("");
-                       sp->setFixedSize(SpinBoxSize);
-                       gpw = scene->addWidget(sp);
-                       sp->move(xsb,j+7);
-                   }
+                QComboBox* cmb_coord = new QComboBox();
+                cmb_coord->setFixedSize( FixedSize );
+                cmb_coord->addItem( "X" );
+                cmb_coord->addItem( "Y" );
+                gpw = scene->addWidget(cmb_coord);
+                cmb_coord->move(xcb,j+7);
+                ListCoordComboBox << cmb_coord;
 
-                   //QList< QComboBox* > ComboBoxList2;
-                   ComboBoxList2 << new QComboBox();
-                   foreach(cmb2, ComboBoxList2)
-                   {
-                       cmb2 = new QComboBox;
-                       cmb2->setFixedSize(FixedSize);
-                       cmb2->addItem("X");
-                       cmb2->addItem("Y");
-                       gpw = scene->addWidget(cmb2);
-                       cmb2->move(xcb,j+7);
-                   }
-               }
+                QSpinBox* spinbx_numb = new QSpinBox();
+                spinbx_numb->setRange(0,50);
+                spinbx_numb->setFixedSize(SpinBoxSize);
+                gpw = scene->addWidget(spinbx_numb);
+                spinbx_numb->move(xsb,j+7);
+                ListSpinBox << spinbx_numb;
 
-           }
-       }
+                //Доделать комбобоксы и спин бокс, переделать циклы!
+                //Разобраться со структурой JSON файла!
 
+            }
+
+        }
+    }
 }
 
 void viewConstr::CreateConnections()
@@ -114,30 +100,33 @@ void viewConstr::ToJson()
 {
     qDebug() << "ToJson";
 
-    QVariantMap nmb_map;
-    QVariantMap xy_cmb2;
-    QVariantMap sp_map;
+    QVariantMap map;
+    QVariantMap device_map;
 
-    foreach(cmb, ComboBoxList)
+    foreach(QComboBox* cmb, listComboBox)
     {
-        nmb_map.insert("Number of board", cmb->itemData(cmb->currentIndex()));
+        device_map.insert("Number of MT48", cmb->currentText());
+        qDebug() << cmb->currentText();
     }
 
-    foreach(sp, SpinBoxList)
+    foreach(QSpinBox* spinbx_numb, ListSpinBox)
     {
-        sp_map.insert("SpinBox", sp->value());
+        map.insert("Number", spinbx_numb->value());
     }
 
-    foreach(cmb2, ComboBoxList2)
+    foreach(QComboBox* cmb_coord, ListCoordComboBox)
     {
-        xy_cmb2.insert("Coordiante", cmb2->itemData(cmb2->currentIndex()));
+        map.insert("Coordiante", cmb_coord->currentText());
     }
 
-    numberOfBoardsObject = QJsonObject::fromVariantMap(nmb_map);
-    detectorObject["Detector"] = deviceObject;
-    detectorObject["Sp"] = QJsonObject::fromVariantMap(sp_map);
-    detectorObject["Coordinate"] = QJsonObject::fromVariantMap(xy_cmb2);
-    deviceObject["Device"] = numberOfBoardsObject;
+    deviceObject = QJsonObject::fromVariantMap(device_map);
+
+    obj = QJsonObject::fromVariantMap(map);
+    obj["Device"] = QJsonObject::fromVariantMap(device_map);
+    detectorObject["Detector"] = obj;
+
+    //detectorObject["Device"] = deviceObject;
+    //detectorObject["Device"] = QJsonObject::fromVariantMap(device_map);
 
     document.setObject(detectorObject);
 
@@ -146,7 +135,7 @@ void viewConstr::ToJson()
     QFile jsonFile("blocks.json");
     jsonFile.open(QFile::Append);
     QTextStream out(&jsonFile);
-    //out << document.toJson();
+    out << document.toJson();
     jsonFile.close();
 
 }

@@ -19,16 +19,17 @@ public:
     explicit viewConstr(QWidget *parent = 0);
     void CreateView();
     void CreateConnections();
-    QList< QComboBox* > ComboBoxList;
-    QList< QSpinBox* > SpinBoxList;
-    QList< QComboBox* > ComboBoxList2;
-    QComboBox* cmb;
-    QSpinBox* sp;
-    QComboBox* cmb2;
+    quint8 nmOfBoardsOnDetector;
+    QList< QComboBox* > listComboBox;
+    QList< QSpinBox* > ListSpinBox;
+    QList< QComboBox* > ListCoordComboBox;
+
     QJsonDocument document;
-    QJsonObject numberOfBoardsObject;
+
     QJsonObject detectorObject;
     QJsonObject deviceObject;
+    QJsonObject obj;
+
     QPushButton* pb_toJson;
     QGraphicsView * gv;
     QGraphicsScene *scene;
@@ -39,7 +40,6 @@ public:
     quint8 step;
     QVBoxLayout *mainLayout;
     QWidget *window ;
-
 
 public slots:
     void ToJson();
