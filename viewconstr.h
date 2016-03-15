@@ -24,11 +24,6 @@ public:
     QList< QSpinBox* > ListSpinBox;
     QList< QComboBox* > ListCoordComboBox;
 
-    QJsonDocument document;
-
-    QJsonObject detectorObject;
-    QJsonObject deviceObject;
-    QJsonObject obj;
 
     QPushButton* pb_toJson;
     QGraphicsView * gv;

@@ -1,6 +1,6 @@
 #include "viewconstr.h"
 
-viewConstr::viewConstr(QWidget *parent) : count(720), step(80), nmOfBoardsOnDetector(6),  QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) : count(720), step(80), nmOfBoardsOnDetector(7),  QWidget(parent)
 {
     CreateView();
     CreateConnections();
@@ -45,7 +45,7 @@ void viewConstr::CreateView()
         if (i != empty_area)
         {
             rectangle = scene->addRect(0, i, width, height, outlinePen,TBrush);
-            qDebug() << "Square n%";
+            //qDebug() << "Square n%";
         }
     }
 
@@ -98,46 +98,46 @@ void viewConstr::CreateConnections()
 
 void viewConstr::ToJson()
 {
-    qDebug() << "ToJson";
+    qDebug() << "ToJson btn clicked";
 
-    QVariantMap map;
-    QVariantMap device_map;
+    QJsonDocument docJSON;
+    QJsonObject jsonDevice;
+    QJsonObject jsonDetector;
+    QJsonObject jsonTempInDetector;
 
-    foreach(QComboBox* cmb, listComboBox)
-    {
-        device_map.insert("Number of MT48", cmb->currentText());
-        qDebug() << cmb->currentText();
+    const short nmDevicesOnDetec = 6;
+    for (int indDetector = 0; indDetector < 8; ++indDetector){
+        for(int indDevice = 0; indDevice < nmDevicesOnDetec; ++indDevice )
+        {
+            QString nameField("Number of MT48: ");
+            nameField += QString::number(indDevice);
+            jsonDevice[nameField] = listComboBox[(indDetector*nmDevicesOnDetec) + indDevice]->currentText();
+        }
+        jsonTempInDetector["Device "] = jsonDevice;
+
+        QString coordField("Cooridnate ");
+        coordField += QString::number(indDetector);
+        jsonTempInDetector[coordField] = ListCoordComboBox[indDetector]->currentText();
+
+        ListSpinBox[0];
+        QString numbField("Number ");
+        numbField += QString::number(indDetector);
+        jsonTempInDetector[numbField] = ListSpinBox[0]->value();
+
+        QString nameField("Detector ");
+        nameField += QString::number(indDetector);
+
+        jsonDetector[nameField] = jsonTempInDetector;
     }
+    docJSON.setObject(jsonDetector);
 
-    foreach(QSpinBox* spinbx_numb, ListSpinBox)
-    {
-        map.insert("Number", spinbx_numb->value());
-    }
+    QFile jsnFile("blocks.json");
+    jsnFile.open(QFile::Append);
+    QTextStream outJson(&jsnFile);
+    outJson << docJSON.toJson();
+    jsnFile.close();
 
-    foreach(QComboBox* cmb_coord, ListCoordComboBox)
-    {
-        map.insert("Coordiante", cmb_coord->currentText());
-    }
-
-    deviceObject = QJsonObject::fromVariantMap(device_map);
-
-    obj = QJsonObject::fromVariantMap(map);
-    obj["Device"] = QJsonObject::fromVariantMap(device_map);
-    detectorObject["Detector"] = obj;
-
-    //detectorObject["Device"] = deviceObject;
-    //detectorObject["Device"] = QJsonObject::fromVariantMap(device_map);
-
-    document.setObject(detectorObject);
-
-    //qDebug() << document.toJson();
-
-    QFile jsonFile("blocks.json");
-    jsonFile.open(QFile::Append);
-    QTextStream out(&jsonFile);
-    out << document.toJson();
-    jsonFile.close();
-
+    return;
 }
 
 
