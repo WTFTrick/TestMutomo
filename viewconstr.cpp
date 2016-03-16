@@ -1,6 +1,6 @@
 #include "viewconstr.h"
 
-viewConstr::viewConstr(QWidget *parent) : count(720), step(80), nmOfBoardsOnDetector(7),  QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) : count(720), step(80), nmOfBoardsOnDetector(6),  QWidget(parent)
 {
     CreateView();
     CreateConnections();
@@ -45,17 +45,17 @@ void viewConstr::CreateView()
         if (i != empty_area)
         {
             rectangle = scene->addRect(0, i, width, height, outlinePen,TBrush);
-            //qDebug() << "Square n%";
         }
     }
 
+    int checkNumberOfSpinBox = 0;
     for (quint16 i = 0; i < count; i = i + step)
     {
 
         for (quint16 j = 0; j < count; j = j + step)
         {
 
-            if ((i < width) && (j != empty_area))
+            if ((j < width) && (i != empty_area))
             {
                 quint8 numberOfBoardMT = qrand() % 50;
                 QString s_numberOfBoardMT = QString::number( numberOfBoardMT);
@@ -64,7 +64,7 @@ void viewConstr::CreateView()
                 cmb->setFixedSize( FixedSize );
                 cmb->addItem(  s_numberOfBoardMT );
                 gpw = scene->addWidget( cmb );
-                cmb->move(i+7,j+7);
+                cmb->move(j+7,i+7);
                 listComboBox << cmb;
 
                 QComboBox* cmb_coord = new QComboBox();
@@ -72,18 +72,17 @@ void viewConstr::CreateView()
                 cmb_coord->addItem( "X" );
                 cmb_coord->addItem( "Y" );
                 gpw = scene->addWidget(cmb_coord);
-                cmb_coord->move(xcb,j+7);
+                cmb_coord->move(xcb,i+7);
                 ListCoordComboBox << cmb_coord;
 
                 QSpinBox* spinbx_numb = new QSpinBox();
                 spinbx_numb->setRange(0,50);
                 spinbx_numb->setFixedSize(SpinBoxSize);
                 gpw = scene->addWidget(spinbx_numb);
-                spinbx_numb->move(xsb,j+7);
+                spinbx_numb->move(xsb,i+7);
+                checkNumberOfSpinBox++;
+                spinbx_numb->setValue(checkNumberOfSpinBox);
                 ListSpinBox << spinbx_numb;
-
-                //Доделать комбобоксы и спин бокс, переделать циклы!
-                //Разобраться со структурой JSON файла!
 
             }
 
@@ -106,7 +105,9 @@ void viewConstr::ToJson()
     QJsonObject jsonTempInDetector;
 
     const short nmDevicesOnDetec = 6;
-    for (int indDetector = 0; indDetector < 8; ++indDetector){
+    const short nmDetectors = 8;
+
+    for (int indDetector = 0; indDetector < nmDetectors; ++indDetector){
         for(int indDevice = 0; indDevice < nmDevicesOnDetec; ++indDevice )
         {
             QString nameField("Number of MT48: ");
@@ -115,14 +116,12 @@ void viewConstr::ToJson()
         }
         jsonTempInDetector["Device "] = jsonDevice;
 
-        QString coordField("Cooridnate ");
-        coordField += QString::number(indDetector);
-        jsonTempInDetector[coordField] = ListCoordComboBox[indDetector]->currentText();
 
-        ListSpinBox[0];
-        QString numbField("Number ");
-        numbField += QString::number(indDetector);
-        jsonTempInDetector[numbField] = ListSpinBox[0]->value();
+        QString spinboxField("Coordinate: ");
+        spinboxField += QString::number(indDetector);
+        jsonTempInDetector[spinboxField] = ListCoordComboBox[indDetector]->currentText();
+
+        jsonTempInDetector["Number "] = ListSpinBox[indDetector]->value();
 
         QString nameField("Detector ");
         nameField += QString::number(indDetector);
