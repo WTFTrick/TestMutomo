@@ -58,36 +58,43 @@ void viewConstr::CreateView()
             if ((j < width) && (i != empty_area))
             {
                 quint8 numberOfBoardMT = qrand() % 50;
-                QString s_numberOfBoardMT = QString::number( numberOfBoardMT);
+                QString s_numberOfBoardMT = QString::number( numberOfBoardMT );
 
                 QComboBox* cmb = new QComboBox();
+                listComboBox << cmb;
                 cmb->setFixedSize( FixedSize );
                 cmb->addItem(  s_numberOfBoardMT );
                 gpw = scene->addWidget( cmb );
                 cmb->move(j+7,i+7);
-                listComboBox << cmb;
-
-                QComboBox* cmb_coord = new QComboBox();
-                cmb_coord->setFixedSize( FixedSize );
-                cmb_coord->addItem( "X" );
-                cmb_coord->addItem( "Y" );
-                gpw = scene->addWidget(cmb_coord);
-                cmb_coord->move(xcb,i+7);
-                ListCoordComboBox << cmb_coord;
-
-                QSpinBox* spinbx_numb = new QSpinBox();
-                spinbx_numb->setRange(0,50);
-                spinbx_numb->setFixedSize(SpinBoxSize);
-                gpw = scene->addWidget(spinbx_numb);
-                spinbx_numb->move(xsb,i+7);
-                checkNumberOfSpinBox++;
-                spinbx_numb->setValue(checkNumberOfSpinBox);
-                ListSpinBox << spinbx_numb;
 
             }
 
         }
     }
+
+    for (int k = 0; k < count; k += step)
+    {
+        if (k != empty_area)
+        {
+            QComboBox* cmb_coord = new QComboBox();
+            ListCoordComboBox << cmb_coord;
+            cmb_coord->setFixedSize( FixedSize );
+            cmb_coord->addItem( "X" );
+            cmb_coord->addItem( "Y" );
+            gpw = scene->addWidget( cmb_coord );
+            cmb_coord->move(xcb,k+7);
+
+            QSpinBox* spinbx_numb = new QSpinBox();
+            ListSpinBox << spinbx_numb;
+            spinbx_numb->setRange(0,50);
+            spinbx_numb->setFixedSize(SpinBoxSize);
+            gpw = scene->addWidget(spinbx_numb);
+            spinbx_numb->move(xsb,k+7);
+            checkNumberOfSpinBox++;
+            spinbx_numb->setValue(checkNumberOfSpinBox);
+        }
+    }
+
 }
 
 void viewConstr::CreateConnections()
@@ -116,12 +123,11 @@ void viewConstr::ToJson()
         }
         jsonTempInDetector["Device "] = jsonDevice;
 
-
-        QString spinboxField("Coordinate: ");
-        spinboxField += QString::number(indDetector);
-        jsonTempInDetector[spinboxField] = ListCoordComboBox[indDetector]->currentText();
+        jsonTempInDetector["Coordinate"] = ListCoordComboBox[indDetector]->currentText();
+        qDebug() << "Index of ComboBox:"<< indDetector << "; Value in ComboBox:" << ListCoordComboBox[indDetector]->currentText();
 
         jsonTempInDetector["Number "] = ListSpinBox[indDetector]->value();
+        qDebug() << "Index of SpinBox:"<< indDetector << "; Value in SpinBox:" << ListSpinBox[indDetector]->value();
 
         QString nameField("Detector ");
         nameField += QString::number(indDetector);
