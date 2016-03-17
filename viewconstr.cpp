@@ -2,6 +2,7 @@
 
 viewConstr::viewConstr(QWidget *parent) : count(720), step(80), nmOfBoardsOnDetector(6),  QWidget(parent)
 {
+    ClearJSONFile();
     CreateView();
     CreateConnections();
 }
@@ -32,14 +33,6 @@ void viewConstr::CreateView()
     QSize FixedSize(60,50);
     QSize SpinBoxSize(85, 50);
 
-    QFile file("blocks.json");
-    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
-    {
-        file.write("");
-    }
-
-    file.close();
-
     for (quint16 i = 0; i < count; i = i + step)
     {
         if (i != empty_area)
@@ -66,9 +59,7 @@ void viewConstr::CreateView()
                 cmb->addItem(  s_numberOfBoardMT );
                 gpw = scene->addWidget( cmb );
                 cmb->move(j+7,i+7);
-
             }
-
         }
     }
 
@@ -102,8 +93,19 @@ void viewConstr::CreateConnections()
     connect(pb_toJson, SIGNAL(clicked(bool)), this, SLOT(ToJson()));
 }
 
+void viewConstr::ClearJSONFile()
+{
+    QFile file("blocks.json");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        file.write("");
+    }
+}
+
 void viewConstr::ToJson()
 {
+    ClearJSONFile();
+
     qDebug() << "ToJson btn clicked";
 
     QJsonDocument docJSON;

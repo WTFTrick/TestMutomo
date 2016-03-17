@@ -36,6 +36,8 @@ public:
     QVBoxLayout *mainLayout;
     QWidget *window ;
 
+    void ClearJSONFile();
+
 public slots:
     void ToJson();
 
