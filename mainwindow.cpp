@@ -24,7 +24,8 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
     ui->customPlot->setCurrentLayer("BG");
     ui->pb_stopServer->setDisabled(true);
 
-    ui->tabWidget->addTab(new viewConstr(), tr("GraphicalView"));
+    ui->tabWidget->addTab(new viewConstr(), tr("Configuration"));
+    ui->pb_ResetRange->setFocus();
 
     fVisibleLabels = false;
 
@@ -114,6 +115,7 @@ void MainWindow::StartServer()
     qDebug() << "Send 'start' command to server";
     ui->pb_stopServer->setDisabled(false);
     ui->pb_startServer->setDisabled(true);
+    ui->tabWidget->setFocus();
 }
 
 void MainWindow::StopServer()
@@ -123,6 +125,7 @@ void MainWindow::StopServer()
     qDebug() << "Send 'stop' command to server";
     ui->pb_startServer->setDisabled(false);
     ui->pb_stopServer->setDisabled(true);
+    ui->tabWidget->setFocus();
 }
 
 void MainWindow::ServerControl(quint8 status)
