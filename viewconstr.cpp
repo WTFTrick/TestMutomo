@@ -36,9 +36,8 @@ void viewConstr::CreateView()
     int xcb = width + 15; // x coordinate for combobox, which containt x and y values
     int xsb = width + 100; // x coordinate for spinbox, which contain order nubmer
     int NumberInSpinBox = 0; // vaule, which will be in spinBox
-    QSize ComboBoxFixedSize(60,50);
+    QSize ComboBoxFixedSize(60, 50);
     QSize SpinBoxFixedSize(85, 50);
-
 
     // Drawing a rectangles
     for (quint16 i = 0; i < count; i = i + step)
@@ -68,7 +67,7 @@ void viewConstr::CreateView()
                 cmb->setFixedSize( ComboBoxFixedSize );
                 cmb->addItem(  s_numberOfBoardMT );
                 gpw = scene->addWidget( cmb );
-                cmb->move(j+7,i+7);
+                cmb->move(j+6,i+6);
             }
         }
     }
@@ -85,14 +84,14 @@ void viewConstr::CreateView()
             cmb_coord->addItem( "X" );
             cmb_coord->addItem( "Y" );
             gpw = scene->addWidget( cmb_coord );
-            cmb_coord->move(xcb,k+7);
+            cmb_coord->move(xcb,k+6);
 
             QSpinBox* spinbx_numb = new QSpinBox();
             ListSpinBox << spinbx_numb;
             spinbx_numb->setRange(0,50);
             spinbx_numb->setFixedSize(SpinBoxFixedSize);
             gpw = scene->addWidget(spinbx_numb);
-            spinbx_numb->move(xsb,k+7);
+            spinbx_numb->move(xsb,k+6);
             spinbx_numb->setValue(NumberInSpinBox);
             NumberInSpinBox++;
         }
@@ -114,9 +113,33 @@ void viewConstr::ClearJSONFile()
     }
 }
 
+void viewConstr::BrokenDevice()
+{
+    QBrush TBrush(Qt::transparent);
+    QPen outlinePen(Qt::red);
+    outlinePen.setWidth(0.75);
+
+    QPoint positionOfComboBox;
+    const short nmDetectors = 8;
+
+    for (int indDetector = 0; indDetector < nmDetectors; ++indDetector)
+    {
+        for(int indDevice = 0; indDevice < nmOfBoardsOnDetector; ++indDevice )
+        {
+            listComboBox[(indDetector*nmOfBoardsOnDetector) + indDevice]->currentText();
+            positionOfComboBox = listComboBox[(indDetector*nmOfBoardsOnDetector) + indDevice]->pos();
+            qDebug() << positionOfComboBox;
+            scene->addRect(positionOfComboBox.rx(), positionOfComboBox.ry(), 59, 49,  outlinePen,TBrush);
+        }
+    }
+}
+
+
 void viewConstr::ToJson()
 {
     // Clearing JSON file before write data in it
+
+    BrokenDevice();
 
     ClearJSONFile();
 
@@ -127,28 +150,28 @@ void viewConstr::ToJson()
     QJsonObject jsonDetector;
     QJsonObject jsonTempInDetector;
 
-    const short nmDevicesOnDetec = 6;
+    //const short nmDevicesOnDetec = 6;
     const short nmDetectors = 8;
 
     // Creating a structure of JSON file
 
     for (int indDetector = 0; indDetector < nmDetectors; ++indDetector)
     {
-        for(int indDevice = 0; indDevice < nmDevicesOnDetec; ++indDevice )
+        for(int indDevice = 0; indDevice < nmOfBoardsOnDetector; ++indDevice )
         {
             QString nameField("Number of MT48: ");
             nameField += QString::number(indDevice);
-            jsonDevice[nameField] = listComboBox[(indDetector*nmDevicesOnDetec) + indDevice]->currentText();
+            jsonDevice[nameField] = listComboBox[(indDetector*nmOfBoardsOnDetector) + indDevice]->currentText();
         }
         jsonTempInDetector["Device "] = jsonDevice;
 
         jsonTempInDetector["Coordinate"] = ListCoordComboBox[indDetector]->currentText();
-        /*qDebug() << "Index of ComboBox:"<< indDetector <<
-                    "; Value in ComboBox:" << ListCoordComboBox[indDetector]->currentText();*/
+        //qDebug() << "Index of ComboBox:"<< indDetector <<
+        //            "; Value in ComboBox:" << ListCoordComboBox[indDetector]->currentText();
 
         jsonTempInDetector["Number "] = ListSpinBox[indDetector]->value();
-        /*qDebug() << "Index of SpinBox:"<< indDetector <<
-                    "; Value in SpinBox:" << ListSpinBox[indDetector]->value();*/
+        //qDebug() << "Index of SpinBox:"<< indDetector <<
+        //            "; Value in SpinBox:" << ListSpinBox[indDetector]->value();
 
         QString nameField("Detector ");
         nameField += QString::number(indDetector);
