@@ -35,10 +35,11 @@ public:
     quint8 step; //step for cycle, which will be draw a rectangles
     quint8 nmOfBoardsOnDetector; //Number of devices on detector
     QVBoxLayout *mainLayout;
-    QWidget *window ;
+    QWidget *window;
 
     void ClearJSONFile();
     void BrokenDevice(int index);
+    int ind;
 
 public slots:
     void ToJson();

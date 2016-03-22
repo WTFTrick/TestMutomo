@@ -18,7 +18,7 @@ void settings::InterfaceSettings()
 {
     ui->label->setAlignment(Qt::AlignCenter); //Set label at center
     ui->le_value->setValidator( new QIntValidator(0, 100, this) );
-    ui->le_value->setText("0");
+    ui->le_value->setText("71");
     ui->pb_cancel->setFocus();
 }
 

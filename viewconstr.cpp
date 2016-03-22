@@ -1,6 +1,6 @@
 #include "viewconstr.h"
 
-viewConstr::viewConstr(QWidget *parent) : count(720), step(80), nmOfBoardsOnDetector(6),  QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) : count(720), step(80), ind(0), nmOfBoardsOnDetector(6),  QWidget(parent)
 {
     ClearJSONFile();
     CreateView();
@@ -39,10 +39,11 @@ void viewConstr::CreateView()
     int NumberInSpinBox = 0; // vaule, which will be in spinBox
     QSize ComboBoxFixedSize(60, 50);
     QSize SpinBoxFixedSize(85, 50);
+    int counterForComboBox = 0;
 
     // Drawing a transparent rectagles, for better viewing
-    rectangle = scene->addRect(0, -20, width, height / 6, transparentPen,TBrush);
-    rectangle = scene->addRect(0, 720, width, height / 6, transparentPen,TBrush);
+    rectangle = scene->addRect(0, -20, width, height / 6, transparentPen, TBrush);
+    rectangle = scene->addRect(0, 720, width, height / 6, transparentPen, TBrush);
 
     // Drawing a rectangles
     for (quint16 i = 0; i < count; i = i + step)
@@ -65,12 +66,14 @@ void viewConstr::CreateView()
             {
                 // Random numbers for comboboxes
                 quint8 numberOfBoardMT = qrand() % 50;
-                QString s_numberOfBoardMT = QString::number( numberOfBoardMT );
+                QString s_numberOfBoardMT = QString::number( counterForComboBox );
 
                 QComboBox* cmb = new QComboBox();
                 listComboBox << cmb;
                 cmb->setFixedSize( ComboBoxFixedSize );
                 cmb->addItem(  s_numberOfBoardMT );
+                counterForComboBox++;
+
                 gpw = scene->addWidget( cmb );
                 cmb->move(j+10,i+6);
             }
@@ -121,31 +124,26 @@ void viewConstr::BrokenDevice(int index)
 {
     QBrush TBrush(Qt::transparent);
     QPen outlinePen(Qt::red);
-    outlinePen.setWidth(0.75);
+    outlinePen.setWidth(1);
+
+    ind = index;
 
     QPoint positionOfComboBox;
-    const short nmDetectors = 8;
-
-    //qDebug() << index << listComboBox[index]->currentText();
-
+    //const short nmDetectors = 8;
     positionOfComboBox = listComboBox[index]->pos();
-    qDebug() << positionOfComboBox.rx() << positionOfComboBox.ry();
-    scene->addRect(positionOfComboBox.rx(), positionOfComboBox.ry(), 59, 49,  outlinePen, TBrush);
 
-    for (int indDetector = 0; indDetector < nmDetectors; ++indDetector)
-    {
-        for(int indDevice = 0; indDevice < nmOfBoardsOnDetector; ++indDevice )
-        {
-            //positionOfComboBox = listComboBox[]->pos();
-            //scene->addRect(positionOfComboBox.rx(), positionOfComboBox.ry(), 59, 49,  outlinePen,TBrush);
-        }
-    }
+    scene->addRect(positionOfComboBox.rx(), positionOfComboBox.ry(), 59, 49,  outlinePen, TBrush);
+    //scene->addRect(10, 20, 59, 49,  outlinePen, TBrush);
+
+    qDebug() << "________";
+    qDebug() << ind << listComboBox[index]->currentText();
+    qDebug() << positionOfComboBox.rx() << positionOfComboBox.ry();
 }
 
 void viewConstr::ToJson()
 {
     // Clearing JSON file before write data in it
-    //BrokenDevice();
+    BrokenDevice(ind);
 
     ClearJSONFile();
 

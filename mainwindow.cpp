@@ -3,7 +3,7 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),numberOfBrokenDevice(0), LinesCount(48), ui(new Ui::MainWindow)
+MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),numberOfBrokenDevice(71), LinesCount(48), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -44,7 +44,7 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
     //MutomoHost = "10.162.1.110"
     CreateConnections();
 
-     //NOBD->resize(100);
+    //NOBD->resize(100);
 }
 
 MainWindow::~MainWindow()
@@ -63,15 +63,16 @@ void MainWindow::CreatePlot(QVector<quint32> *arrData)
     for (double i = 0; i < arrData->size(); i++)
     {
         mapData->operator [](i) = QCPData(i, arrData->at(i));
-
         if (arrData->at(i) > maxY)
             maxY = arrData->at(i);
+    }
 
+    for (double i = 0; i < arrData->size(); i++)
+    {
         if (arrData->at(i) > value_threshold)
         {
             numberOfBrokenDevice = i / ChannelsOnBoard;
             vw->BrokenDevice(numberOfBrokenDevice);
-
             //qDebug () << "Broken device №" << numberOfBrokenDevice;
         }
     }
@@ -402,5 +403,5 @@ void MainWindow::get_threshold(int threshold)
 {
     value_threshold = threshold;
     if (value_threshold != 0)
-    qDebug() << "Threshold" << value_threshold;
+        qDebug() << "Threshold" << value_threshold;
 }

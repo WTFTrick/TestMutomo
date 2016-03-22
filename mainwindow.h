@@ -28,8 +28,9 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow();
+    int numberOfBrokenDevice;
     ~MainWindow();
-     int numberOfBrokenDevice;
+
      //QVector<int> *NOBD;
 
 private:
@@ -45,6 +46,7 @@ private:
     IPDialog* ip_dialog;
     settings* settings_dialog;
     bool fVisibleLabels;
+
     const unsigned char ChannelsOnBoard;
     quint8 value_threshold;
     viewConstr* vw;
