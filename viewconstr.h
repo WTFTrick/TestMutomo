@@ -11,6 +11,7 @@
 #include <QSpinBox>
 
 #include "mainwindow.h"
+class MainWindow;
 
 class viewConstr : public QWidget
 {
@@ -37,7 +38,7 @@ public:
     QWidget *window ;
 
     void ClearJSONFile();
-    void BrokenDevice();
+    void BrokenDevice(int index);
 
 public slots:
     void ToJson();

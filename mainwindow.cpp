@@ -3,7 +3,7 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49), LinesCount(48), ui(new Ui::MainWindow)
+MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),numberOfBrokenDevice(0), LinesCount(48), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -37,28 +37,43 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
     ui->customPlot->replot();
 
     ip_dialog = new IPDialog( this );
+    settings_dialog = new settings( this );
 
     connectToHost("0.0.0.0");
+    get_threshold(0);
     //MutomoHost = "10.162.1.110"
     CreateConnections();
 
+     //NOBD->resize(100);
 }
 
 MainWindow::~MainWindow()
 {
+    StopServer();
     delete ui;
+    close();
 }
 
 void MainWindow::CreatePlot(QVector<quint32> *arrData)
 {
+    vw = new viewConstr( this );
     ui->pb_startServer->setEnabled(false);
     ui->pb_stopServer->setEnabled(true);
     unsigned int maxY = 0;
     for (double i = 0; i < arrData->size(); i++)
     {
         mapData->operator [](i) = QCPData(i, arrData->at(i));
+
         if (arrData->at(i) > maxY)
             maxY = arrData->at(i);
+
+        if (arrData->at(i) > value_threshold)
+        {
+            numberOfBrokenDevice = i / ChannelsOnBoard;
+            vw->BrokenDevice(numberOfBrokenDevice);
+
+            //qDebug () << "Broken device №" << numberOfBrokenDevice;
+        }
     }
 
     // Dynamic range of x and y axis;
@@ -183,7 +198,6 @@ void MainWindow::on_pb_ZoomIn_clicked()
 {
     ui->customPlot->xAxis->scaleRange(0.85, ui->customPlot->xAxis->range().lower);
     ui->customPlot->yAxis->scaleRange(0.85, ui->customPlot->yAxis->range().lower);
-    //ScaleChanged();
 }
 
 void MainWindow::on_pb_ZoomOut_clicked()
@@ -304,6 +318,7 @@ void MainWindow::CreateConnections()
 
     // Connections between mainWindow and modal dialog ('connect to...')
     connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
+    connect(settings_dialog, SIGNAL(sendThreshold(int)), this, SLOT(get_threshold(int)));
     connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
     connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
     connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
@@ -348,8 +363,8 @@ void MainWindow::tabSelected()
 {
     if(ui->tabWidget->currentIndex()!=0)
     {
-        StopServer();
-        qDebug() << "Tab Changed, stop server";
+        //StopServer();
+        //qDebug() << "Tab Changed, stop server";
     }
     else
     {
@@ -374,3 +389,18 @@ void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)
     }
 }
 
+void MainWindow::on_actionSettings_triggered()
+{
+    // Settings button action
+
+    settings_dialog->setModal(true);
+    if (settings_dialog->exec() == QDialog::Accepted)
+        qDebug() << "Open modal window";
+}
+
+void MainWindow::get_threshold(int threshold)
+{
+    value_threshold = threshold;
+    if (value_threshold != 0)
+    qDebug() << "Threshold" << value_threshold;
+}

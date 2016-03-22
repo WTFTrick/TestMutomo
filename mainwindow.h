@@ -9,7 +9,10 @@
 #include <qcustomplot.h>
 
 #include "dialog.h"
+#include "settings.h"
 #include "viewconstr.h"
+
+class viewConstr;
 
 namespace Ui
 {
@@ -26,6 +29,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow();
     ~MainWindow();
+     int numberOfBrokenDevice;
+     //QVector<int> *NOBD;
 
 private:
     Ui::MainWindow *ui;
@@ -38,8 +43,11 @@ private:
     quint32     m_nNextBlockSize;
     int LinesCount;                         // ...
     IPDialog* ip_dialog;
+    settings* settings_dialog;
     bool fVisibleLabels;
     const unsigned char ChannelsOnBoard;
+    quint8 value_threshold;
+    viewConstr* vw;
 
     void CreateLines();
     //void CreatePlot(QVector<InfoChannel> *arrData);
@@ -66,6 +74,8 @@ private slots:
     void on_pb_ResetRange_clicked();
     void MousePress(QCPAbstractItem* item, QMouseEvent* event);
     void tabSelected();
+    void on_actionSettings_triggered();
+    void get_threshold(int threshold);
 };
 
 #endif // MAINWINDOW_H

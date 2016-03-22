@@ -132,7 +132,6 @@ void IPDialog::on_pb_del_clicked()
 
 void IPDialog::on_pb_connect_clicked()
 {
-
     QString ip = "0.0.0.0";
     ip = ui->listWidget->item(ui->listWidget->currentRow())->text();
     //qDebug() << "Modal dialog ip:" << ip;

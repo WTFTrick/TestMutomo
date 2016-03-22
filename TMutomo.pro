@@ -17,15 +17,18 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     qcustomplot.cpp \
     dialog.cpp \
-    viewconstr.cpp
+    viewconstr.cpp \
+    settings.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
     dialog.h \
-    viewconstr.h
+    viewconstr.h \
+    settings.h
 
 FORMS    += mainwindow.ui \
-    dialog.ui
+    dialog.ui \
+    settings.ui
 
 CONFIG += mobility c++11
 MOBILITY = 
