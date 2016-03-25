@@ -45,8 +45,8 @@ public:
     QVector<bool> VectorOfbadBoards;
     bool *getBadBoards();
 
-    QVector<QGraphicsRectItem*> rOverComboBoxes;
-    QGraphicsRectItem* rectForComboBox;
+    QVector<QGraphicsRectItem*> VectorOfRectanglesOverComboBoxes;
+    QGraphicsRectItem* RectanglesForComboBoxes;
 
 public slots:
     void ToJson();

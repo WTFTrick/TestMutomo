@@ -1,6 +1,6 @@
 #include "viewconstr.h"
 
-viewConstr::viewConstr(QWidget *parent) : count(720), step(80), VectorOfbadBoards(49), nmOfBoardsOnDetector(6),  QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) : count(720), step(80),VectorOfRectanglesOverComboBoxes(48), VectorOfbadBoards(47), nmOfBoardsOnDetector(6),  QWidget(parent)
 {
     ClearJSONFile();
     CreateView();
@@ -41,12 +41,10 @@ void viewConstr::CreateView()
     QSize SpinBoxFixedSize(85, 50);
     int counterForComboBox = 0;
 
-    //rOverComboBoxes.resize(49);
-    //rOverComboBoxes[0] = new QGraphicsRectItem(rectForComboBox);
-
     // Drawing a transparent rectagles, for better viewing
     rectangle = scene->addRect(0, -20, width, height / 6, transparentPen, TBrush);
     rectangle = scene->addRect(0, 720, width, height / 6, transparentPen, TBrush);
+
 
     // Drawing a rectangles
     for (quint16 i = 0; i < count; i = i + step)
@@ -74,16 +72,19 @@ void viewConstr::CreateView()
                 listComboBox << cmb;
                 cmb->setFixedSize( ComboBoxFixedSize );
                 cmb->addItem(  s_numberOfBoardMT );
-                counterForComboBox++;
 
                 gpw = scene->addWidget( cmb );
                 cmb->move(j+10,i+6);
 
-                rectForComboBox = scene->addRect(j+10, i+6, 59, 49,  outlinePen, TBrush);
-                scene->update();
-                //rOverComboBoxes.at(counterForComboBox) = rectForComboBox;
-                rOverComboBoxes << new QGraphicsRectItem(rectForComboBox);
+                RectanglesForComboBoxes = scene->addRect(j+10, i+6, 59, 49,  transparentPen, TBrush);
+                //VectorOfRectanglesOverComboBoxes << new QGraphicsRectItem(RectanglesForComboBoxes);
+                if (counterForComboBox < 48)
+                    VectorOfRectanglesOverComboBoxes[counterForComboBox] = new QGraphicsRectItem(RectanglesForComboBoxes);
 
+                scene->update();
+
+                //qDebug() << counterForComboBox;
+                counterForComboBox++;
             }
         }
     }
@@ -143,8 +144,6 @@ void viewConstr::ToJson()
 {
     // Clearing JSON file before write data in it
 
-    //BrokenDevice(ind);
-
     ClearJSONFile();
 
     qDebug() << "ToJson buttonn clicked! Data was converted to JSON!";
@@ -153,7 +152,6 @@ void viewConstr::ToJson()
     QJsonObject jsonDevice;
     QJsonObject jsonDetector;
     QJsonObject jsonTempInDetector;
-
     //const short nmDevicesOnDetec = 6;
     const short nmDetectors = 8;
 
@@ -202,12 +200,20 @@ void viewConstr::ToJson()
 
     out.device()->seek(0);
     out << (quint16)(block.size() - sizeof(quint16));
-    mw->m_pTcpSocket->write(block);
+    //mw->m_pTcpSocket->write(block);
+
+    QPen RedPen(Qt::red);
+
+    foreach( QGraphicsRectItem *item, VectorOfRectanglesOverComboBoxes )
+    {
+        VectorOfRectanglesOverComboBoxes.takeAt( VectorOfRectanglesOverComboBoxes.indexOf( item ) )->setPen(RedPen);
+    }
+    scene->update();
 }
 
 bool* viewConstr::getBadBoards()
 {
-    //return &VectorOfbadBoards;
+    return VectorOfbadBoards.data();
 }
 
 

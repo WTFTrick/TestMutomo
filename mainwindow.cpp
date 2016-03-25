@@ -24,7 +24,8 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
     ui->customPlot->setCurrentLayer("BG");
     ui->pb_stopServer->setDisabled(true);
 
-    ui->tabWidget->addTab(new viewConstr(), tr("Configuration"));
+    vw = new viewConstr( this );
+    ui->tabWidget->addTab(vw, tr("Configuration"));
     ui->pb_ResetRange->setFocus();
 
     fVisibleLabels = false;
@@ -50,7 +51,8 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
 
 MainWindow::~MainWindow()
 {
-    //delete vw;
+    delete vw;
+
     StopServer();
     close();
     delete ui;
@@ -405,11 +407,12 @@ void MainWindow::ChannelCheck(quint32 freq, int ind)
 {
     // выявление плат с каналами, в которых частота регистрации сигналов
     // превышает порог
-    vw = new viewConstr( this );
+
     if (freq > value_threshold)
     {
         numberOfBrokenDevice = ind / ChannelsOnBoard;
         vw->VectorOfbadBoards[ind] = 1;
     }
-    delete vw;
+
+    //delete vw;
 }
