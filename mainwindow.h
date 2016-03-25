@@ -28,10 +28,12 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow();
-    int numberOfBrokenDevice;
     ~MainWindow();
 
-     //QVector<int> *NOBD;
+    QTcpSocket* m_pTcpSocket;
+    int numberOfBrokenDevice;
+    inline void ChannelCheck(quint32 freq, int ind);
+    bool* badBoards;
 
 private:
     Ui::MainWindow *ui;
@@ -40,19 +42,18 @@ private:
     QCPDataMap  *mapData;
     QCPGraph    *graph1;
     QCustomPlot *customPlot;
-    QTcpSocket* m_pTcpSocket;
     quint32     m_nNextBlockSize;
-    int LinesCount;                         // ...
+    int LinesCount;
     IPDialog* ip_dialog;
     settings* settings_dialog;
     bool fVisibleLabels;
+    bool bUpdatePlot;
 
     const unsigned char ChannelsOnBoard;
     quint8 value_threshold;
     viewConstr* vw;
 
     void CreateLines();
-    //void CreatePlot(QVector<InfoChannel> *arrData);
     void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
     void resizeEvent(QResizeEvent* event);

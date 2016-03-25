@@ -1,6 +1,6 @@
 #include "viewconstr.h"
 
-viewConstr::viewConstr(QWidget *parent) : count(720), step(80), ind(0), nmOfBoardsOnDetector(6),  QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) : count(720), step(80), VectorOfbadBoards(49), nmOfBoardsOnDetector(6),  QWidget(parent)
 {
     ClearJSONFile();
     CreateView();
@@ -41,6 +41,9 @@ void viewConstr::CreateView()
     QSize SpinBoxFixedSize(85, 50);
     int counterForComboBox = 0;
 
+    //rOverComboBoxes.resize(49);
+    //rOverComboBoxes[0] = new QGraphicsRectItem(rectForComboBox);
+
     // Drawing a transparent rectagles, for better viewing
     rectangle = scene->addRect(0, -20, width, height / 6, transparentPen, TBrush);
     rectangle = scene->addRect(0, 720, width, height / 6, transparentPen, TBrush);
@@ -65,7 +68,6 @@ void viewConstr::CreateView()
             if ((j < width) && (i != empty_area))
             {
                 // Random numbers for comboboxes
-                quint8 numberOfBoardMT = qrand() % 50;
                 QString s_numberOfBoardMT = QString::number( counterForComboBox );
 
                 QComboBox* cmb = new QComboBox();
@@ -76,6 +78,12 @@ void viewConstr::CreateView()
 
                 gpw = scene->addWidget( cmb );
                 cmb->move(j+10,i+6);
+
+                rectForComboBox = scene->addRect(j+10, i+6, 59, 49,  outlinePen, TBrush);
+                scene->update();
+                //rOverComboBoxes.at(counterForComboBox) = rectForComboBox;
+                rOverComboBoxes << new QGraphicsRectItem(rectForComboBox);
+
             }
         }
     }
@@ -126,24 +134,16 @@ void viewConstr::BrokenDevice(int index)
     QPen outlinePen(Qt::red);
     outlinePen.setWidth(1);
 
-    ind = index;
-
     QPoint positionOfComboBox;
-    //const short nmDetectors = 8;
     positionOfComboBox = listComboBox[index]->pos();
-
     scene->addRect(positionOfComboBox.rx(), positionOfComboBox.ry(), 59, 49,  outlinePen, TBrush);
-    //scene->addRect(10, 20, 59, 49,  outlinePen, TBrush);
-
-    qDebug() << "________";
-    qDebug() << ind << listComboBox[index]->currentText();
-    qDebug() << positionOfComboBox.rx() << positionOfComboBox.ry();
 }
 
 void viewConstr::ToJson()
 {
     // Clearing JSON file before write data in it
-    BrokenDevice(ind);
+
+    //BrokenDevice(ind);
 
     ClearJSONFile();
 
@@ -170,12 +170,8 @@ void viewConstr::ToJson()
         jsonTempInDetector["Device "] = jsonDevice;
 
         jsonTempInDetector["Coordinate"] = ListCoordComboBox[indDetector]->currentText();
-        //qDebug() << "Index of ComboBox:"<< indDetector <<
-        //            "; Value in ComboBox:" << ListCoordComboBox[indDetector]->currentText();
 
         jsonTempInDetector["Number "] = ListSpinBox[indDetector]->value();
-        //qDebug() << "Index of SpinBox:"<< indDetector <<
-        //            "; Value in SpinBox:" << ListSpinBox[indDetector]->value();
 
         QString nameField("Detector ");
         nameField += QString::number(indDetector);
@@ -186,15 +182,32 @@ void viewConstr::ToJson()
 
     // Writing data in file blocks.json
 
-    QFile jsnFile("blocks.json");
+    /*QFile jsnFile("blocks.json");
     jsnFile.open(QFile::Append);
     QTextStream outJson(&jsnFile);
     outJson << docJSON.toJson();
-    jsnFile.close();
+    jsnFile.close();*/
 
-    return;
+    // Send JSON to server
+    mw = new MainWindow();
+
+    QByteArray block;
+    QDataStream out(&block, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_4);
+
+    out << (quint16)0;
+    QString output = docJSON.toJson();
+    out << output;
+    //qDebug() << docJSON.toJson();
+
+    out.device()->seek(0);
+    out << (quint16)(block.size() - sizeof(quint16));
+    mw->m_pTcpSocket->write(block);
 }
 
-
+bool* viewConstr::getBadBoards()
+{
+    //return &VectorOfbadBoards;
+}
 
 

@@ -3,7 +3,7 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),numberOfBrokenDevice(71), LinesCount(48), ui(new Ui::MainWindow)
+MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),numberOfBrokenDevice(100), LinesCount(48), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -44,19 +44,20 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
     //MutomoHost = "10.162.1.110"
     CreateConnections();
 
-    //NOBD->resize(100);
+
+    bUpdatePlot = true;
 }
 
 MainWindow::~MainWindow()
 {
+    //delete vw;
     StopServer();
-    delete ui;
     close();
+    delete ui;
 }
 
 void MainWindow::CreatePlot(QVector<quint32> *arrData)
 {
-    vw = new viewConstr( this );
     ui->pb_startServer->setEnabled(false);
     ui->pb_stopServer->setEnabled(true);
     unsigned int maxY = 0;
@@ -67,27 +68,13 @@ void MainWindow::CreatePlot(QVector<quint32> *arrData)
             maxY = arrData->at(i);
     }
 
-    for (double i = 0; i < arrData->size(); i++)
-    {
-        if (arrData->at(i) > value_threshold)
-        {
-            numberOfBrokenDevice = i / ChannelsOnBoard;
-            vw->BrokenDevice(numberOfBrokenDevice);
-            //qDebug () << "Broken device №" << numberOfBrokenDevice;
-        }
-    }
-
-    // Dynamic range of x and y axis;
-    //ui->customPlot->xAxis->setRange(0, arrData->size() + 100);
-    //ui->customPlot->yAxis->setRange(0, maxY + 20);
-    //qDebug() << "arrData->size():" << arrData->size();
-
     ui->customPlot->replot();
 }
 
 void MainWindow::slotReadyRead()
 {
     // Reading data from server
+
 
     QDataStream in(m_pTcpSocket);
     in.setVersion(QDataStream::Qt_5_4);
@@ -107,19 +94,25 @@ void MainWindow::slotReadyRead()
             break;
         }
 
-
         quint32  freq = 0;
         QVector<quint32> arrFreq;
         for (int i = 0; i < m_nNextBlockSize/4; i++ )
         {
             in >> freq;
             arrFreq.append( freq );
+
+            // проверку
+            // inline void checkChannel();
+            // checkChannel( freq, i );
+            ChannelCheck(freq, i);
         }
-        CreatePlot( &arrFreq );
-        //qDebug() << "size:" << arrFreq.size();
+
+        if ( bUpdatePlot )
+            CreatePlot( &arrFreq );
+        else
+            qDebug() << "bUpdatePlot = false!";
 
         arrFreq.clear();
-
         m_nNextBlockSize = 0;
     }
 }
@@ -364,12 +357,15 @@ void MainWindow::tabSelected()
 {
     if(ui->tabWidget->currentIndex()!=0)
     {
-        //StopServer();
-        //qDebug() << "Tab Changed, stop server";
+        // не обновлять график
+        bUpdatePlot = false;
+        qDebug() << "bUpdatePlot =" << bUpdatePlot;
+        //vw->BrokenDevice();
     }
     else
     {
-        //StartServer();
+        bUpdatePlot = true;
+        qDebug() << "bUpdatePlot =" << bUpdatePlot;
     }
 }
 
@@ -402,6 +398,18 @@ void MainWindow::on_actionSettings_triggered()
 void MainWindow::get_threshold(int threshold)
 {
     value_threshold = threshold;
-    if (value_threshold != 0)
-        qDebug() << "Threshold" << value_threshold;
+    qDebug() << "Threshold" << value_threshold;
+}
+
+void MainWindow::ChannelCheck(quint32 freq, int ind)
+{
+    // выявление плат с каналами, в которых частота регистрации сигналов
+    // превышает порог
+    vw = new viewConstr( this );
+    if (freq > value_threshold)
+    {
+        numberOfBrokenDevice = ind / ChannelsOnBoard;
+        vw->VectorOfbadBoards[ind] = 1;
+    }
+    delete vw;
 }

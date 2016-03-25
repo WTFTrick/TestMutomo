@@ -36,10 +36,17 @@ public:
     quint8 nmOfBoardsOnDetector; //Number of devices on detector
     QVBoxLayout *mainLayout;
     QWidget *window;
+    QTcpSocket* m_pTcpSocket;
+    MainWindow* mw;
 
     void ClearJSONFile();
+
     void BrokenDevice(int index);
-    int ind;
+    QVector<bool> VectorOfbadBoards;
+    bool *getBadBoards();
+
+    QVector<QGraphicsRectItem*> rOverComboBoxes;
+    QGraphicsRectItem* rectForComboBox;
 
 public slots:
     void ToJson();

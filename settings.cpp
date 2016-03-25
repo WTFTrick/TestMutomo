@@ -18,8 +18,9 @@ void settings::InterfaceSettings()
 {
     ui->label->setAlignment(Qt::AlignCenter); //Set label at center
     ui->le_value->setValidator( new QIntValidator(0, 100, this) );
-    ui->le_value->setText("71");
+    ui->le_value->setText("100");
     ui->pb_cancel->setFocus();
+    setWindowFlags(Qt::Window | Qt::CustomizeWindowHint);
 }
 
 void settings::CreateConnections()
@@ -36,11 +37,11 @@ void settings::ok_clicked()
     }
     else
     {
-    QString threshold_val;
-    threshold_val = ui->le_value->text();
-    quint8 threshold = threshold_val.toInt();
-    emit sendThreshold(threshold);
-    close();
+        QString threshold_val;
+        threshold_val = ui->le_value->text();
+        quint8 threshold = threshold_val.toInt();
+        emit sendThreshold(threshold);
+        close();
     }
 }
 
