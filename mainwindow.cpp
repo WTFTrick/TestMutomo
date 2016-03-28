@@ -112,8 +112,8 @@ void MainWindow::slotReadyRead()
 
         if ( bUpdatePlot )
             CreatePlot( &arrFreq );
-        else
-            qDebug() << "bUpdatePlot = false!";
+        //else
+            //qDebug() << "bUpdatePlot = false!";
 
         arrFreq.clear();
         m_nNextBlockSize = 0;
@@ -362,15 +362,10 @@ void MainWindow::tabSelected()
     {
         // не обновлять график
         bUpdatePlot = false;
-        //qDebug() << "bUpdatePlot =" << bUpdatePlot;
-
-        //vw->BrokenDevice();
+        vw->BrokenDevice();
     }
     else
-    {
         bUpdatePlot = true;
-        //qDebug() << "bUpdatePlot =" << bUpdatePlot;
-    }
 }
 
 void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)
@@ -414,7 +409,6 @@ void MainWindow::ChannelCheck(quint32 freq, int ind)
     {
         numberOfBrokenDevice = ind / ChannelsOnBoard;
         vw->VectorOfbadBoards[ind] = 1;
+        qDebug() << numberOfBrokenDevice;
     }
-
-    //delete vw;
 }

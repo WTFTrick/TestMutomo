@@ -38,15 +38,15 @@ public:
     QWidget *window;
     QTcpSocket* m_pTcpSocket;
     MainWindow* mw;
-
+    quint8 countOfBoards;
     void ClearJSONFile();
-
     void BrokenDevice();
     QVector<bool> VectorOfbadBoards;
     bool *getBadBoards();
-
     QVector<QGraphicsRectItem*> VectorOfRectanglesOverComboBoxes;
     QGraphicsRectItem* RectanglesForComboBoxes;
+    void resizeEvent(QResizeEvent *event);
+    bool event(QEvent *event);
 
 public slots:
     void ToJson();

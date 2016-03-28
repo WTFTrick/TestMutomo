@@ -1,6 +1,7 @@
 #include "viewconstr.h"
 
-viewConstr::viewConstr(QWidget *parent) : count(720), step(80), VectorOfbadBoards(48), nmOfBoardsOnDetector(6),  QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48),
+    VectorOfRectanglesOverComboBoxes(48), VectorOfbadBoards(48), nmOfBoardsOnDetector(6),  QWidget(parent)
 {
     ClearJSONFile();
     CreateView();
@@ -14,10 +15,15 @@ void viewConstr::CreateView()
     pb_toJson = new QPushButton("To JSON");
     fileNameLabel->setAlignment(Qt::AlignCenter); //Set label at center
 
+    for (int i = 0; i < countOfBoards; i++)
+        VectorOfbadBoards[i] = 0;
+
     scene = new QGraphicsScene(this);
     gv = new QGraphicsView();
     gv->setScene(scene);
     gv->setAlignment(Qt::AlignCenter);
+    gv->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    gv->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mainLayout = new QVBoxLayout;
     mainLayout->addWidget(fileNameLabel);
     mainLayout->addWidget(gv);
@@ -45,8 +51,6 @@ void viewConstr::CreateView()
     // Drawing a transparent rectagles, for better viewing
     rectangle = scene->addRect(0, -20, width, height / 6, transparentPen, TBrush);
     rectangle = scene->addRect(0, 720, width, height / 6, transparentPen, TBrush);
-
-    VectorOfRectanglesOverComboBoxes.resize(48);
 
     // Drawing a rectangles
     for (quint16 i = 0; i < count; i = i + step)
@@ -78,7 +82,7 @@ void viewConstr::CreateView()
                 cmb->move(j+10,i+6);
 
                 RectanglesForComboBoxes = new QGraphicsRectItem();
-                RectanglesForComboBoxes = scene->addRect(j+10, i+6, 59, 49,  redPen, TBrush);
+                RectanglesForComboBoxes = scene->addRect(j+10, i+6, 59, 49,  transparentPen, TBrush);
 
                 VectorOfRectanglesOverComboBoxes[counterForComboBox] = RectanglesForComboBoxes;
                 scene->update();
@@ -114,6 +118,22 @@ void viewConstr::CreateView()
     }
 }
 
+void viewConstr::resizeEvent(QResizeEvent *event)
+{
+    gv->fitInView(-100, -100, scene->width()+100, scene->height()+100, Qt::KeepAspectRatio);
+
+    QWidget::resizeEvent(event);
+}
+
+bool viewConstr::event(QEvent *event)
+{
+    if( event->type() == QEvent::Show)
+    {
+        gv->fitInView(-100, -100, scene->width()+100, scene->height()+100, Qt::KeepAspectRatio);
+    }
+    return QWidget::event(event);
+}
+
 void viewConstr::CreateConnections()
 {
     connect(pb_toJson, SIGNAL(clicked(bool)), this, SLOT(ToJson()));
@@ -130,28 +150,21 @@ void viewConstr::ClearJSONFile()
 
 void viewConstr::BrokenDevice()
 {
-    QBrush TBrush(Qt::transparent);
-    QPen RedPen(Qt::red);
-    RedPen.setWidth(1);
-
-
-    int index;
-    QPoint positionOfComboBox;
-    positionOfComboBox = listComboBox[index]->pos();
-    //scene->addRect(positionOfComboBox.rx(), positionOfComboBox.ry(), 59, 49,  outlinePen, TBrush);
-
     // Cycle for broken boards
 
-    const quint8 countOfBoards = 48;
+    QPen redPen(Qt::red);
+    QPen transparentPen(Qt::transparent);
 
     for ( int i = 0; i < countOfBoards; i++ )
         if ( VectorOfbadBoards[i] == 1)
         {
-            //func that will color broken board
+            qDebug() << "Device with number" << i << "broken:" << VectorOfbadBoards[i];
+            VectorOfRectanglesOverComboBoxes[i]->setPen(redPen);
         }
         else
         {
-
+            qDebug() << "Device with number" << i << "broken:" << VectorOfbadBoards[i];
+            VectorOfRectanglesOverComboBoxes[i]->setPen(transparentPen);
         }
 }
 
@@ -159,12 +172,14 @@ void viewConstr::ToJson()
 {
     ClearJSONFile();
 
+    BrokenDevice();
+
     QJsonDocument docJSON;
     QJsonObject jsonDevice;
     QJsonObject jsonDetector;
     QJsonObject jsonTempInDetector;
-    //const short nmDevicesOnDetec = 6;
     const short nmDetectors = 8;
+    //const short nmDevicesOnDetec = 6;
 
     // Creating a structure of JSON file
 
@@ -211,17 +226,12 @@ void viewConstr::ToJson()
     out << (quint16)(block.size() - sizeof(quint16));
     //mw->m_pTcpSocket->write(block);
 
-    QPen greenPen(Qt::green);
-
-    //qDebug() << "Combobox coord:" <<VectorOfRectanglesOverComboBoxes[ 1 ]->x();
-
-    //foreach( QGraphicsRectItem *item, VectorOfRectanglesOverComboBoxes )
-    //VectorOfRectanglesOverComboBoxes.takeAt( VectorOfRectanglesOverComboBoxes.indexOf( item ) )->setPen(greenPen);
 
 
-    VectorOfRectanglesOverComboBoxes.at(0)->setPen(greenPen);
-
-    scene->update();
+    /*QPen redPen(Qt::red);
+    foreach( QGraphicsRectItem *item, VectorOfRectanglesOverComboBoxes )
+    VectorOfRectanglesOverComboBoxes.takeAt( VectorOfRectanglesOverComboBoxes.indexOf( item ) )->setPen(redPen);
+    scene->update();*/
 }
 
 bool* viewConstr::getBadBoards()
