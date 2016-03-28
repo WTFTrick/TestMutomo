@@ -5,6 +5,7 @@ viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48
 {
     ClearJSONFile();
     CreateView();
+    ClearVectorOfBrokenDevices();
     CreateConnections();
 }
 
@@ -14,9 +15,6 @@ void viewConstr::CreateView()
     QLabel *fileNameLabel = new QLabel(tr("Configuration:"));
     pb_toJson = new QPushButton("To JSON");
     fileNameLabel->setAlignment(Qt::AlignCenter); //Set label at center
-
-    for (int i = 0; i < countOfBoards; i++)
-        VectorOfbadBoards[i] = 0;
 
     scene = new QGraphicsScene(this);
     gv = new QGraphicsView();
@@ -139,6 +137,12 @@ void viewConstr::CreateConnections()
     connect(pb_toJson, SIGNAL(clicked(bool)), this, SLOT(ToJson()));
 }
 
+void viewConstr::ClearVectorOfBrokenDevices()
+{
+    for (int i = 0; i < countOfBoards; i++)
+        VectorOfbadBoards[i] = 0;
+}
+
 void viewConstr::ClearJSONFile()
 {
     QFile file("blocks.json");
@@ -166,6 +170,7 @@ void viewConstr::BrokenDevice()
             qDebug() << "Device with number" << i << "broken:" << VectorOfbadBoards[i];
             VectorOfRectanglesOverComboBoxes[i]->setPen(transparentPen);
         }
+    ClearVectorOfBrokenDevices();
 }
 
 void viewConstr::ToJson()

@@ -408,7 +408,7 @@ void MainWindow::ChannelCheck(quint32 freq, int ind)
     if (freq > value_threshold)
     {
         numberOfBrokenDevice = ind / ChannelsOnBoard;
-        vw->VectorOfbadBoards[ind] = 1;
+        vw->VectorOfbadBoards[numberOfBrokenDevice] = 1;
         qDebug() << numberOfBrokenDevice;
     }
 }

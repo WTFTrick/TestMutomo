@@ -20,6 +20,7 @@ public:
     explicit viewConstr(QWidget *parent = 0);
     void CreateView();
     void CreateConnections();
+    void ClearVectorOfBrokenDevices();
 
     QList< QComboBox* > listComboBox;
     QList< QSpinBox* > ListSpinBox;
