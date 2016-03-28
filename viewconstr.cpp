@@ -1,6 +1,6 @@
 #include "viewconstr.h"
 
-viewConstr::viewConstr(QWidget *parent) : count(720), step(80),VectorOfRectanglesOverComboBoxes(48), VectorOfbadBoards(47), nmOfBoardsOnDetector(6),  QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) : count(720), step(80), VectorOfbadBoards(48), nmOfBoardsOnDetector(6),  QWidget(parent)
 {
     ClearJSONFile();
     CreateView();
@@ -27,6 +27,7 @@ void viewConstr::CreateView()
     QBrush TBrush(Qt::transparent);
     QPen outlinePen(Qt::black);
     QPen transparentPen(Qt::transparent);
+    QPen redPen(Qt::red);
     outlinePen.setWidth(0.5);
 
     // Add variables for drawing comboboxes, spinboxes and rectangles
@@ -45,6 +46,7 @@ void viewConstr::CreateView()
     rectangle = scene->addRect(0, -20, width, height / 6, transparentPen, TBrush);
     rectangle = scene->addRect(0, 720, width, height / 6, transparentPen, TBrush);
 
+    VectorOfRectanglesOverComboBoxes.resize(48);
 
     // Drawing a rectangles
     for (quint16 i = 0; i < count; i = i + step)
@@ -65,7 +67,6 @@ void viewConstr::CreateView()
 
             if ((j < width) && (i != empty_area))
             {
-                // Random numbers for comboboxes
                 QString s_numberOfBoardMT = QString::number( counterForComboBox );
 
                 QComboBox* cmb = new QComboBox();
@@ -76,14 +77,12 @@ void viewConstr::CreateView()
                 gpw = scene->addWidget( cmb );
                 cmb->move(j+10,i+6);
 
-                RectanglesForComboBoxes = scene->addRect(j+10, i+6, 59, 49,  transparentPen, TBrush);
-                //VectorOfRectanglesOverComboBoxes << new QGraphicsRectItem(RectanglesForComboBoxes);
-                if (counterForComboBox < 48)
-                    VectorOfRectanglesOverComboBoxes[counterForComboBox] = new QGraphicsRectItem(RectanglesForComboBoxes);
+                RectanglesForComboBoxes = new QGraphicsRectItem();
+                RectanglesForComboBoxes = scene->addRect(j+10, i+6, 59, 49,  redPen, TBrush);
 
+                VectorOfRectanglesOverComboBoxes[counterForComboBox] = RectanglesForComboBoxes;
                 scene->update();
 
-                //qDebug() << counterForComboBox;
                 counterForComboBox++;
             }
         }
@@ -129,24 +128,36 @@ void viewConstr::ClearJSONFile()
     }
 }
 
-void viewConstr::BrokenDevice(int index)
+void viewConstr::BrokenDevice()
 {
     QBrush TBrush(Qt::transparent);
-    QPen outlinePen(Qt::red);
-    outlinePen.setWidth(1);
+    QPen RedPen(Qt::red);
+    RedPen.setWidth(1);
 
+
+    int index;
     QPoint positionOfComboBox;
     positionOfComboBox = listComboBox[index]->pos();
-    scene->addRect(positionOfComboBox.rx(), positionOfComboBox.ry(), 59, 49,  outlinePen, TBrush);
+    //scene->addRect(positionOfComboBox.rx(), positionOfComboBox.ry(), 59, 49,  outlinePen, TBrush);
+
+    // Cycle for broken boards
+
+    const quint8 countOfBoards = 48;
+
+    for ( int i = 0; i < countOfBoards; i++ )
+        if ( VectorOfbadBoards[i] == 1)
+        {
+            //func that will color broken board
+        }
+        else
+        {
+
+        }
 }
 
 void viewConstr::ToJson()
 {
-    // Clearing JSON file before write data in it
-
     ClearJSONFile();
-
-    qDebug() << "ToJson buttonn clicked! Data was converted to JSON!";
 
     QJsonDocument docJSON;
     QJsonObject jsonDevice;
@@ -187,7 +198,6 @@ void viewConstr::ToJson()
     jsnFile.close();*/
 
     // Send JSON to server
-    mw = new MainWindow();
 
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
@@ -196,18 +206,21 @@ void viewConstr::ToJson()
     out << (quint16)0;
     QString output = docJSON.toJson();
     out << output;
-    //qDebug() << docJSON.toJson();
 
     out.device()->seek(0);
     out << (quint16)(block.size() - sizeof(quint16));
     //mw->m_pTcpSocket->write(block);
 
-    QPen RedPen(Qt::red);
+    QPen greenPen(Qt::green);
 
-    foreach( QGraphicsRectItem *item, VectorOfRectanglesOverComboBoxes )
-    {
-        VectorOfRectanglesOverComboBoxes.takeAt( VectorOfRectanglesOverComboBoxes.indexOf( item ) )->setPen(RedPen);
-    }
+    //qDebug() << "Combobox coord:" <<VectorOfRectanglesOverComboBoxes[ 1 ]->x();
+
+    //foreach( QGraphicsRectItem *item, VectorOfRectanglesOverComboBoxes )
+    //VectorOfRectanglesOverComboBoxes.takeAt( VectorOfRectanglesOverComboBoxes.indexOf( item ) )->setPen(greenPen);
+
+
+    VectorOfRectanglesOverComboBoxes.at(0)->setPen(greenPen);
+
     scene->update();
 }
 

@@ -41,7 +41,7 @@ public:
 
     void ClearJSONFile();
 
-    void BrokenDevice(int index);
+    void BrokenDevice();
     QVector<bool> VectorOfbadBoards;
     bool *getBadBoards();
 

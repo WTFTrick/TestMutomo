@@ -77,6 +77,7 @@ void MainWindow::slotReadyRead()
 {
     // Reading data from server
 
+    // заполнить контейнер BadBoards нулями
 
     QDataStream in(m_pTcpSocket);
     in.setVersion(QDataStream::Qt_5_4);
@@ -361,13 +362,14 @@ void MainWindow::tabSelected()
     {
         // не обновлять график
         bUpdatePlot = false;
-        qDebug() << "bUpdatePlot =" << bUpdatePlot;
+        //qDebug() << "bUpdatePlot =" << bUpdatePlot;
+
         //vw->BrokenDevice();
     }
     else
     {
         bUpdatePlot = true;
-        qDebug() << "bUpdatePlot =" << bUpdatePlot;
+        //qDebug() << "bUpdatePlot =" << bUpdatePlot;
     }
 }
 
