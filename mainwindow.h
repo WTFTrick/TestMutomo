@@ -47,8 +47,8 @@ private:
     IPDialog* ip_dialog;
     settings* settings_dialog;
     bool fVisibleLabels;
-    bool bUpdatePlot;
-
+    bool bUpdatePlot;               // comm
+    bool bUpdateViewConstr;
     const unsigned char ChannelsOnBoard;
     quint8 value_threshold;
     viewConstr* vw;

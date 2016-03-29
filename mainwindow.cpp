@@ -45,8 +45,9 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
     //MutomoHost = "10.162.1.110"
     CreateConnections();
 
-
     bUpdatePlot = true;
+    bUpdateViewConstr  = false;
+    //tabSelected();
 }
 
 MainWindow::~MainWindow()
@@ -112,8 +113,12 @@ void MainWindow::slotReadyRead()
 
         if ( bUpdatePlot )
             CreatePlot( &arrFreq );
+
+        if ( bUpdateViewConstr )
+            vw->BrokenDevice();
+
         //else
-            //qDebug() << "bUpdatePlot = false!";
+        //qDebug() << "bUpdatePlot = false!";
 
         arrFreq.clear();
         m_nNextBlockSize = 0;
@@ -188,7 +193,7 @@ void MainWindow::mousePress()
 void MainWindow::mouseWheel()
 {
     ui->customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
-    ScaleChanged();
+    //ScaleChanged();
 }
 
 void MainWindow::on_pb_ZoomIn_clicked()
@@ -201,14 +206,12 @@ void MainWindow::on_pb_ZoomOut_clicked()
 {
     ui->customPlot->xAxis->scaleRange(1.17, ui->customPlot->xAxis->range().center());
     ui->customPlot->yAxis->scaleRange(1.17, ui->customPlot->yAxis->range().center());
-    //ScaleChanged();
 }
 
 void MainWindow::on_pb_ResetRange_clicked()
 {
     ui->customPlot->xAxis->setRange(0, 2500);
     ui->customPlot->yAxis->setRange(0, 100);
-    //ScaleChanged();
 }
 
 void MainWindow::xAxisChanged(QCPRange newRange)
@@ -261,11 +264,10 @@ void MainWindow::ScaleChanged()
     double px_size = ui->customPlot->xAxis->coordToPixel(ChannelsOnBoard) - ui->customPlot->xAxis->coordToPixel(0);
     //qDebug() << "px_size =" << px_size;
 
-    if (px_size > PixelLimit)
+    if (px_size >= PixelLimit)
         fVisibleLabels = true;
     else
-        if (px_size < PixelLimit)
-            fVisibleLabels = false;
+        fVisibleLabels = false;
 
     CreateLines();
 }
@@ -292,7 +294,6 @@ void MainWindow::CreateLines()
         tickHLine->end->setCoords(i, line_height);
         tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
 
-        CounterOfBoards++;
         QString NOB = QString("%1").arg(CounterOfBoards);
         if (fVisibleLabels)
         {
@@ -303,6 +304,7 @@ void MainWindow::CreateLines()
             NumberOfBoard->setFont(QFont(font().family(), 11));
             //NumberOfBoard->setPadding(QMargins(10, 0, 0, 0));
         }
+        CounterOfBoards++;
     }
     //qDebug() << "fVisibleLabels=" << fVisibleLabels;
 
@@ -325,6 +327,7 @@ void MainWindow::CreateConnections()
     connect(ui->pb_ZoomIn, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
     connect(ui->pb_ZoomOut, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
     connect(ui->pb_ResetRange, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
+    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(ScaleChanged()));
 
     // mouse click on some area of plot
     connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MousePress(QCPAbstractItem* , QMouseEvent*)));
@@ -349,23 +352,26 @@ void MainWindow::changeEvent(QEvent *event)
     if(event->type() == QEvent::WindowStateChange)
     {
         if(isMaximized())
-        {
             ScaleChanged();
-        }
     }
     event->accept();
 }
 
 void MainWindow::tabSelected()
 {
-    if(ui->tabWidget->currentIndex()!=0)
+    bUpdatePlot        = false;
+    bUpdateViewConstr  = false;
+
+
+    if (ui->tabWidget->currentIndex() == 0)
     {
-        // не обновлять график
-        bUpdatePlot = false;
-        vw->BrokenDevice();
-    }
-    else
         bUpdatePlot = true;
+        ScaleChanged();
+    }
+
+    if (ui->tabWidget->currentIndex() == 1)
+        bUpdateViewConstr = true;
+
 }
 
 void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)
@@ -409,6 +415,6 @@ void MainWindow::ChannelCheck(quint32 freq, int ind)
     {
         numberOfBrokenDevice = ind / ChannelsOnBoard;
         vw->VectorOfbadBoards[numberOfBrokenDevice] = 1;
-        qDebug() << numberOfBrokenDevice;
+        //qDebug() << numberOfBrokenDevice;
     }
 }

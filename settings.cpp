@@ -20,7 +20,7 @@ void settings::InterfaceSettings()
     ui->le_value->setValidator( new QIntValidator(0, 100, this) );
     ui->le_value->setText("100");
     ui->pb_cancel->setFocus();
-    setWindowFlags(Qt::Window | Qt::CustomizeWindowHint);
+    //setWindowFlags(Qt::Window | Qt::CustomizeWindowHint);
 }
 
 void settings::CreateConnections()

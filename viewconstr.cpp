@@ -3,27 +3,27 @@
 viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48),
     VectorOfRectanglesOverComboBoxes(48), VectorOfbadBoards(48), nmOfBoardsOnDetector(6),  QWidget(parent)
 {
-    ClearJSONFile();
     CreateView();
     ClearVectorOfBrokenDevices();
     CreateConnections();
+    ClearJSONFile();
 }
 
 void viewConstr::CreateView()
 {
-    // Add label, button, scene and layout
-    QLabel *fileNameLabel = new QLabel(tr("Configuration:"));
-    pb_toJson = new QPushButton("To JSON");
-    fileNameLabel->setAlignment(Qt::AlignCenter); //Set label at center
+    //graphics view, button, scene and layout
 
+    pb_toJson = new QPushButton("To JSON");
+    pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed,QSizePolicy::Policy::Fixed);
     scene = new QGraphicsScene(this);
+
     gv = new QGraphicsView();
     gv->setScene(scene);
     gv->setAlignment(Qt::AlignCenter);
     gv->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     gv->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    gv->setRenderHint(QPainter::Antialiasing);
     mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(fileNameLabel);
     mainLayout->addWidget(gv);
     mainLayout->addWidget(pb_toJson);
     setLayout(mainLayout);
@@ -31,7 +31,6 @@ void viewConstr::CreateView()
     QBrush TBrush(Qt::transparent);
     QPen outlinePen(Qt::black);
     QPen transparentPen(Qt::transparent);
-    QPen redPen(Qt::red);
     outlinePen.setWidth(0.5);
 
     // Add variables for drawing comboboxes, spinboxes and rectangles
@@ -46,16 +45,12 @@ void viewConstr::CreateView()
     QSize SpinBoxFixedSize(85, 50);
     int counterForComboBox = 0;
 
-    // Drawing a transparent rectagles, for better viewing
-    rectangle = scene->addRect(0, -20, width, height / 6, transparentPen, TBrush);
-    rectangle = scene->addRect(0, 720, width, height / 6, transparentPen, TBrush);
-
     // Drawing a rectangles
     for (quint16 i = 0; i < count; i = i + step)
     {
         if (i != empty_area)
         {
-            rectangle = scene->addRect(0, i, width, height, outlinePen,TBrush);
+            scene->addRect(0, i, width, height, outlinePen,TBrush);
         }
     }
 
@@ -118,7 +113,7 @@ void viewConstr::CreateView()
 
 void viewConstr::resizeEvent(QResizeEvent *event)
 {
-    gv->fitInView(-100, -100, scene->width()+100, scene->height()+100, Qt::KeepAspectRatio);
+    gv->fitInView(-50, -50, scene->width()+50, scene->height()+50, Qt::KeepAspectRatio);
 
     QWidget::resizeEvent(event);
 }
@@ -127,7 +122,7 @@ bool viewConstr::event(QEvent *event)
 {
     if( event->type() == QEvent::Show)
     {
-        gv->fitInView(-100, -100, scene->width()+100, scene->height()+100, Qt::KeepAspectRatio);
+        gv->fitInView(-50, -50, scene->width()+50, scene->height()+50, Qt::KeepAspectRatio);
     }
     return QWidget::event(event);
 }
@@ -158,18 +153,14 @@ void viewConstr::BrokenDevice()
 
     QPen redPen(Qt::red);
     QPen transparentPen(Qt::transparent);
+    redPen.setWidth(2);
 
     for ( int i = 0; i < countOfBoards; i++ )
         if ( VectorOfbadBoards[i] == 1)
-        {
-            qDebug() << "Device with number" << i << "broken:" << VectorOfbadBoards[i];
             VectorOfRectanglesOverComboBoxes[i]->setPen(redPen);
-        }
         else
-        {
-            qDebug() << "Device with number" << i << "broken:" << VectorOfbadBoards[i];
             VectorOfRectanglesOverComboBoxes[i]->setPen(transparentPen);
-        }
+
     ClearVectorOfBrokenDevices();
 }
 
@@ -177,14 +168,11 @@ void viewConstr::ToJson()
 {
     ClearJSONFile();
 
-    BrokenDevice();
-
     QJsonDocument docJSON;
     QJsonObject jsonDevice;
     QJsonObject jsonDetector;
     QJsonObject jsonTempInDetector;
     const short nmDetectors = 8;
-    //const short nmDevicesOnDetec = 6;
 
     // Creating a structure of JSON file
 
@@ -211,11 +199,11 @@ void viewConstr::ToJson()
 
     // Writing data in file blocks.json
 
-    /*QFile jsnFile("blocks.json");
+    QFile jsnFile("blocks.json");
     jsnFile.open(QFile::Append);
     QTextStream outJson(&jsnFile);
     outJson << docJSON.toJson();
-    jsnFile.close();*/
+    jsnFile.close();
 
     // Send JSON to server
 
@@ -230,7 +218,6 @@ void viewConstr::ToJson()
     out.device()->seek(0);
     out << (quint16)(block.size() - sizeof(quint16));
     //mw->m_pTcpSocket->write(block);
-
 
 
     /*QPen redPen(Qt::red);
