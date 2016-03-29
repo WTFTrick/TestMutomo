@@ -3,7 +3,7 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),numberOfBrokenDevice(100), LinesCount(48), ui(new Ui::MainWindow)
+MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(49),vectorOfNumbersOfBrokenDevices(49), ChannelsOnBoard(49),numberOfBrokenDevice(100), LinesCount(48), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -48,6 +48,8 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),ChannelsOnBoard(49),
     bUpdatePlot = true;
     bUpdateViewConstr  = false;
     //tabSelected();
+
+    ClearVectorForCheckingDevices();
 }
 
 MainWindow::~MainWindow()
@@ -288,6 +290,7 @@ void MainWindow::CreateLines()
     uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
     for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
     {
+        int CounterForNumbersOfBoards = 0;
         QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
         ui->customPlot->addItem(tickHLine);
         tickHLine->start->setCoords(i, 0);
@@ -297,18 +300,41 @@ void MainWindow::CreateLines()
         QString NOB = QString("%1").arg(CounterOfBoards);
         if (fVisibleLabels)
         {
-            QCPItemText *NumberOfBoard = new QCPItemText(ui->customPlot);
+            NumberOfBoard = new QCPItemText(ui->customPlot);
             ui->customPlot->addItem(NumberOfBoard);
+            vectorOfNumbersOfBrokenDevices[CounterOfBoards] = NumberOfBoard;
             NumberOfBoard->position->setCoords(i + label_center_x, label_center_y);
             NumberOfBoard->setText(NOB);
             NumberOfBoard->setFont(QFont(font().family(), 11));
             //NumberOfBoard->setPadding(QMargins(10, 0, 0, 0));
+            CounterForNumbersOfBoards ++;
         }
         CounterOfBoards++;
     }
     //qDebug() << "fVisibleLabels=" << fVisibleLabels;
 
     ui->customPlot->replot();
+}
+
+void MainWindow::PaintNumberOfBrokenDevices()
+{
+    if (fVisibleLabels)
+    {
+        for (int i = 0; i < 49; i++)
+        {
+            if ( vectorForCheckingDevices[ i ] == 1 )
+                vectorOfNumbersOfBrokenDevices[i]->setColor(QColor(255, 0, 0));
+
+            else
+                qDebug() << "Crash here if try to paint text in black";
+                //Also, need to decide, what should we do with resize and Text
+
+                //vectorOfNumbersOfBrokenDevices[i]->setColor(QColor(255,255,255));
+        }
+        ui->customPlot->replot();
+    }
+
+    ClearVectorForCheckingDevices();
 }
 
 void MainWindow::CreateConnections()
@@ -402,6 +428,7 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::get_threshold(int threshold)
 {
+    threshold = 100;
     value_threshold = threshold;
     qDebug() << "Threshold" << value_threshold;
 }
@@ -415,6 +442,13 @@ void MainWindow::ChannelCheck(quint32 freq, int ind)
     {
         numberOfBrokenDevice = ind / ChannelsOnBoard;
         vw->VectorOfbadBoards[numberOfBrokenDevice] = 1;
-        //qDebug() << numberOfBrokenDevice;
+        vectorForCheckingDevices[numberOfBrokenDevice] = 1;
+        PaintNumberOfBrokenDevices();
     }
+}
+
+void MainWindow::ClearVectorForCheckingDevices()
+{
+    for (int i = 0; i < 49; i++)
+        vectorForCheckingDevices[i] = 0;
 }

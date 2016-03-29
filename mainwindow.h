@@ -52,8 +52,13 @@ private:
     const unsigned char ChannelsOnBoard;
     quint8 value_threshold;
     viewConstr* vw;
+    QVector<QCPItemText*> vectorOfNumbersOfBrokenDevices;
+    QVector<bool> vectorForCheckingDevices;
+    void ClearVectorForCheckingDevices();
 
+    QCPItemText * NumberOfBoard;
     void CreateLines();
+    void PaintNumberOfBrokenDevices(); //paint number of broken device on graphic
     void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
     void resizeEvent(QResizeEvent* event);

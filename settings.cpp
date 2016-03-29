@@ -19,7 +19,7 @@ void settings::InterfaceSettings()
     ui->label->setAlignment(Qt::AlignCenter); //Set label at center
     ui->le_value->setValidator( new QIntValidator(0, 100, this) );
     ui->le_value->setText("100");
-    ui->pb_cancel->setFocus();
+    ui->le_value->setFocus();
     //setWindowFlags(Qt::Window | Qt::CustomizeWindowHint);
 }
 
