@@ -49,6 +49,11 @@ public:
     void resizeEvent(QResizeEvent *event);
     bool event(QEvent *event);
 
+    QPointF nullCoordinateCheck; //Check for android, why 0.0 point move somwhere left or down
+    void NullCoordinateCheckFunc();
+    QLabel* coordXlabel;
+    QLabel* coordYlabel;
+
 public slots:
     void ToJson();
 

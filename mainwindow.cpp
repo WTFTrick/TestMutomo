@@ -290,7 +290,6 @@ void MainWindow::CreateLines()
     uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
     for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
     {
-        int CounterForNumbersOfBoards = 0;
         QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
         ui->customPlot->addItem(tickHLine);
         tickHLine->start->setCoords(i, 0);
@@ -307,7 +306,6 @@ void MainWindow::CreateLines()
             NumberOfBoard->setText(NOB);
             NumberOfBoard->setFont(QFont(font().family(), 11));
             //NumberOfBoard->setPadding(QMargins(10, 0, 0, 0));
-            CounterForNumbersOfBoards ++;
         }
         CounterOfBoards++;
     }
@@ -318,18 +316,22 @@ void MainWindow::CreateLines()
 
 void MainWindow::PaintNumberOfBrokenDevices()
 {
+    //Проверка исправности плат. Если плата не исправна (В массиве vectorForCheckingDevices i-ое значение = 1)
+    //то номер устройства окрашивается в красный цвет
+
     if (fVisibleLabels)
     {
         for (int i = 0; i < 49; i++)
         {
-            if ( vectorForCheckingDevices[ i ] == 1 )
-                vectorOfNumbersOfBrokenDevices[i]->setColor(QColor(255, 0, 0));
-
+            qDebug() << "vector[" << i << "] =" << vectorForCheckingDevices[i];
+            if ( vectorForCheckingDevices[ i ] == true )
+                vectorOfNumbersOfBrokenDevices[ i ]->setColor(QColor(255, 0, 0));
             else
-                qDebug() << "Crash here if try to paint text in black";
-                //Also, need to decide, what should we do with resize and Text
-
-                //vectorOfNumbersOfBrokenDevices[i]->setColor(QColor(255,255,255));
+            {
+                //vectorOfNumbersOfBrokenDevices[ i ]->setColor(QColor(255,255,255));
+                //qDebug() << "Вылет в этом месте при попытке изменить цвет номера платы на черный цвет";
+                //Решить проблему изменения размера окна (цвет номера платы меняется с красного на черный)
+            }
         }
         ui->customPlot->replot();
     }
@@ -396,7 +398,10 @@ void MainWindow::tabSelected()
     }
 
     if (ui->tabWidget->currentIndex() == 1)
+    {
         bUpdateViewConstr = true;
+        vw->NullCoordinateCheckFunc();
+    }
 
 }
 
@@ -449,6 +454,7 @@ void MainWindow::ChannelCheck(quint32 freq, int ind)
 
 void MainWindow::ClearVectorForCheckingDevices()
 {
+    //Очистка массива, отвечающего за проверку исправности плат MT48
     for (int i = 0; i < 49; i++)
         vectorForCheckingDevices[i] = 0;
 }

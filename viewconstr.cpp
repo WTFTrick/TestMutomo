@@ -13,19 +13,33 @@ void viewConstr::CreateView()
 {
     //graphics view, button, scene and layout
 
+    //coordXlabel = new QLabel();
+    //coordYlabel = new QLabel();
+
+    //coordXlabel->setAlignment(Qt::AlignCenter);
+    //coordYlabel->setAlignment(Qt::AlignCenter);
+
     pb_toJson = new QPushButton("To JSON");
     pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed,QSizePolicy::Policy::Fixed);
     scene = new QGraphicsScene(this);
 
     gv = new QGraphicsView();
     gv->setScene(scene);
+
+    scene->setSceneRect(scene->itemsBoundingRect());
+    gv->setSceneRect(QRectF(175, 200 , 300, 300));
+    gv->centerOn( 0 , 0 );
+    gv->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+
     gv->setAlignment(Qt::AlignCenter);
     gv->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     gv->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    gv->setRenderHint(QPainter::Antialiasing);
+
     mainLayout = new QVBoxLayout;
     mainLayout->addWidget(gv);
     mainLayout->addWidget(pb_toJson);
+    //mainLayout->addWidget(coordXlabel);
+    //mainLayout->addWidget(coordYlabel);
     setLayout(mainLayout);
 
     QBrush TBrush(Qt::transparent);
@@ -44,13 +58,14 @@ void viewConstr::CreateView()
     QSize ComboBoxFixedSize(60, 50);
     QSize SpinBoxFixedSize(85, 50);
     int counterForComboBox = 0;
+    int nullX = 0;
 
     // Drawing a rectangles
-    for (quint16 i = 0; i < count; i = i + step)
+    for (int i = 0; i < count; i = i + step)
     {
         if (i != empty_area)
         {
-            scene->addRect(0, i, width, height, outlinePen,TBrush);
+            scene->addRect(nullX, i, width, height, outlinePen,TBrush);
         }
     }
 
@@ -114,7 +129,6 @@ void viewConstr::CreateView()
 void viewConstr::resizeEvent(QResizeEvent *event)
 {
     gv->fitInView(-50, -50, scene->width()+50, scene->height()+50, Qt::KeepAspectRatio);
-
     QWidget::resizeEvent(event);
 }
 
@@ -124,7 +138,20 @@ bool viewConstr::event(QEvent *event)
     {
         gv->fitInView(-50, -50, scene->width()+50, scene->height()+50, Qt::KeepAspectRatio);
     }
+
     return QWidget::event(event);
+}
+
+void viewConstr::NullCoordinateCheckFunc()
+{
+    /*nullCoordinateCheck = listComboBox[0]->pos();
+
+    qDebug() << "Null coord X:" << nullCoordinateCheck.rx();
+    qDebug() << "Null coord Y:" << nullCoordinateCheck.ry();
+    QString x = QString::number(nullCoordinateCheck.rx());
+    QString y = QString::number(nullCoordinateCheck.ry());
+    coordXlabel->setText(x);
+    coordYlabel->setText(y);*/
 }
 
 void viewConstr::CreateConnections()
@@ -167,7 +194,7 @@ void viewConstr::BrokenDevice()
 void viewConstr::ToJson()
 {
     ClearJSONFile();
-
+    NullCoordinateCheckFunc();
     QJsonDocument docJSON;
     QJsonObject jsonDevice;
     QJsonObject jsonDetector;
