@@ -5,7 +5,7 @@
 
 MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(49),
     vectorOfNumbersOfBrokenDevices(49), ChannelsOnBoard(49),numberOfBrokenDevice(100),
-    LinesCount(48), ui(new Ui::MainWindow)
+    LinesCount(49), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -117,6 +117,7 @@ void MainWindow::slotReadyRead()
 
         if ( bUpdateViewConstr )
             vw->BrokenDevice();
+            CreateLines();
 
         //else
         //qDebug() << "bUpdatePlot = false!";
@@ -299,13 +300,23 @@ void MainWindow::CreateLines()
         {
             NumberOfBoard = new QCPItemText(ui->customPlot);
             ui->customPlot->addItem(NumberOfBoard);
-            vectorOfNumbersOfBrokenDevices[CounterOfBoards] = NumberOfBoard;
+
+            //vectorOfNumbersOfBrokenDevices[CounterOfBoards] = NumberOfBoard;
+
             NumberOfBoard->position->setCoords(i + label_center_x, label_center_y);
             NumberOfBoard->setText(NOB);
             NumberOfBoard->setFont(QFont(font().family(), 11));
+
+            if ( vectorForCheckingDevices[ CounterOfBoards ] == true )
+                NumberOfBoard->setColor(QColor(255, 0, 0));
+            else
+                NumberOfBoard->setColor(QColor(0, 0, 0));
         }
+
         CounterOfBoards++;
     }
+
+    ClearVectorForCheckingDevices();
 
     ui->customPlot->replot();
 }
@@ -325,7 +336,7 @@ void MainWindow::PaintNumberOfBrokenDevices()
             else
             {
                 //vectorOfNumbersOfBrokenDevices[ i ]->setColor(QColor(255,255,255));
-                //qDebug() << "Вылет в этом месте при попытке изменить цвет номера платы на черный цвет";
+                //qDebug() << "Вылет в этом месте, не красит больше 1-ого номера платы";
                 //Решить проблему изменения размера окна (цвет номера платы меняется с красного на черный)
             }
         }
@@ -367,7 +378,6 @@ void MainWindow::CreateConnections()
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
-
     ScaleChanged();
 }
 
@@ -429,7 +439,7 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::get_threshold(int threshold)
 {
-    threshold = 100;
+    //threshold = 100;
     value_threshold = threshold;
     qDebug() << "Threshold" << value_threshold;
 }
@@ -444,7 +454,6 @@ void MainWindow::ChannelCheck(quint32 freq, int ind)
         numberOfBrokenDevice = ind / ChannelsOnBoard;
         vw->VectorOfbadBoards[numberOfBrokenDevice] = 1;
         vectorForCheckingDevices[numberOfBrokenDevice] = 1;
-        PaintNumberOfBrokenDevices();
     }
 }
 
