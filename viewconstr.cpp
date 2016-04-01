@@ -11,11 +11,10 @@ viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48
 
 void viewConstr::CreateView()
 {
-    //graphics view, button, scene and layout
+    //Create graphics view,scene, button and layout
 
     //coordXlabel = new QLabel();
     //coordYlabel = new QLabel();
-
     //coordXlabel->setAlignment(Qt::AlignCenter);
     //coordYlabel->setAlignment(Qt::AlignCenter);
 
@@ -38,8 +37,10 @@ void viewConstr::CreateView()
     mainLayout = new QVBoxLayout;
     mainLayout->addWidget(gv);
     mainLayout->addWidget(pb_toJson);
+
     //mainLayout->addWidget(coordXlabel);
     //mainLayout->addWidget(coordYlabel);
+
     setLayout(mainLayout);
 
     QBrush TBrush(Qt::transparent);
@@ -251,11 +252,6 @@ void viewConstr::ToJson()
     foreach( QGraphicsRectItem *item, VectorOfRectanglesOverComboBoxes )
     VectorOfRectanglesOverComboBoxes.takeAt( VectorOfRectanglesOverComboBoxes.indexOf( item ) )->setPen(redPen);
     scene->update();*/
-}
-
-bool* viewConstr::getBadBoards()
-{
-    return VectorOfbadBoards.data();
 }
 
 

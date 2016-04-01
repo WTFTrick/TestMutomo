@@ -4,8 +4,9 @@
 #include <QDialog>
 #include <QLineEdit>
 #include <QWidget>
-#include <qfile.h>
 #include <QListWidget>
+
+#include <qfile.h>
 
 namespace Ui
 {

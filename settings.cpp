@@ -10,8 +10,8 @@ settings::settings(QWidget *parent) : QDialog(parent), ui(new Ui::settings)
 
 settings::~settings()
 {
-    delete ui;
     close();
+    delete ui;
 }
 
 void settings::InterfaceSettings()
@@ -20,7 +20,6 @@ void settings::InterfaceSettings()
     ui->le_value->setValidator( new QIntValidator(0, 100, this) );
     ui->le_value->setText("100");
     ui->le_value->setFocus();
-    //setWindowFlags(Qt::Window | Qt::CustomizeWindowHint);
 }
 
 void settings::CreateConnections()
@@ -32,9 +31,8 @@ void settings::CreateConnections()
 void settings::ok_clicked()
 {
     if (ui->le_value->text() == "")
-    {
         qDebug() << "Edit line is empty! Enter some value!";
-    }
+
     else
     {
         QString threshold_val;

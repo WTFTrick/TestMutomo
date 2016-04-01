@@ -6,22 +6,17 @@
 IPDialog::IPDialog(QWidget *parent) : QDialog(parent), ui(new Ui::IPDialog)
 {
     ui->setupUi(this);
-    //setWindowFlags(Qt::Window | Qt::CustomizeWindowHint);
-    QRegExp rx("\\d+");
     ui->ip_lineEdit->setValidator( new QIntValidator(0, 255, this) );
     ui->ip_lineEdit->setInputMask("000.000.000.000;_");
     ipFile.setFileName("./IPAdress.txt");
     ReadFromFile();
-    //ui->listWidget->clear();
     if (ui->listWidget->count() == 0)
     {
         ui->pb_connect->setDisabled(true);
         ui->pb_del->setDisabled(true);
     }
     else
-    {
         ui->listWidget->setCurrentRow(0);
-    }
 }
 
 IPDialog::~IPDialog()
@@ -74,17 +69,6 @@ void IPDialog::ReadFromFile()
 
         if(ipFile.open(QIODevice::ReadWrite|QIODevice::Text))
         {
-            /*QString s;
-            QTextStream t(&ipFile);
-            while(!t.atEnd())
-            {
-                QString line = t.readLine();
-                if(!line.contains("..."))
-                    s.append(line + "\n");
-            }
-            ipFile.resize(0);
-            t << s;*/
-
             while(!stream.atEnd())
             {
                 tempstr = stream.readLine();
@@ -103,9 +87,8 @@ void IPDialog::on_pb_del_clicked()
     QString st1 = ui->listWidget->item(ui->listWidget->currentRow())->text();
 
     if (ui->listWidget->count() < 0)
-    {
         ui->pb_connect->setDisabled(true);
-    }
+
     if(ipFile.open(QIODevice::ReadWrite | QIODevice::Text))
     {
         QString s;
@@ -134,9 +117,6 @@ void IPDialog::on_pb_connect_clicked()
 {
     QString ip = "0.0.0.0";
     ip = ui->listWidget->item(ui->listWidget->currentRow())->text();
-    //qDebug() << "Modal dialog ip:" << ip;
     emit sendData(ip);
     close();
-
-
 }

@@ -3,7 +3,9 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(49),vectorOfNumbersOfBrokenDevices(49), ChannelsOnBoard(49),numberOfBrokenDevice(100), LinesCount(48), ui(new Ui::MainWindow)
+MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(49),
+    vectorOfNumbersOfBrokenDevices(49), ChannelsOnBoard(49),numberOfBrokenDevice(100),
+    LinesCount(48), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -47,7 +49,6 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
 
     bUpdatePlot = true;
     bUpdateViewConstr  = false;
-    //tabSelected();
 
     ClearVectorForCheckingDevices();
 }
@@ -79,8 +80,6 @@ void MainWindow::CreatePlot(QVector<quint32> *arrData)
 void MainWindow::slotReadyRead()
 {
     // Reading data from server
-
-    // заполнить контейнер BadBoards нулями
 
     QDataStream in(m_pTcpSocket);
     in.setVersion(QDataStream::Qt_5_4);
@@ -195,7 +194,6 @@ void MainWindow::mousePress()
 void MainWindow::mouseWheel()
 {
     ui->customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
-    //ScaleChanged();
 }
 
 void MainWindow::on_pb_ZoomIn_clicked()
@@ -305,11 +303,9 @@ void MainWindow::CreateLines()
             NumberOfBoard->position->setCoords(i + label_center_x, label_center_y);
             NumberOfBoard->setText(NOB);
             NumberOfBoard->setFont(QFont(font().family(), 11));
-            //NumberOfBoard->setPadding(QMargins(10, 0, 0, 0));
         }
         CounterOfBoards++;
     }
-    //qDebug() << "fVisibleLabels=" << fVisibleLabels;
 
     ui->customPlot->replot();
 }
@@ -428,7 +424,7 @@ void MainWindow::on_actionSettings_triggered()
 
     settings_dialog->setModal(true);
     if (settings_dialog->exec() == QDialog::Accepted)
-        qDebug() << "Open modal window";
+        qDebug() << "Open modal window thershold settings";
 }
 
 void MainWindow::get_threshold(int threshold)

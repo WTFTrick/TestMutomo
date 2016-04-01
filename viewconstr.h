@@ -32,24 +32,24 @@ public:
     QGraphicsRectItem *rectangle;
     QGraphicsProxyWidget* gpw;
     QTransform transform;
-    quint16 count; //count need for drawing, area from 0 to count, where will be draw a rectangles
-    quint8 step; //step for cycle, which will be draw a rectangles
-    quint8 nmOfBoardsOnDetector; //Number of devices on detector
+    quint16 count;                  //count need for drawing, area from 0 to count, where will be draw a rectangles
+    quint8 step;                    //step for cycle, which will be draw a rectangles
+    quint8 nmOfBoardsOnDetector;    //Number of devices on detector
     QVBoxLayout *mainLayout;
     QWidget *window;
     QTcpSocket* m_pTcpSocket;
     MainWindow* mw;
     quint8 countOfBoards;
     void ClearJSONFile();
+
     void BrokenDevice();
     QVector<bool> VectorOfbadBoards;
-    bool *getBadBoards();
     QVector<QGraphicsRectItem*> VectorOfRectanglesOverComboBoxes;
     QGraphicsRectItem* RectanglesForComboBoxes;
     void resizeEvent(QResizeEvent *event);
     bool event(QEvent *event);
 
-    QPointF nullCoordinateCheck; //Check for android, why 0.0 point move somwhere left or down
+    QPointF nullCoordinateCheck;     //Check for android, why 0.0 point move somwhere left or down
     void NullCoordinateCheckFunc();
     QLabel* coordXlabel;
     QLabel* coordYlabel;
