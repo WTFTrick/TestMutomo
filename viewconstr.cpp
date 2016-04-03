@@ -13,10 +13,8 @@ void viewConstr::CreateView()
 {
     //Create graphics view,scene, button and layout
 
-    //coordXlabel = new QLabel();
-    //coordYlabel = new QLabel();
-    //coordXlabel->setAlignment(Qt::AlignCenter);
-    //coordYlabel->setAlignment(Qt::AlignCenter);
+    screen = QGuiApplication::primaryScreen();
+    screen->setOrientationUpdateMask(Qt::PortraitOrientation| Qt::LandscapeOrientation| Qt::InvertedPortraitOrientation| Qt::InvertedLandscapeOrientation);
 
     pb_toJson = new QPushButton("To JSON");
     pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed,QSizePolicy::Policy::Fixed);
@@ -25,10 +23,10 @@ void viewConstr::CreateView()
     gv = new QGraphicsView();
     gv->setScene(scene);
 
-    scene->setSceneRect(scene->itemsBoundingRect());
     gv->setSceneRect(QRectF(175, 200 , 300, 300));
     gv->centerOn( 0 , 0 );
-    gv->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+
+    //Обработчик событие смены ориентации на android.
 
     gv->setAlignment(Qt::AlignCenter);
     gv->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -38,15 +36,13 @@ void viewConstr::CreateView()
     mainLayout->addWidget(gv);
     mainLayout->addWidget(pb_toJson);
 
-    //mainLayout->addWidget(coordXlabel);
-    //mainLayout->addWidget(coordYlabel);
-
     setLayout(mainLayout);
 
     QBrush TBrush(Qt::transparent);
     QPen outlinePen(Qt::black);
     QPen transparentPen(Qt::transparent);
     outlinePen.setWidth(0.5);
+
 
     // Add variables for drawing comboboxes, spinboxes and rectangles
 
@@ -129,35 +125,27 @@ void viewConstr::CreateView()
 
 void viewConstr::resizeEvent(QResizeEvent *event)
 {
-    gv->fitInView(-50, -50, scene->width()+50, scene->height()+50, Qt::KeepAspectRatio);
+    gv->fitInView(-40, -40, scene->width()+40, scene->height()+40, Qt::KeepAspectRatio);
     QWidget::resizeEvent(event);
 }
 
 bool viewConstr::event(QEvent *event)
 {
     if( event->type() == QEvent::Show)
+        gv->fitInView(-40, -40, scene->width()+40, scene->height()+40, Qt::KeepAspectRatio);
+
+    /*if ( event->type () == QEvent::OrientationChange)
     {
-        gv->fitInView(-50, -50, scene->width()+50, scene->height()+50, Qt::KeepAspectRatio);
-    }
+        gv->fitInView(-40, -40, scene->width()+40, scene->height()+40, Qt::KeepAspectRatio);
+    }*/
 
     return QWidget::event(event);
-}
-
-void viewConstr::NullCoordinateCheckFunc()
-{
-    /*nullCoordinateCheck = listComboBox[0]->pos();
-
-    qDebug() << "Null coord X:" << nullCoordinateCheck.rx();
-    qDebug() << "Null coord Y:" << nullCoordinateCheck.ry();
-    QString x = QString::number(nullCoordinateCheck.rx());
-    QString y = QString::number(nullCoordinateCheck.ry());
-    coordXlabel->setText(x);
-    coordYlabel->setText(y);*/
 }
 
 void viewConstr::CreateConnections()
 {
     connect(pb_toJson, SIGNAL(clicked(bool)), this, SLOT(ToJson()));
+    connect(screen, SIGNAL(orientationChanged(Qt::ScreenOrientation)), this, SLOT(onRotate(Qt::ScreenOrientation)));
 }
 
 void viewConstr::ClearVectorOfBrokenDevices()
@@ -195,7 +183,6 @@ void viewConstr::BrokenDevice()
 void viewConstr::ToJson()
 {
     ClearJSONFile();
-    NullCoordinateCheckFunc();
     QJsonDocument docJSON;
     QJsonObject jsonDevice;
     QJsonObject jsonDetector;
@@ -253,5 +240,19 @@ void viewConstr::ToJson()
     VectorOfRectanglesOverComboBoxes.takeAt( VectorOfRectanglesOverComboBoxes.indexOf( item ) )->setPen(redPen);
     scene->update();*/
 }
+
+void viewConstr::onRotate(Qt::ScreenOrientation)
+{
+    screen = QGuiApplication::primaryScreen();
+    // don't work without changes in scene
+    // ------------------
+    scene->addRect(0, 0, 10, 10,  QPen(Qt::transparent), QBrush(Qt::transparent));
+    // ------------------
+    gv->setSceneRect(QRectF(175, 200 , 300, 300));
+}
+
+
+
+
 
 

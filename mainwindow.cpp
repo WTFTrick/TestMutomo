@@ -3,8 +3,7 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(49),
-    vectorOfNumbersOfBrokenDevices(49), ChannelsOnBoard(49),numberOfBrokenDevice(100),
+MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(49), ChannelsOnBoard(49),numberOfBrokenDevice(0),
     LinesCount(49), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -42,15 +41,17 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     ip_dialog = new IPDialog( this );
     settings_dialog = new settings( this );
 
+    //MutomoHost = "10.162.1.110"
     connectToHost("0.0.0.0");
     get_threshold(0);
-    //MutomoHost = "10.162.1.110"
     CreateConnections();
 
     bUpdatePlot = true;
     bUpdateViewConstr  = false;
 
     ClearVectorForCheckingDevices();
+
+    ui->statusBar->showMessage("Application run. Threshold = 0.");
 }
 
 MainWindow::~MainWindow()
@@ -85,6 +86,7 @@ void MainWindow::slotReadyRead()
     in.setVersion(QDataStream::Qt_5_4);
     for (;;)
     {
+
         if (!m_nNextBlockSize)
         {
             if (m_pTcpSocket->bytesAvailable() < sizeof(quint32))
@@ -99,6 +101,8 @@ void MainWindow::slotReadyRead()
             break;
         }
 
+        ClearVectorForCheckingDevices();
+
         quint32  freq = 0;
         QVector<quint32> arrFreq;
         for (int i = 0; i < m_nNextBlockSize/4; i++ )
@@ -106,9 +110,6 @@ void MainWindow::slotReadyRead()
             in >> freq;
             arrFreq.append( freq );
 
-            // проверку
-            // inline void checkChannel();
-            // checkChannel( freq, i );
             ChannelCheck(freq, i);
         }
 
@@ -117,10 +118,9 @@ void MainWindow::slotReadyRead()
 
         if ( bUpdateViewConstr )
             vw->BrokenDevice();
-            CreateLines();
 
-        //else
-        //qDebug() << "bUpdatePlot = false!";
+        if ( fVisibleLabels )
+            CreateLines();
 
         arrFreq.clear();
         m_nNextBlockSize = 0;
@@ -131,20 +131,20 @@ void MainWindow::StartServer()
 {
     quint8 status = 1;
     ServerControl(status);
-    qDebug() << "Send 'start' command to server";
     ui->pb_stopServer->setDisabled(false);
     ui->pb_startServer->setDisabled(true);
     ui->tabWidget->setFocus();
+    ui->statusBar->showMessage("Send 'start' command to server");
 }
 
 void MainWindow::StopServer()
 {
     quint8 status = 0;
     ServerControl(status);
-    qDebug() << "Send 'stop' command to server";
     ui->pb_startServer->setDisabled(false);
     ui->pb_stopServer->setDisabled(true);
     ui->tabWidget->setFocus();
+    ui->statusBar->showMessage("Send 'stop' command to server");
 }
 
 void MainWindow::ServerControl(quint8 status)
@@ -164,6 +164,7 @@ void MainWindow::slotConnected()
 {
     qDebug() << "Received the connected() signal";
     qDebug() << "Connection successfull";
+    ui->statusBar->showMessage("Connection to server successfull");
 }
 
 void MainWindow::on_actionConnect_to_triggered()
@@ -180,6 +181,7 @@ void MainWindow::connectToHost(QString str)
     // Connecting to server
     strHost = str;
     qDebug() << "Mainwindow ip:" << strHost;
+
 
     m_pTcpSocket = new QTcpSocket(this);
     m_pTcpSocket->connectToHost(strHost, nPort);
@@ -280,7 +282,7 @@ void MainWindow::CreateLines()
 
     // Add QCPItemLine and QCPItemText
     unsigned char CounterOfBoards = 0;           // Counter for boards
-    const unsigned char nmBoards = 48;          //  Number of boards
+    const unsigned char nmBoards = 48;           // Number of boards
     const char line_height = 30;
     const char width_line = 3;
     const short label_center_x = ChannelsOnBoard / 2;
@@ -296,13 +298,11 @@ void MainWindow::CreateLines()
         tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
 
         QString NOB = QString("%1").arg(CounterOfBoards);
+
         if (fVisibleLabels)
         {
             NumberOfBoard = new QCPItemText(ui->customPlot);
             ui->customPlot->addItem(NumberOfBoard);
-
-            //vectorOfNumbersOfBrokenDevices[CounterOfBoards] = NumberOfBoard;
-
             NumberOfBoard->position->setCoords(i + label_center_x, label_center_y);
             NumberOfBoard->setText(NOB);
             NumberOfBoard->setFont(QFont(font().family(), 11));
@@ -316,34 +316,9 @@ void MainWindow::CreateLines()
         CounterOfBoards++;
     }
 
-    ClearVectorForCheckingDevices();
+
 
     ui->customPlot->replot();
-}
-
-void MainWindow::PaintNumberOfBrokenDevices()
-{
-    //Проверка исправности плат. Если плата не исправна (В массиве vectorForCheckingDevices i-ое значение = 1)
-    //то номер устройства окрашивается в красный цвет
-
-    if (fVisibleLabels)
-    {
-        for (int i = 0; i < 49; i++)
-        {
-            qDebug() << "vector[" << i << "] =" << vectorForCheckingDevices[i];
-            if ( vectorForCheckingDevices[ i ] == true )
-                vectorOfNumbersOfBrokenDevices[ i ]->setColor(QColor(255, 0, 0));
-            else
-            {
-                //vectorOfNumbersOfBrokenDevices[ i ]->setColor(QColor(255,255,255));
-                //qDebug() << "Вылет в этом месте, не красит больше 1-ого номера платы";
-                //Решить проблему изменения размера окна (цвет номера платы меняется с красного на черный)
-            }
-        }
-        ui->customPlot->replot();
-    }
-
-    ClearVectorForCheckingDevices();
 }
 
 void MainWindow::CreateConnections()
@@ -404,11 +379,7 @@ void MainWindow::tabSelected()
     }
 
     if (ui->tabWidget->currentIndex() == 1)
-    {
         bUpdateViewConstr = true;
-        vw->NullCoordinateCheckFunc();
-    }
-
 }
 
 void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)
@@ -439,9 +410,9 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::get_threshold(int threshold)
 {
-    //threshold = 100;
     value_threshold = threshold;
-    qDebug() << "Threshold" << value_threshold;
+    QString tresh_val = QString::number(value_threshold);
+    ui->statusBar->showMessage("Threshold = " + tresh_val);
 }
 
 void MainWindow::ChannelCheck(quint32 freq, int ind)
@@ -460,6 +431,6 @@ void MainWindow::ChannelCheck(quint32 freq, int ind)
 void MainWindow::ClearVectorForCheckingDevices()
 {
     //Очистка массива, отвечающего за проверку исправности плат MT48
-    for (int i = 0; i < 49; i++)
+    for (int i = 0; i < 48; i++)
         vectorForCheckingDevices[i] = 0;
 }

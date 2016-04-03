@@ -52,7 +52,6 @@ private:
     const unsigned char ChannelsOnBoard;
     quint8 value_threshold;
     viewConstr* vw;
-    QVector<QCPItemText*> vectorOfNumbersOfBrokenDevices;
     QVector<bool> vectorForCheckingDevices;
     void ClearVectorForCheckingDevices();
 
