@@ -60,8 +60,6 @@ private:
     void PaintNumberOfBrokenDevices(); //paint number of broken device on graphic
     void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
-    void resizeEvent(QResizeEvent* event);
-    void changeEvent(QEvent *event);
 
 private slots:
     void StopServer();
@@ -83,6 +81,13 @@ private slots:
     void tabSelected();
     void on_actionSettings_triggered();
     void get_threshold(int threshold);
+
+    void slotMessage(QString str);
+
+protected:
+    void resizeEvent(QResizeEvent* event);
+    void changeEvent(QEvent *event);
+    virtual bool event(QEvent *event);
 };
 
 #endif // MAINWINDOW_H

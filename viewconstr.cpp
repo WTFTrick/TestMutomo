@@ -1,5 +1,7 @@
 #include "viewconstr.h"
 
+bool f_orient = false;
+
 viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48),
     VectorOfRectanglesOverComboBoxes(48), VectorOfbadBoards(48), nmOfBoardsOnDetector(6),  QWidget(parent)
 {
@@ -12,22 +14,16 @@ viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48
 void viewConstr::CreateView()
 {
     //Create graphics view,scene, button and layout
-
     screen = QGuiApplication::primaryScreen();
     screen->setOrientationUpdateMask(Qt::PortraitOrientation| Qt::LandscapeOrientation| Qt::InvertedPortraitOrientation| Qt::InvertedLandscapeOrientation);
 
     pb_toJson = new QPushButton("To JSON");
     pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed,QSizePolicy::Policy::Fixed);
     scene = new QGraphicsScene(this);
-
     gv = new QGraphicsView();
     gv->setScene(scene);
-
     gv->setSceneRect(QRectF(175, 200 , 300, 300));
     gv->centerOn( 0 , 0 );
-
-    //Обработчик событие смены ориентации на android.
-
     gv->setAlignment(Qt::AlignCenter);
     gv->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     gv->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -35,23 +31,20 @@ void viewConstr::CreateView()
     mainLayout = new QVBoxLayout;
     mainLayout->addWidget(gv);
     mainLayout->addWidget(pb_toJson);
-
     setLayout(mainLayout);
 
     QBrush TBrush(Qt::transparent);
     QPen outlinePen(Qt::black);
     QPen transparentPen(Qt::transparent);
     outlinePen.setWidth(0.5);
-
-
     // Add variables for drawing comboboxes, spinboxes and rectangles
 
     int width = step * nmOfBoardsOnDetector;
     quint8 height = 60;
-    int empty_area = count / 2.25; // empty area between blocks of detectors, where can be radiograph object
-    int xcb = width + 15; // x coordinate for combobox, which containt x and y values
-    int xsb = width + 100; // x coordinate for spinbox, which contain order nubmer
-    int NumberInSpinBox = 0; // vaule, which will be in spinBox
+    int empty_area = count / 2.25;  // empty area between blocks of detectors, where can be radiograph object
+    int xcb = width + 15;           // x coordinate for combobox, which containt x and y values
+    int xsb = width + 100;          // x coordinate for spinbox, which contain order nubmer
+    int NumberInSpinBox = 0;        // vaule, which will be in spinBox
     QSize ComboBoxFixedSize(60, 50);
     QSize SpinBoxFixedSize(85, 50);
     int counterForComboBox = 0;
@@ -61,37 +54,27 @@ void viewConstr::CreateView()
     for (int i = 0; i < count; i = i + step)
     {
         if (i != empty_area)
-        {
             scene->addRect(nullX, i, width, height, outlinePen,TBrush);
-        }
     }
 
     // Drawing a comboboxes, which contain number of MT48
-
     for (quint16 i = 0; i < count; i = i + step)
     {
-
         for (quint16 j = 0; j < count; j = j + step)
         {
-
             if ((j < width) && (i != empty_area))
             {
                 QString s_numberOfBoardMT = QString::number( counterForComboBox );
-
                 QComboBox* cmb = new QComboBox();
                 listComboBox << cmb;
                 cmb->setFixedSize( ComboBoxFixedSize );
                 cmb->addItem(  s_numberOfBoardMT );
-
                 gpw = scene->addWidget( cmb );
                 cmb->move(j+10,i+6);
-
                 RectanglesForComboBoxes = new QGraphicsRectItem();
                 RectanglesForComboBoxes = scene->addRect(j+10, i+6, 59, 49,  transparentPen, TBrush);
-
                 VectorOfRectanglesOverComboBoxes[counterForComboBox] = RectanglesForComboBoxes;
                 scene->update();
-
                 counterForComboBox++;
             }
         }
@@ -125,6 +108,19 @@ void viewConstr::CreateView()
 
 void viewConstr::resizeEvent(QResizeEvent *event)
 {
+    /*
+    if ( f_orient ){
+        scene->addRect(0, 0, 50, 50,  QPen(Qt::transparent), QBrush(Qt::red));
+        f_orient = false;
+    }
+    else{
+        scene->addRect(0, 0, 50, 50,  QPen(Qt::transparent), QBrush(Qt::blue));
+        f_orient = true;
+    }
+
+    gv->repaint();
+    */
+
     gv->fitInView(-40, -40, scene->width()+40, scene->height()+40, Qt::KeepAspectRatio);
     QWidget::resizeEvent(event);
 }
@@ -133,11 +129,6 @@ bool viewConstr::event(QEvent *event)
 {
     if( event->type() == QEvent::Show)
         gv->fitInView(-40, -40, scene->width()+40, scene->height()+40, Qt::KeepAspectRatio);
-
-    /*if ( event->type () == QEvent::OrientationChange)
-    {
-        gv->fitInView(-40, -40, scene->width()+40, scene->height()+40, Qt::KeepAspectRatio);
-    }*/
 
     return QWidget::event(event);
 }
@@ -234,7 +225,6 @@ void viewConstr::ToJson()
     out << (quint16)(block.size() - sizeof(quint16));
     //mw->m_pTcpSocket->write(block);
 
-
     /*QPen redPen(Qt::red);
     foreach( QGraphicsRectItem *item, VectorOfRectanglesOverComboBoxes )
     VectorOfRectanglesOverComboBoxes.takeAt( VectorOfRectanglesOverComboBoxes.indexOf( item ) )->setPen(redPen);
@@ -243,12 +233,27 @@ void viewConstr::ToJson()
 
 void viewConstr::onRotate(Qt::ScreenOrientation)
 {
-    screen = QGuiApplication::primaryScreen();
+    scene->addRect(0, 0, 1, 1,  QPen(Qt::transparent), QBrush(Qt::transparent));
+    gv->setSceneRect(QRectF(175, 200 , 300, 300));
+    gv->centerOn( 0 , 0 );
+
     // don't work without changes in scene
     // ------------------
-    scene->addRect(0, 0, 10, 10,  QPen(Qt::transparent), QBrush(Qt::transparent));
+
+    /*
+    if ( f_orient ){
+        scene->addRect(0, 0, 50, 50,  QPen(Qt::transparent), QBrush(Qt::red));
+        f_orient = false;
+    }
+    else{
+        scene->addRect(0, 0, 50, 50,  QPen(Qt::transparent), QBrush(Qt::blue));
+        f_orient = true;
+    }
+    */
+
     // ------------------
-    gv->setSceneRect(QRectF(175, 200 , 300, 300));
+    emit messg( "Change orientation"  );
+    //gv->fitInView(-40, -40, scene->width()+40, scene->height()+40, Qt::KeepAspectRatio);
 }
 
 

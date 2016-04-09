@@ -29,6 +29,7 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     ui->tabWidget->addTab(vw, tr("Configuration"));
     ui->pb_ResetRange->setFocus();
 
+
     fVisibleLabels = false;
 
     // Colour and width of graph
@@ -60,6 +61,7 @@ MainWindow::~MainWindow()
 
     StopServer();
     close();
+
     delete ui;
 }
 
@@ -348,6 +350,8 @@ void MainWindow::CreateConnections()
 
 
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected()));
+
+    connect(vw, SIGNAL(messg(QString)), this, SLOT(slotMessage(QString)));
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -364,6 +368,16 @@ void MainWindow::changeEvent(QEvent *event)
             ScaleChanged();
     }
     event->accept();
+}
+
+bool MainWindow::event(QEvent *event)
+{
+    //qDebug() << "MainWindow::event()";
+
+    if ( event->type () == QEvent::OrientationChange)
+        ui->statusBar->showMessage("Orientation changed");
+
+    return QMainWindow::event(event);
 }
 
 void MainWindow::tabSelected()
@@ -415,6 +429,11 @@ void MainWindow::get_threshold(int threshold)
     ui->statusBar->showMessage("Threshold = " + tresh_val);
 }
 
+void MainWindow::slotMessage(QString str)
+{
+    ui->statusBar->showMessage(str);
+}
+
 void MainWindow::ChannelCheck(quint32 freq, int ind)
 {
     // выявление плат с каналами, в которых частота регистрации сигналов
@@ -427,6 +446,7 @@ void MainWindow::ChannelCheck(quint32 freq, int ind)
         vectorForCheckingDevices[numberOfBrokenDevice] = 1;
     }
 }
+
 
 void MainWindow::ClearVectorForCheckingDevices()
 {

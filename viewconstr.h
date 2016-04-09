@@ -11,55 +11,57 @@
 #include <QSpinBox>
 
 #include "mainwindow.h"
+
 class MainWindow;
 
 class viewConstr : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit viewConstr(QWidget *parent = 0);
-    void CreateView();
-    void CreateConnections();
-    void ClearVectorOfBrokenDevices();
 
     QList< QComboBox* > listComboBox;
     QList< QSpinBox* > ListSpinBox;
     QList< QComboBox* > ListCoordComboBox;
 
-    QPushButton* pb_toJson;
+    QVector<bool> VectorOfbadBoards;
+    QVector<QGraphicsRectItem*> VectorOfRectanglesOverComboBoxes;
+
+    QGraphicsRectItem* RectanglesForComboBoxes;
+    QScreen * screen;
+
     QGraphicsView * gv;
     QGraphicsScene *scene;
     QGraphicsRectItem *rectangle;
     QGraphicsProxyWidget* gpw;
     QTransform transform;
+    QPushButton* pb_toJson;
     quint16 count;                  //count need for drawing, area from 0 to count, where will be draw a rectangles
     quint8 step;                    //step for cycle, which will be draw a rectangles
     quint8 nmOfBoardsOnDetector;    //Number of devices on detector
+    quint8 countOfBoards;
+
     QVBoxLayout *mainLayout;
     QWidget *window;
     QTcpSocket* m_pTcpSocket;
     MainWindow* mw;
-    quint8 countOfBoards;
-    void ClearJSONFile();
 
+    void ClearJSONFile();
     void BrokenDevice();
-    QVector<bool> VectorOfbadBoards;
-    QVector<QGraphicsRectItem*> VectorOfRectanglesOverComboBoxes;
-    QGraphicsRectItem* RectanglesForComboBoxes;
+    void CreateView();
+    void CreateConnections();
+    void ClearVectorOfBrokenDevices();
     void resizeEvent(QResizeEvent *event);
     bool event(QEvent *event);
-    QScreen * screen;
-
 
 public slots:
     void ToJson();
     void onRotate(Qt::ScreenOrientation);
 
 signals:
+    void messg(QString str);
 
-private:
-
-public slots:
 };
 
 #endif // VIEWCONSTR_H

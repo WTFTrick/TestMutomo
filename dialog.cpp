@@ -17,6 +17,10 @@ IPDialog::IPDialog(QWidget *parent) : QDialog(parent), ui(new Ui::IPDialog)
     }
     else
         ui->listWidget->setCurrentRow(0);
+    ui->pb_add->setFixedWidth(120);
+    ui->pb_connect->setFixedWidth(120);
+    ui->pb_close->setFixedWidth(120);
+    ui->pb_del->setFixedWidth(120);
 }
 
 IPDialog::~IPDialog()
