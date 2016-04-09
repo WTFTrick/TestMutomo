@@ -29,7 +29,6 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     ui->tabWidget->addTab(vw, tr("Configuration"));
     ui->pb_ResetRange->setFocus();
 
-
     fVisibleLabels = false;
 
     // Colour and width of graph
@@ -52,6 +51,7 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
 
     ClearVectorForCheckingDevices();
 
+    ui->tabWidget->setFocus();
     ui->statusBar->showMessage("Application run. Threshold = 0.");
 }
 
