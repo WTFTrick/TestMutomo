@@ -30,30 +30,36 @@ public:
     explicit MainWindow();
     ~MainWindow();
 
-    QTcpSocket* m_pTcpSocket;
+    QTcpSocket* m_pTcpSocket;           // выявление плат с каналами, в которых частота регистрации сигналов
+                                        // превышает порог
     int numberOfBrokenDevice;
     inline void ChannelCheck(quint32 freq, int ind);
     bool* badBoards;
 
+    void GetJsonFromViewConstr(QString JsonDoc);
+
 private:
     Ui::MainWindow *ui;
-    QString strHost;
+    QString strHost;                    // String, that contain an IP-Adress of the server from modal window (Connection dialog)
     int nPort;
     QCPDataMap  *mapData;
     QCPGraph    *graph1;
     QCustomPlot *customPlot;
     quint32     m_nNextBlockSize;
     int LinesCount;
-    IPDialog* ip_dialog;
+    IPDialog* ip_dialog;                // exemplar of IPDialog class, for creating modal window for Connection dialog.
     settings* settings_dialog;
     bool fVisibleLabels;
-    bool bUpdatePlot;               // comm
-    bool bUpdateViewConstr;
+    bool bUpdatePlot;                   // bool variable, if true - user can see Chart
+    bool bUpdateViewConstr;             // bool variable, if true - drawes a red rectangles over broken devices in second tab
     const unsigned char ChannelsOnBoard;
     quint8 value_threshold;
-    viewConstr* vw;
+    viewConstr* vw;                     // exemplar of viewConstr class, for creating second tab in TabWidget
     QVector<bool> vectorForCheckingDevices;
+
     void ClearVectorForCheckingDevices();
+
+    enum TYPE_DATA{DATA_RAW, DATA_HIST, CFG_MUTOMO, CMD};
 
     QCPItemText * NumberOfBoard;
     void CreateLines();
@@ -61,10 +67,13 @@ private:
     void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
 
+    void DataToServer(TYPE_DATA t_data, quint32 data);
+    void DataHistRequest();
+    void DataRawRequset();
+
 private slots:
     void StopServer();
     void StartServer();
-    void ServerControl(quint8 status);
     void ScaleChanged();
     void mousePress();
     void mouseWheel();
@@ -81,13 +90,12 @@ private slots:
     void tabSelected();
     void on_actionSettings_triggered();
     void get_threshold(int threshold);
-
     void slotMessage(QString str);
 
 protected:
     void resizeEvent(QResizeEvent* event);
     void changeEvent(QEvent *event);
-    virtual bool event(QEvent *event);
+    //virtual bool event(QEvent *event);
 };
 
 #endif // MAINWINDOW_H

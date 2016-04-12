@@ -131,8 +131,12 @@ void MainWindow::slotReadyRead()
 
 void MainWindow::StartServer()
 {
-    quint8 status = 1;
-    ServerControl(status);
+    //Команда - начать генерацию данных на сервере и передачу клиенту
+
+    quint8 data = 1;
+    TYPE_DATA t_data = CMD;
+    DataToServer(t_data, data);
+
     ui->pb_stopServer->setDisabled(false);
     ui->pb_startServer->setDisabled(true);
     ui->tabWidget->setFocus();
@@ -141,26 +145,72 @@ void MainWindow::StartServer()
 
 void MainWindow::StopServer()
 {
-    quint8 status = 0;
-    ServerControl(status);
+    //Команда - остановить генерацию данных на сервере и передачу клиенту
+
+    quint8 data = 0;
+    TYPE_DATA t_data = CMD;
+    DataToServer(t_data, data);
+
     ui->pb_startServer->setDisabled(false);
     ui->pb_stopServer->setDisabled(true);
     ui->tabWidget->setFocus();
     ui->statusBar->showMessage("Send 'stop' command to server");
 }
 
-void MainWindow::ServerControl(quint8 status)
+void MainWindow::DataHistRequest()
 {
-    QByteArray data;
-    QDataStream out(&data, QIODevice::WriteOnly);
+    //Запросить у сервера данные для гистограммы
+
+    TYPE_DATA t_data = DATA_HIST;
+    DataToServer(t_data, 0 );
+}
+
+void MainWindow::DataRawRequset()
+{
+    //Запросить у сервера сырые данные
+
+    TYPE_DATA t_data = DATA_RAW;
+    DataToServer(t_data, 0 );
+}
+
+void MainWindow::GetJsonFromViewConstr(QString JsonDoc)
+{
+    //Передать серверу конфигурацию в виде JSON
+
+    TYPE_DATA t_data = CFG_MUTOMO;
+    //DataToServer(t_data, JsonDoc);
+
+    qDebug() << "MainWindow Get JsonDoc";
+}
+
+void MainWindow::DataToServer(TYPE_DATA t_data, quint32 data)
+{
+    //  Передача данных серверу
+    //  Блок данных |Size|Type|Data|
+
+    QByteArray rawData;
+    QDataStream out(&rawData, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_4);
 
-    out << quint8(0) << status;
-    out.device()->seek(0);
+    //  Size
+    out << quint8(0);
 
-    out << quint8(data.size() - sizeof(quint8));
-    m_pTcpSocket->write(data);
+    //  Type
+    int t = t_data;
+    //out << t_data;
+    out << t;
+
+    //  Data
+    out << data;
+
+    qDebug() << "Client received type:" << t;
+    qDebug() << "Client received data:" << data;
+
+    out.device()->seek(0);
+    out << quint8(rawData.size() - sizeof(quint8));
+    m_pTcpSocket->write(rawData);
 }
+
 
 void MainWindow::slotConnected()
 {
@@ -370,16 +420,6 @@ void MainWindow::changeEvent(QEvent *event)
     event->accept();
 }
 
-bool MainWindow::event(QEvent *event)
-{
-    //qDebug() << "MainWindow::event()";
-
-    if ( event->type () == QEvent::OrientationChange)
-        ui->statusBar->showMessage("Orientation changed");
-
-    return QMainWindow::event(event);
-}
-
 void MainWindow::tabSelected()
 {
     bUpdatePlot        = false;
@@ -447,10 +487,20 @@ void MainWindow::ChannelCheck(quint32 freq, int ind)
     }
 }
 
-
 void MainWindow::ClearVectorForCheckingDevices()
 {
     //Очистка массива, отвечающего за проверку исправности плат MT48
     for (int i = 0; i < 48; i++)
         vectorForCheckingDevices[i] = 0;
 }
+
+/*bool MainWindow::event(QEvent *event)
+{
+    //qDebug() << "MainWindow::event()";
+
+    if ( event->type () == QEvent::OrientationChange)
+        //ui->statusBar->showMessage("Orientation changed");
+
+    return QMainWindow::event(event);
+}
+*/

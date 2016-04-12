@@ -11,6 +11,14 @@ viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48
     ClearJSONFile();
 }
 
+viewConstr::~viewConstr()
+{
+    //delete mw;
+    screen->deleteLater();
+    gv->deleteLater();
+    ClearVectorOfBrokenDevices();
+}
+
 void viewConstr::CreateView()
 {
     //Create graphics view,scene, button and layout
@@ -19,6 +27,7 @@ void viewConstr::CreateView()
 
     pb_toJson = new QPushButton("To JSON");
     pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed,QSizePolicy::Policy::Fixed);
+
     scene = new QGraphicsScene(this);
     gv = new QGraphicsView();
     gv->setScene(scene);
@@ -174,14 +183,12 @@ void viewConstr::BrokenDevice()
 void viewConstr::ToJson()
 {
     ClearJSONFile();
-    QJsonDocument docJSON;
     QJsonObject jsonDevice;
     QJsonObject jsonDetector;
     QJsonObject jsonTempInDetector;
     const short nmDetectors = 8;
 
     // Creating a structure of JSON file
-
     for (int indDetector = 0; indDetector < nmDetectors; ++indDetector)
     {
         for(int indDevice = 0; indDevice < nmOfBoardsOnDetector; ++indDevice )
@@ -203,32 +210,16 @@ void viewConstr::ToJson()
     }
     docJSON.setObject(jsonDetector);
 
+    QString JsonDoc = docJSON.toJson();
+    mw->GetJsonFromViewConstr(JsonDoc);
+
     // Writing data in file blocks.json
 
-    QFile jsnFile("blocks.json");
+    /*QFile jsnFile("blocks.json");
     jsnFile.open(QFile::Append);
     QTextStream outJson(&jsnFile);
     outJson << docJSON.toJson();
-    jsnFile.close();
-
-    // Send JSON to server
-
-    QByteArray block;
-    QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_4);
-
-    out << (quint16)0;
-    QString output = docJSON.toJson();
-    out << output;
-
-    out.device()->seek(0);
-    out << (quint16)(block.size() - sizeof(quint16));
-    //mw->m_pTcpSocket->write(block);
-
-    /*QPen redPen(Qt::red);
-    foreach( QGraphicsRectItem *item, VectorOfRectanglesOverComboBoxes )
-    VectorOfRectanglesOverComboBoxes.takeAt( VectorOfRectanglesOverComboBoxes.indexOf( item ) )->setPen(redPen);
-    scene->update();*/
+    jsnFile.close();*/
 }
 
 void viewConstr::onRotate(Qt::ScreenOrientation)

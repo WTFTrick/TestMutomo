@@ -9,6 +9,7 @@
 #include <QGraphicsProxyWidget>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QRect>
 
 #include "mainwindow.h"
 
@@ -20,6 +21,9 @@ class viewConstr : public QWidget
 
 public:
     explicit viewConstr(QWidget *parent = 0);
+    ~viewConstr();
+
+    QJsonDocument docJSON;
 
     QList< QComboBox* > listComboBox;
     QList< QSpinBox* > ListSpinBox;
