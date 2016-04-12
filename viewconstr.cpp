@@ -13,7 +13,6 @@ viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48
 
 viewConstr::~viewConstr()
 {
-    //delete mw;
     screen->deleteLater();
     gv->deleteLater();
     ClearVectorOfBrokenDevices();

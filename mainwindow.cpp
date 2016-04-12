@@ -190,25 +190,31 @@ void MainWindow::DataToServer(TYPE_DATA t_data, quint32 data)
 
     QByteArray rawData;
     QDataStream out(&rawData, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_4);
+    out.setVersion(QDataStream::Qt_5_6);
 
     //  Size
-    out << quint8(0);
+    out << quint64(0);
 
     //  Type
-    int t = t_data;
+    quint8 t = t_data;
     //out << t_data;
     out << t;
 
     //  Data
     out << data;
 
-    qDebug() << "Client received type:" << t;
-    qDebug() << "Client received data:" << data;
 
     out.device()->seek(0);
-    out << quint8(rawData.size() - sizeof(quint8));
-    m_pTcpSocket->write(rawData);
+    quint64 size_pkg = quint64(rawData.size() - sizeof(quint64));
+    out << size_pkg;
+
+    quint64 sizeBlock = m_pTcpSocket->write(rawData);
+
+
+    qDebug() << "Client received type:" << t;
+    qDebug() << "Client received data:" << data;
+    qDebug() << "Size of package: " << size_pkg;
+    qDebug() << "Written to socket" << sizeBlock << "bytes.";
 }
 
 
@@ -303,14 +309,19 @@ void MainWindow::yAxisChanged(QCPRange newRange)
         if (fixedRange.upper > upperBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
             fixedRange.upper = upperBound;
         ui->customPlot->yAxis->setRange(fixedRange);
-    } else if (fixedRange.upper > upperBound)
-    {
-        fixedRange.upper = upperBound;
-        fixedRange.lower = upperBound - newRange.size();
-        if (fixedRange.lower < lowerBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
-            fixedRange.lower = lowerBound;
-        ui->customPlot->yAxis->setRange(fixedRange);
     }
+    else
+        if (fixedRange.upper > upperBound)
+        {
+            fixedRange.upper = upperBound;
+            fixedRange.lower = upperBound - newRange.size();
+            if (fixedRange.lower < lowerBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
+                fixedRange.lower = lowerBound;
+            ui->customPlot->yAxis->setRange(fixedRange);
+        }
+
+    // newRange.lower //вызов
+    // CreateLines(newRange.lower);
 }
 
 void MainWindow::ScaleChanged()
@@ -329,6 +340,9 @@ void MainWindow::ScaleChanged()
 
 void MainWindow::CreateLines()
 {
+
+    //Вынести рисование лейблов в отдельную функцию DrawLabels
+
     // delete items
     ui->customPlot->clearItems();
 
