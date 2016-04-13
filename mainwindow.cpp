@@ -4,7 +4,7 @@
 #include <QtGui>
 
 MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(49), ChannelsOnBoard(49),numberOfBrokenDevice(0),
-    LinesCount(49), ui(new Ui::MainWindow)
+    LinesCount(49), qsettings("settings.conf" ,QSettings::NativeFormat), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -42,8 +42,9 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     settings_dialog = new settings( this );
 
     //MutomoHost = "10.162.1.110"
-    connectToHost("0.0.0.0");
-    get_threshold(0);
+    connectToHost(qsettings.value("section/IP").toString());
+    get_threshold(qsettings.value("section/threshold").toInt());
+
     CreateConnections();
 
     bUpdatePlot = true;
@@ -52,16 +53,13 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     ClearVectorForCheckingDevices();
 
     ui->tabWidget->setFocus();
-    ui->statusBar->showMessage("Application run. Threshold = 0.");
-
-    //QSettings
-    //Порог и IP
+    ui->statusBar->showMessage("Application run. Threshold =" + qsettings.value("section/threshold").toString());
 }
 
 MainWindow::~MainWindow()
 {
     delete vw;
-
+    qsettings.sync();
     StopServer();
     close();
 
@@ -214,10 +212,10 @@ void MainWindow::DataToServer(TYPE_DATA t_data, quint32 data)
     quint64 sizeBlock = m_pTcpSocket->write(rawData);
 
 
-    qDebug() << "Client received type:" << t;
+    /*qDebug() << "Client received type:" << t;
     qDebug() << "Client received data:" << data;
     qDebug() << "Size of package: " << size_pkg;
-    qDebug() << "Written to socket" << sizeBlock << "bytes.";
+    qDebug() << "Written to socket" << sizeBlock << "bytes.";*/
 }
 
 void MainWindow::slotConnected()
@@ -240,6 +238,7 @@ void MainWindow::connectToHost(QString str)
 {
     // Connecting to server
     strHost = str;
+    qsettings.setValue("section/IP", str);
     qDebug() << "Mainwindow ip:" << strHost;
 
 
@@ -507,6 +506,7 @@ void MainWindow::on_actionSettings_triggered()
 void MainWindow::get_threshold(int threshold)
 {
     value_threshold = threshold;
+    qsettings.setValue("section/threshold", threshold);
     QString tresh_val = QString::number(value_threshold);
     ui->statusBar->showMessage("Threshold = " + tresh_val);
 }

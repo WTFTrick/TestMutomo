@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QTcpSocket>
 #include <QResizeEvent>
+#include <QSettings>
 #include <math.h>
 #include <qcustomplot.h>
 
@@ -39,6 +40,7 @@ private:
     Ui::MainWindow *ui;
 
     enum TYPE_DATA{DATA_RAW, DATA_HIST, CFG_MUTOMO, CMD};
+    QSettings qsettings;
     int nPort;
     int LinesCount;
     const unsigned char ChannelsOnBoard;
@@ -55,10 +57,10 @@ private:
     settings* settings_dialog;          // exemplar of settings class, for creating modal window for Settings.
     viewConstr* vw;                     // exemplar of viewConstr class, for creating second tab in TabWidget
 
-    QVector<bool> vectorForCheckingDevices;
     bool fVisibleLabels;                // bool variable, if true - draw number of MT48 on customPlot
     bool bUpdatePlot;                   // bool variable, if true - user can see Chart on customPlot
     bool bUpdateViewConstr;             // bool variable, if true - drawes a red rectangles over broken devices in second tab
+    QVector<bool> vectorForCheckingDevices;
 
     void CreateLines(double lowerBound);
     void CreateLabels();                 // function, that draw labels (number of MT48) on customPlot widget
