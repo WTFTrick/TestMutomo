@@ -53,6 +53,9 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
 
     ui->tabWidget->setFocus();
     ui->statusBar->showMessage("Application run. Threshold = 0.");
+
+    //QSettings
+    //Порог и IP
 }
 
 MainWindow::~MainWindow()
@@ -122,7 +125,7 @@ void MainWindow::slotReadyRead()
             vw->BrokenDevice();
 
         if ( fVisibleLabels )
-            CreateLines();
+            CreateLabels();
 
         arrFreq.clear();
         m_nNextBlockSize = 0;
@@ -216,7 +219,6 @@ void MainWindow::DataToServer(TYPE_DATA t_data, quint32 data)
     qDebug() << "Size of package: " << size_pkg;
     qDebug() << "Written to socket" << sizeBlock << "bytes.";
 }
-
 
 void MainWindow::slotConnected()
 {
@@ -321,7 +323,7 @@ void MainWindow::yAxisChanged(QCPRange newRange)
         }
 
     // newRange.lower //вызов
-    // CreateLines(newRange.lower);
+    CreateLines(newRange.lower);
 }
 
 void MainWindow::ScaleChanged()
@@ -335,36 +337,60 @@ void MainWindow::ScaleChanged()
     else
         fVisibleLabels = false;
 
-    CreateLines();
+    CreateLabels();
 }
 
-void MainWindow::CreateLines()
+void MainWindow::CreateLines(double lowerBound)
 {
-
-    //Вынести рисование лейблов в отдельную функцию DrawLabels
-
-    // delete items
-    ui->customPlot->clearItems();
-
-    // Add QCPItemLine and QCPItemText
-    unsigned char CounterOfBoards = 0;           // Counter for boards
-    const unsigned char nmBoards = 48;           // Number of boards
+    // Add QCPItemLine
+    const unsigned char nmBoards = 48; // Number of boards
     const char line_height = 30;
     const char width_line = 3;
-    const short label_center_x = ChannelsOnBoard / 2;
-    const char label_center_y = 7;
 
     uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
+
+    //qDebug() << "LowerBound:" << lowerBound;
+    if (lowerBound >= 30)
+    {
+        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
+        {
+            QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
+            ui->customPlot->addItem(tickHLine);
+            tickHLine->start->setCoords(i, lowerBound);
+            tickHLine->end->setCoords(i, line_height + lowerBound);
+            tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
+        }
+    }
+
+    if (lowerBound <= 30)
+    {
+        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
+        {
+            QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
+            ui->customPlot->addItem(tickHLine);
+            tickHLine->start->setCoords(i, 0);
+            tickHLine->end->setCoords(i, line_height);
+            tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
+        }
+    }
+
+    ui->customPlot->replot();
+}
+
+void MainWindow::CreateLabels()
+{
+    // Add a QCPItemText (number of MT48 on customPlot)
+
+    ui->customPlot->clearItems();
+    unsigned char CounterOfBoards = 0; // Counter for boards
+    const unsigned char nmBoards = 48; // Number of boards
+    const short label_center_x = ChannelsOnBoard / 2;
+    const char label_center_y = 7;
+    uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
+
     for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
     {
-        QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
-        ui->customPlot->addItem(tickHLine);
-        tickHLine->start->setCoords(i, 0);
-        tickHLine->end->setCoords(i, line_height);
-        tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
-
         QString NOB = QString("%1").arg(CounterOfBoards);
-
         if (fVisibleLabels)
         {
             NumberOfBoard = new QCPItemText(ui->customPlot);
@@ -381,8 +407,6 @@ void MainWindow::CreateLines()
 
         CounterOfBoards++;
     }
-
-
 
     ui->customPlot->replot();
 }
@@ -422,6 +446,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
     ScaleChanged();
+    CreateLines(0);
 }
 
 void MainWindow::changeEvent(QEvent *event)
@@ -429,7 +454,10 @@ void MainWindow::changeEvent(QEvent *event)
     if(event->type() == QEvent::WindowStateChange)
     {
         if(isMaximized())
+        {
             ScaleChanged();
+            CreateLines(0);
+        }
     }
     event->accept();
 }

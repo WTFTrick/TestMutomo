@@ -30,43 +30,42 @@ public:
     explicit MainWindow();
     ~MainWindow();
 
-    QTcpSocket* m_pTcpSocket;           // выявление плат с каналами, в которых частота регистрации сигналов
-                                        // превышает порог
-    int numberOfBrokenDevice;
-    inline void ChannelCheck(quint32 freq, int ind);
-    bool* badBoards;
-
+    inline void ChannelCheck(quint32 freq, int ind); // выявление плат с каналами, в которых частота регистрации сигналов превышают порог
     void GetJsonFromViewConstr(QString JsonDoc);
+    bool* badBoards;
+    int numberOfBrokenDevice;
 
 private:
     Ui::MainWindow *ui;
-    QString strHost;                    // String, that contain an IP-Adress of the server from modal window (Connection dialog)
+
+    enum TYPE_DATA{DATA_RAW, DATA_HIST, CFG_MUTOMO, CMD};
     int nPort;
+    int LinesCount;
+    const unsigned char ChannelsOnBoard;
+    quint8 value_threshold;
+    quint32     m_nNextBlockSize;
+    QString strHost;                    // String, that contain an IP-Adress of the server from modal window (Connection dialog)
+
+    QTcpSocket* m_pTcpSocket;
+    QCPItemText * NumberOfBoard;
     QCPDataMap  *mapData;
     QCPGraph    *graph1;
     QCustomPlot *customPlot;
-    quint32     m_nNextBlockSize;
-    int LinesCount;
-    IPDialog* ip_dialog;                // exemplar of IPDialog class, for creating modal window for Connection dialog.
-    settings* settings_dialog;
-    bool fVisibleLabels;
-    bool bUpdatePlot;                   // bool variable, if true - user can see Chart
-    bool bUpdateViewConstr;             // bool variable, if true - drawes a red rectangles over broken devices in second tab
-    const unsigned char ChannelsOnBoard;
-    quint8 value_threshold;
+    IPDialog* ip_dialog;                // exemplar of IPDialog class, for creating modal window for Connection.
+    settings* settings_dialog;          // exemplar of settings class, for creating modal window for Settings.
     viewConstr* vw;                     // exemplar of viewConstr class, for creating second tab in TabWidget
+
     QVector<bool> vectorForCheckingDevices;
+    bool fVisibleLabels;                // bool variable, if true - draw number of MT48 on customPlot
+    bool bUpdatePlot;                   // bool variable, if true - user can see Chart on customPlot
+    bool bUpdateViewConstr;             // bool variable, if true - drawes a red rectangles over broken devices in second tab
 
-    void ClearVectorForCheckingDevices();
-
-    enum TYPE_DATA{DATA_RAW, DATA_HIST, CFG_MUTOMO, CMD};
-
-    QCPItemText * NumberOfBoard;
-    void CreateLines();
-    void PaintNumberOfBrokenDevices(); //paint number of broken device on graphic
+    void CreateLines(double lowerBound);
+    void CreateLabels();                 // function, that draw labels (number of MT48) on customPlot widget
+    void PaintNumberOfBrokenDevices();  // paint number of broken device on graphic
     void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
-
+    void ClearVectorForCheckingDevices();
     void DataToServer(TYPE_DATA t_data, quint32 data);
     void DataHistRequest();
     void DataRawRequset();
