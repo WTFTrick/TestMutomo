@@ -4,7 +4,7 @@
 #include <QtGui>
 
 MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(49), ChannelsOnBoard(49),numberOfBrokenDevice(0),
-    LinesCount(49), qsettings("settings.conf" ,QSettings::NativeFormat), ui(new Ui::MainWindow)
+    LinesCount(49), qsettings("settings.conf", QSettings::NativeFormat), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -89,7 +89,6 @@ void MainWindow::slotReadyRead()
     in.setVersion(QDataStream::Qt_5_4);
     for (;;)
     {
-
         if (!m_nNextBlockSize)
         {
             if (m_pTcpSocket->bytesAvailable() < sizeof(quint32))
@@ -121,9 +120,6 @@ void MainWindow::slotReadyRead()
 
         if ( bUpdateViewConstr )
             vw->BrokenDevice();
-
-        if ( fVisibleLabels )
-            CreateLabels();
 
         arrFreq.clear();
         m_nNextBlockSize = 0;
@@ -174,7 +170,18 @@ void MainWindow::DataRawRequset()
     DataToServer(t_data, 0 );
 }
 
-void MainWindow::GetJsonFromViewConstr(QString JsonDoc)
+void MainWindow::DrawPlot()
+{
+    //qDebug() << "DrawPlot()";
+
+    ui->customPlot->clearItems();
+
+    CreateLines();
+    if ( fVisibleLabels )
+        CreateLabels();
+}
+
+void MainWindow::GetJsonFromViewConstr(QByteArray JsonDoc)
 {
     //Передать серверу конфигурацию в виде JSON
 
@@ -182,6 +189,7 @@ void MainWindow::GetJsonFromViewConstr(QString JsonDoc)
     //DataToServer(t_data, JsonDoc);
 
     qDebug() << "MainWindow Get JsonDoc";
+    qDebug() << JsonDoc;
 }
 
 void MainWindow::DataToServer(TYPE_DATA t_data, quint32 data)
@@ -203,7 +211,6 @@ void MainWindow::DataToServer(TYPE_DATA t_data, quint32 data)
 
     //  Data
     out << data;
-
 
     out.device()->seek(0);
     quint64 size_pkg = quint64(rawData.size() - sizeof(quint64));
@@ -312,6 +319,7 @@ void MainWindow::yAxisChanged(QCPRange newRange)
         ui->customPlot->yAxis->setRange(fixedRange);
     }
     else
+    {
         if (fixedRange.upper > upperBound)
         {
             fixedRange.upper = upperBound;
@@ -320,9 +328,13 @@ void MainWindow::yAxisChanged(QCPRange newRange)
                 fixedRange.lower = lowerBound;
             ui->customPlot->yAxis->setRange(fixedRange);
         }
+    }
 
-    // newRange.lower //вызов
-    CreateLines(newRange.lower);
+
+    yAxisLowerBound = fixedRange.lower;
+
+    // debug information
+    //qDebug() << "\nlowerBound = " << fixedRange.lower;
 }
 
 void MainWindow::ScaleChanged()
@@ -336,10 +348,10 @@ void MainWindow::ScaleChanged()
     else
         fVisibleLabels = false;
 
-    CreateLabels();
+    ui->customPlot->replot();
 }
 
-void MainWindow::CreateLines(double lowerBound)
+void MainWindow::CreateLines()
 {
     // Add QCPItemLine
     const unsigned char nmBoards = 48; // Number of boards
@@ -348,39 +360,21 @@ void MainWindow::CreateLines(double lowerBound)
 
     uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
 
-    //qDebug() << "LowerBound:" << lowerBound;
-    if (lowerBound >= 30)
+    for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
     {
-        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
-        {
-            QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
-            ui->customPlot->addItem(tickHLine);
-            tickHLine->start->setCoords(i, lowerBound);
-            tickHLine->end->setCoords(i, line_height + lowerBound);
-            tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
-        }
+        QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
+        ui->customPlot->addItem(tickHLine);
+        tickHLine->start->setCoords(i, yAxisLowerBound);
+        tickHLine->end->setCoords(i, yAxisLowerBound + line_height);
+        tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
     }
 
-    if (lowerBound <= 30)
-    {
-        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
-        {
-            QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
-            ui->customPlot->addItem(tickHLine);
-            tickHLine->start->setCoords(i, 0);
-            tickHLine->end->setCoords(i, line_height);
-            tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
-        }
-    }
-
-    ui->customPlot->replot();
+    //qDebug() << "y_1 = " << yAxisLowerBound << " y_2 = " << yAxisLowerBound + line_height;
 }
 
 void MainWindow::CreateLabels()
 {
     // Add a QCPItemText (number of MT48 on customPlot)
-
-    ui->customPlot->clearItems();
     unsigned char CounterOfBoards = 0; // Counter for boards
     const unsigned char nmBoards = 48; // Number of boards
     const short label_center_x = ChannelsOnBoard / 2;
@@ -390,11 +384,12 @@ void MainWindow::CreateLabels()
     for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
     {
         QString NOB = QString("%1").arg(CounterOfBoards);
+
         if (fVisibleLabels)
         {
             NumberOfBoard = new QCPItemText(ui->customPlot);
             ui->customPlot->addItem(NumberOfBoard);
-            NumberOfBoard->position->setCoords(i + label_center_x, label_center_y);
+            NumberOfBoard->position->setCoords(i + label_center_x, yAxisLowerBound + label_center_y);
             NumberOfBoard->setText(NOB);
             NumberOfBoard->setFont(QFont(font().family(), 11));
 
@@ -406,8 +401,6 @@ void MainWindow::CreateLabels()
 
         CounterOfBoards++;
     }
-
-    ui->customPlot->replot();
 }
 
 void MainWindow::CreateConnections()
@@ -423,10 +416,9 @@ void MainWindow::CreateConnections()
     connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(yAxisChanged(QCPRange)));
 
     // scaled plot
-    connect(ui->pb_ZoomIn, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
-    connect(ui->pb_ZoomOut, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
-    connect(ui->pb_ResetRange, SIGNAL(clicked(bool)), this, SLOT(ScaleChanged()));
-    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(ScaleChanged()));
+    connect(ui->pb_ZoomIn, SIGNAL(clicked(bool)),               this, SLOT(ScaleChanged()));
+    connect(ui->pb_ZoomOut, SIGNAL(clicked(bool)),              this, SLOT(ScaleChanged()));
+    connect(ui->pb_ResetRange, SIGNAL(clicked(bool)),           this, SLOT(ScaleChanged()));
 
     // mouse click on some area of plot
     connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MousePress(QCPAbstractItem* , QMouseEvent*)));
@@ -439,13 +431,13 @@ void MainWindow::CreateConnections()
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected()));
 
     connect(vw, SIGNAL(messg(QString)), this, SLOT(slotMessage(QString)));
+    connect(ui->customPlot, SIGNAL(beforeReplot()), this, SLOT(DrawPlot()));
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
     ScaleChanged();
-    CreateLines(0);
 }
 
 void MainWindow::changeEvent(QEvent *event)
@@ -455,7 +447,6 @@ void MainWindow::changeEvent(QEvent *event)
         if(isMaximized())
         {
             ScaleChanged();
-            CreateLines(0);
         }
     }
     event->accept();

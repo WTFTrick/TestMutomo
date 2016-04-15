@@ -210,7 +210,8 @@ void viewConstr::ToJson()
     docJSON.setObject(jsonDetector);
 
     QString JsonDoc = docJSON.toJson();
-    mw->GetJsonFromViewConstr(JsonDoc);
+    QByteArray json = docJSON.toJson();
+    mw->GetJsonFromViewConstr(json);
 
     // Writing data in file blocks.json
 

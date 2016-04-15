@@ -32,7 +32,7 @@ public:
     ~MainWindow();
 
     inline void ChannelCheck(quint32 freq, int ind); // выявление плат с каналами, в которых частота регистрации сигналов превышают порог
-    void GetJsonFromViewConstr(QString JsonDoc);
+    void GetJsonFromViewConstr(QByteArray JsonDoc);
     bool* badBoards;
     int numberOfBrokenDevice;
 
@@ -48,6 +48,8 @@ private:
     quint32     m_nNextBlockSize;
     QString strHost;                    // String, that contain an IP-Adress of the server from modal window (Connection dialog)
 
+    double yAxisLowerBound;
+
     QTcpSocket* m_pTcpSocket;
     QCPItemText * NumberOfBoard;
     QCPDataMap  *mapData;
@@ -62,7 +64,7 @@ private:
     bool bUpdateViewConstr;             // bool variable, if true - drawes a red rectangles over broken devices in second tab
     QVector<bool> vectorForCheckingDevices;
 
-    void CreateLines(double lowerBound);
+    void CreateLines();
     void CreateLabels();                 // function, that draw labels (number of MT48) on customPlot widget
     void PaintNumberOfBrokenDevices();  // paint number of broken device on graphic
     void CreatePlot(QVector<quint32> *arrData);
@@ -73,6 +75,7 @@ private:
     void DataRawRequset();
 
 private slots:
+    void DrawPlot();
     void StopServer();
     void StartServer();
     void ScaleChanged();
