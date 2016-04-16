@@ -49,10 +49,10 @@ private:
     QString strHost;                    // String, that contain an IP-Adress of the server from modal window (Connection dialog)
 
     double yAxisLowerBound;
-    double YlowerBound = 0;
-    double YupperBound = 150;
-    double XlowerBound = 0;
-    double XupperBound = 2531;
+    double YlowerBound;
+    double YupperBound;
+    double XlowerBound;
+    double XupperBound;
 
     QTcpSocket* m_pTcpSocket;
     QCPItemText * NumberOfBoard;

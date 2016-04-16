@@ -11,12 +11,24 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     setWindowTitle("Mutomo Client");
     setCentralWidget(ui->tabWidget);
 
-
     thresholdGraph = ui->customPlot->addGraph();
     threhshold_data = thresholdGraph->data();
 
-    connectToHost(qsettings.value("settings/IP").toString());
-    get_threshold(qsettings.value("settings/threshold").toInt(), qsettings.value("settings/xUpperBound").toInt(), qsettings.value("settings/yUpperBound").toInt());
+    if ( ! QFile::exists("settings.conf") ) {
+        YlowerBound = 0;
+        YupperBound = 150;
+        XlowerBound = 0;
+        XupperBound = 2531;
+        strHost = "0.0.0.0";
+        value_threshold = 100;
+        ui->statusBar->showMessage("Application run. Threshold =" + QString::number(value_threshold));
+    }
+    else
+    {
+        get_threshold(qsettings.value("settings/threshold").toInt(), qsettings.value("settings/xUpperBound").toInt(), qsettings.value("settings/yUpperBound").toInt());
+        connectToHost(qsettings.value("settings/IP").toString());
+        ui->statusBar->showMessage("Application run. Threshold =" + qsettings.value("settings/threshold").toString());
+    }
 
     CreateThresholdLine();
 
@@ -61,8 +73,6 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     ClearVectorForCheckingDevices();
 
     ui->tabWidget->setFocus();
-    ui->statusBar->showMessage("Application run. Threshold =" + qsettings.value("settings/threshold").toString());
-
 }
 
 MainWindow::~MainWindow()
@@ -255,8 +265,7 @@ void MainWindow::connectToHost(QString str)
     // Connecting to server
     strHost = str;
     qsettings.setValue("settings/IP", str);
-    qDebug() << "Mainwindow ip:" << strHost;
-
+    //qDebug() << "Mainwindow ip:" << strHost;
 
     m_pTcpSocket = new QTcpSocket(this);
     m_pTcpSocket->connectToHost(strHost, nPort);
@@ -272,6 +281,7 @@ void MainWindow::mousePress()
 void MainWindow::mouseWheel()
 {
     ui->customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+    ScaleChanged();
 }
 
 void MainWindow::on_pb_ZoomIn_clicked()
@@ -346,7 +356,7 @@ void MainWindow::ScaleChanged()
 {
     const unsigned char PixelLimit = 19;
     double px_size = ui->customPlot->xAxis->coordToPixel(ChannelsOnBoard) - ui->customPlot->xAxis->coordToPixel(0);
-    //qDebug() << "px_size =" << px_size;
+    qDebug() << "px_size =" << px_size;
 
     if (px_size >= PixelLimit)
         fVisibleLabels = true;

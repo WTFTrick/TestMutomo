@@ -206,7 +206,7 @@
   </action>
   <action name="actionSettings">
    <property name="text">
-    <string>Threshold settings</string>
+    <string>Settings</string>
    </property>
   </action>
   <action name="actionConnect_to">
