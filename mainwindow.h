@@ -49,11 +49,17 @@ private:
     QString strHost;                    // String, that contain an IP-Adress of the server from modal window (Connection dialog)
 
     double yAxisLowerBound;
+    double YlowerBound = 0;
+    double YupperBound = 150;
+    double XlowerBound = 0;
+    double XupperBound = 2531;
 
     QTcpSocket* m_pTcpSocket;
     QCPItemText * NumberOfBoard;
     QCPDataMap  *mapData;
     QCPGraph    *graph1;
+    QCPDataMap* threhshold_data;
+    QCPGraph    *thresholdGraph;
     QCustomPlot *customPlot;
     IPDialog* ip_dialog;                // exemplar of IPDialog class, for creating modal window for Connection.
     settings* settings_dialog;          // exemplar of settings class, for creating modal window for Settings.
@@ -65,6 +71,7 @@ private:
     QVector<bool> vectorForCheckingDevices;
 
     void CreateLines();
+    void CreateThresholdLine();
     void CreateLabels();                 // function, that draw labels (number of MT48) on customPlot widget
     void PaintNumberOfBrokenDevices();  // paint number of broken device on graphic
     void CreatePlot(QVector<quint32> *arrData);
@@ -93,7 +100,7 @@ private slots:
     void MousePress(QCPAbstractItem* item, QMouseEvent* event);
     void tabSelected();
     void on_actionSettings_triggered();
-    void get_threshold(int threshold);
+    void get_threshold(quint16 threshold, quint16 xUpperBound, quint16 yUpperBound);
     void slotMessage(QString str);
 
 protected:

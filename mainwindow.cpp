@@ -11,15 +11,25 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     setWindowTitle("Mutomo Client");
     setCentralWidget(ui->tabWidget);
 
+
+    thresholdGraph = ui->customPlot->addGraph();
+    threhshold_data = thresholdGraph->data();
+
+    connectToHost(qsettings.value("settings/IP").toString());
+    get_threshold(qsettings.value("settings/threshold").toInt(), qsettings.value("settings/xUpperBound").toInt(), qsettings.value("settings/yUpperBound").toInt());
+
+    CreateThresholdLine();
+
     graph1 = ui->customPlot->addGraph();
     mapData = graph1->data();
+
     ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom );
     ui->customPlot->xAxis->setLabel("Номер канала");
     ui->customPlot->yAxis->setLabel("Частота, HZ");
     ui->customPlot->xAxis->setRange(0, 2500);
     ui->customPlot->yAxis->setRange(0, 100);
 
-    ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(2));
+    graph1->setLineStyle((QCPGraph::LineStyle)(2));
 
     ui->customPlot->addLayer("BG",ui->customPlot->layer("graph1"), QCustomPlot::limBelow);
     ui->customPlot->setCurrentLayer("BG");
@@ -35,15 +45,13 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     QPen graphPen;
     graphPen.setColor(QColor(0, 0, 0));
     graphPen.setWidthF(0.4);
-    ui->customPlot->graph()->setPen(graphPen);
+    graph1->setPen(graphPen);
     ui->customPlot->replot();
 
     ip_dialog = new IPDialog( this );
     settings_dialog = new settings( this );
 
     //MutomoHost = "10.162.1.110"
-    connectToHost(qsettings.value("section/IP").toString());
-    get_threshold(qsettings.value("section/threshold").toInt());
 
     CreateConnections();
 
@@ -53,7 +61,8 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     ClearVectorForCheckingDevices();
 
     ui->tabWidget->setFocus();
-    ui->statusBar->showMessage("Application run. Threshold =" + qsettings.value("section/threshold").toString());
+    ui->statusBar->showMessage("Application run. Threshold =" + qsettings.value("settings/threshold").toString());
+
 }
 
 MainWindow::~MainWindow()
@@ -245,7 +254,7 @@ void MainWindow::connectToHost(QString str)
 {
     // Connecting to server
     strHost = str;
-    qsettings.setValue("section/IP", str);
+    qsettings.setValue("settings/IP", str);
     qDebug() << "Mainwindow ip:" << strHost;
 
 
@@ -285,47 +294,43 @@ void MainWindow::on_pb_ResetRange_clicked()
 
 void MainWindow::xAxisChanged(QCPRange newRange)
 {
-    double lowerBound = 0;
-    double upperBound = 2531;
     QCPRange fixedRange(newRange);
-    if (fixedRange.lower < lowerBound)
+    if (fixedRange.lower < XlowerBound)
     {
-        fixedRange.lower = lowerBound;
-        fixedRange.upper = lowerBound + newRange.size();
-        if (fixedRange.upper > upperBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
-            fixedRange.upper = upperBound;
+        fixedRange.lower = XlowerBound;
+        fixedRange.upper = XlowerBound + newRange.size();
+        if (fixedRange.upper > XupperBound || qFuzzyCompare(newRange.size(), XupperBound-XlowerBound))
+            fixedRange.upper = XupperBound;
         ui->customPlot->xAxis->setRange(fixedRange);
-    } else if (fixedRange.upper > upperBound)
+    } else if (fixedRange.upper > XupperBound)
     {
-        fixedRange.upper = upperBound;
-        fixedRange.lower = upperBound - newRange.size();
-        if (fixedRange.lower < lowerBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
-            fixedRange.lower = lowerBound;
+        fixedRange.upper = XupperBound;
+        fixedRange.lower = XupperBound - newRange.size();
+        if (fixedRange.lower < XlowerBound || qFuzzyCompare(newRange.size(), XupperBound-XlowerBound))
+            fixedRange.lower = XlowerBound;
         ui->customPlot->xAxis->setRange(fixedRange);
     }
 }
 
 void MainWindow::yAxisChanged(QCPRange newRange)
 {
-    double lowerBound = 0;
-    double upperBound = 150;
     QCPRange fixedRange(newRange);
-    if (fixedRange.lower < lowerBound)
+    if (fixedRange.lower < YlowerBound)
     {
-        fixedRange.lower = lowerBound;
-        fixedRange.upper = lowerBound + newRange.size();
-        if (fixedRange.upper > upperBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
-            fixedRange.upper = upperBound;
+        fixedRange.lower = YlowerBound;
+        fixedRange.upper = YlowerBound + newRange.size();
+        if (fixedRange.upper > YupperBound || qFuzzyCompare(newRange.size(), YupperBound-YlowerBound))
+            fixedRange.upper = YupperBound;
         ui->customPlot->yAxis->setRange(fixedRange);
     }
     else
     {
-        if (fixedRange.upper > upperBound)
+        if (fixedRange.upper > YupperBound)
         {
-            fixedRange.upper = upperBound;
-            fixedRange.lower = upperBound - newRange.size();
-            if (fixedRange.lower < lowerBound || qFuzzyCompare(newRange.size(), upperBound-lowerBound))
-                fixedRange.lower = lowerBound;
+            fixedRange.upper = YupperBound;
+            fixedRange.lower = YupperBound - newRange.size();
+            if (fixedRange.lower < YlowerBound || qFuzzyCompare(newRange.size(), YupperBound-YlowerBound))
+                fixedRange.lower = YlowerBound;
             ui->customPlot->yAxis->setRange(fixedRange);
         }
     }
@@ -372,6 +377,20 @@ void MainWindow::CreateLines()
     //qDebug() << "y_1 = " << yAxisLowerBound << " y_2 = " << yAxisLowerBound + line_height;
 }
 
+void MainWindow::CreateThresholdLine()
+{
+    for (double i = 0; i < 2510; i += 1250 )
+        threhshold_data->operator [](i) = QCPData(i, value_threshold);
+
+    QPen pen;
+    pen.setColor(QColor(255,0,0));
+    pen.setWidth(2);
+    pen.setStyle(Qt::DotLine);
+    thresholdGraph->setPen(pen);
+
+    ui->customPlot->replot();
+}
+
 void MainWindow::CreateLabels()
 {
     // Add a QCPItemText (number of MT48 on customPlot)
@@ -407,9 +426,11 @@ void MainWindow::CreateConnections()
 {
     //qDebug() << "CreateConnections";
 
-    // Connections between mainWindow and modal dialog ('connect to...')
+    // connections between mainWindow and modal dialogs
     connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
-    connect(settings_dialog, SIGNAL(sendThreshold(int)), this, SLOT(get_threshold(int)));
+    connect(settings_dialog, SIGNAL(sendThreshold(quint16,quint16,quint16)), this, SLOT(get_threshold(quint16,quint16,quint16)));
+
+    // QCustomPlot connects
     connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
     connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
     connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
@@ -427,10 +448,13 @@ void MainWindow::CreateConnections()
     connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(StartServer()));
     connect(ui->pb_stopServer, SIGNAL(clicked(bool)), this, SLOT(StopServer()));
 
-
+    // tab changed event
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected()));
 
+    // info from viewConstr class to MainWindow StatusBar
     connect(vw, SIGNAL(messg(QString)), this, SLOT(slotMessage(QString)));
+
+    // replot event
     connect(ui->customPlot, SIGNAL(beforeReplot()), this, SLOT(DrawPlot()));
 }
 
@@ -456,7 +480,6 @@ void MainWindow::tabSelected()
 {
     bUpdatePlot        = false;
     bUpdateViewConstr  = false;
-
 
     if (ui->tabWidget->currentIndex() == 0)
     {
@@ -494,12 +517,17 @@ void MainWindow::on_actionSettings_triggered()
         qDebug() << "Open modal window thershold settings";
 }
 
-void MainWindow::get_threshold(int threshold)
+void MainWindow::get_threshold(quint16 threshold, quint16 xUpperBound, quint16 yUpperBound)
 {
     value_threshold = threshold;
-    qsettings.setValue("section/threshold", threshold);
-    QString tresh_val = QString::number(value_threshold);
-    ui->statusBar->showMessage("Threshold = " + tresh_val);
+    YupperBound = yUpperBound;
+    XupperBound = xUpperBound;
+    qsettings.setValue("settings/threshold", threshold);
+    qsettings.setValue("settings/yUpperBound", yUpperBound);
+    qsettings.setValue("settings/xUpperBound", xUpperBound);
+    QString sThr = QString::number(value_threshold);
+    ui->statusBar->showMessage("Threshold = " + sThr);
+    CreateThresholdLine();
 }
 
 void MainWindow::slotMessage(QString str)

@@ -16,10 +16,16 @@ settings::~settings()
 
 void settings::InterfaceSettings()
 {
-    ui->label->setAlignment(Qt::AlignCenter); //Set label at center
-    ui->le_value->setValidator( new QIntValidator(0, 100, this) );
-    ui->le_value->setText("100");
-    ui->le_value->setFocus();
+    ui->label_threshold->setAlignment(Qt::AlignCenter); //Set label at center
+    ui->label_xUpperBound->setAlignment(Qt::AlignCenter);
+    ui->label_yUpperBound->setAlignment(Qt::AlignCenter);
+    ui->le_thresholdValue->setValidator( new QIntValidator(0, 100, this) );
+    ui->le_thresholdValue->setText("100");
+    ui->le_xUpperBound->setValidator( new QIntValidator(0, 3000, this) );
+    ui->le_xUpperBound->setText("2531");
+    ui->le_yUpperBound->setValidator( new QIntValidator(0, 500, this) );
+    ui->le_yUpperBound->setText("150");
+    ui->le_thresholdValue->setFocus();
 }
 
 void settings::CreateConnections()
@@ -30,15 +36,15 @@ void settings::CreateConnections()
 
 void settings::ok_clicked()
 {
-    if (ui->le_value->text() == "")
+    if ((ui->le_thresholdValue->text() == "") || (ui->le_yUpperBound->text() == "") || (ui->le_xUpperBound->text() == ""))
         qDebug() << "Edit line is empty! Enter some value!";
 
     else
     {
-        QString threshold_val;
-        threshold_val = ui->le_value->text();
-        quint8 threshold = threshold_val.toInt();
-        emit sendThreshold(threshold);
+        quint16 threshold= ui->le_thresholdValue->text().toInt();
+        quint16 xUpperBound = ui->le_xUpperBound->text().toInt();
+        quint16 yUpperBound = ui->le_yUpperBound->text().toInt();
+        emit sendThreshold(threshold, xUpperBound, yUpperBound);
         close();
     }
 }
