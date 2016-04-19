@@ -55,7 +55,6 @@ void viewConstr::CreateView()
     int xsb = width + 100;          // x coordinate for spinbox, which contain order nubmer
     int NumberInSpinBox = 0;        // vaule, which will be in spinBox
     QSize ComboBoxFixedSize(60, 50);
-    QSize SpinBoxFixedSize(85, 50);
     int counterForComboBox = 0;
     int nullX = 0;
 
@@ -102,15 +101,6 @@ void viewConstr::CreateView()
             cmb_coord->addItem( "Y" );
             gpw = scene->addWidget( cmb_coord );
             cmb_coord->move(xcb,k+6);
-
-            QSpinBox* spinbx_numb = new QSpinBox();
-            ListSpinBox << spinbx_numb;
-            spinbx_numb->setRange(0,50);
-            spinbx_numb->setFixedSize(SpinBoxFixedSize);
-            gpw = scene->addWidget(spinbx_numb);
-            spinbx_numb->move(xsb,k+6);
-            spinbx_numb->setValue(NumberInSpinBox);
-            NumberInSpinBox++;
         }
     }
 }
@@ -200,8 +190,6 @@ void viewConstr::ToJson()
         jsonTempInDetector["Device "] = jsonDevice;
 
         jsonTempInDetector["Coordinate"] = ListCoordComboBox[indDetector]->currentText();
-
-        jsonTempInDetector["Number "] = ListSpinBox[indDetector]->value();
 
         QString nameField("Detector ");
         nameField += QString::number(indDetector);

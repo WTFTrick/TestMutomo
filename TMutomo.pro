@@ -33,3 +33,6 @@ FORMS    += mainwindow.ui \
 CONFIG += mobility c++11
 MOBILITY = 
 
+DISTFILES += \
+    StyleSheet.qss
+

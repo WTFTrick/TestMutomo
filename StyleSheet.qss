@@ -1,0 +1,58 @@
+QComboBox
+{
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    selection-background-color: #ffffff;
+    background-color: #ffffff;
+    border-style: solid;
+    border: 1px solid #3A3939;
+    border-radius: 2px;
+    padding: 2px;
+    min-width: 50px;
+}
+
+QComboBox:hover
+{
+    border: 2px solid #78879b;
+    color: black;
+}
+
+QComboBox:on
+{
+    background-color: #ffffff;
+    padding-top: 3px;
+    padding-left: 4px;
+    selection-background-color: #ffffff;
+}
+
+QComboBox QAbstractItemView
+{
+    background-color: #ffffff;
+    border-radius: 2px;
+    border: 1px solid #444;
+    selection-background-color: #3d8ec9;
+}
+
+QComboBox::drop-down
+{
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+
+    border-left-width: 0px;
+    border-left-color: darkgray;
+    border-left-style: solid;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+QComboBox::down-arrow
+{
+    image: url(/home/kopylov/projects/TMutomo-develope/rc/down_arrow_disabled.png);
+}
+
+QComboBox::down-arrow:on, QComboBox::down-arrow:hover,
+QComboBox::down-arrow:focus
+{
+    image: url(/home/kopylov/projects/TMutomo-develope/rc/down_arrow.png);
+}

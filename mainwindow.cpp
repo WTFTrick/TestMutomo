@@ -164,8 +164,8 @@ void MainWindow::StartServer()
     QByteArray arrayStart;
     arrayStart.setNum(data);
     //arrayStart += data;
-    qDebug() << "size of QByteArray arrayStart = " << arrayStart.size();
-    qDebug() << "\n";
+    //qDebug() << "size of QByteArray arrayStart = " << arrayStart.size();
+    //qDebug() << "\n";
 
 
     TYPE_DATA t_data = DATA_CMD;
@@ -263,7 +263,6 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
     //  Type
     out << t_data;
 
-
     //  Data
     out << data;
 
@@ -273,12 +272,12 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
 
     quint64 sizeBlock = m_pTcpSocket->write(rawData);
 
-    qDebug() << "Client sended type:" << t_data;
+    qDebug() << "Client sent type:" << t_data;
     qDebug() << "Size of t_data:" << sizeof( t_data) << " bytes";
-    qDebug() << "Client sended data:" << data;
+    qDebug() << "Client sent data:" << data;
     qDebug() << "Size of data:" << data.size() << " bytes";
     qDebug() << "Size of package: " << size_pkg;
-    qDebug() << "Written to socket" << sizeBlock << "bytes.";
+    qDebug() << "Written to socket" << sizeBlock << "bytes";
 }
 
 void MainWindow::DrawPlot()
@@ -622,15 +621,4 @@ void MainWindow::ClearVectorForCheckingDevices()
     for (int i = 0; i < 48; i++)
         vectorForCheckingDevices[i] = 0;
 }
-
-/*bool MainWindow::event(QEvent *event)
-{
-    //qDebug() << "MainWindow::event()";
-
-    if ( event->type () == QEvent::OrientationChange)
-        //ui->statusBar->showMessage("Orientation changed");
-
-    return QMainWindow::event(event);
-}
-*/
 
