@@ -40,7 +40,7 @@ private:
 
     QSettings qsettings;
 
-    enum TYPE_DATA{DATA_RAW, DATA_HIST, CFG_MUTOMO, CMD};
+    enum TYPE_DATA {DATA_RAW, DATA_HIST, DATA_CONFIG_MUTOMO, DATA_CMD};
     int nPort;
     int LinesCount;
     const unsigned char ChannelsOnBoard;

@@ -3,7 +3,6 @@
 #include <QtNetwork>
 #include <QtGui>
 
-
 MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(49), ChannelsOnBoard(49),numberOfBrokenDevice(0),
     LinesCount(49), qsettings("settings.conf", QSettings::NativeFormat), ui(new Ui::MainWindow)
 {
@@ -90,9 +89,9 @@ MainWindow::~MainWindow()
 
     qsettings.sync();
     delete vw;
-    //delete settings_dialog;
-    //delete ip_dialog;
-    //close();
+    delete settings_dialog;
+    delete ip_dialog;
+    close();
 
     delete ui;
 }
@@ -161,11 +160,15 @@ void MainWindow::StartServer()
 {
     //Команда - начать генерацию данных на сервере и передачу клиенту
 
-    quint8 data = 1;
+    quint32 data = 1;
     QByteArray arrayStart;
     arrayStart.setNum(data);
+    //arrayStart += data;
+    qDebug() << "size of QByteArray arrayStart = " << arrayStart.size();
+    qDebug() << "\n";
 
-    TYPE_DATA t_data = CMD;
+
+    TYPE_DATA t_data = DATA_CMD;
 
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
@@ -184,11 +187,11 @@ void MainWindow::StopServer()
 {
     //Команда - остановить генерацию данных на сервере и передачу клиенту
 
-    quint8 data = 0;
+    quint32 data = 0;
     QByteArray arrayStop;
     arrayStop.setNum(data);
 
-    TYPE_DATA t_data = CMD;
+    TYPE_DATA t_data = DATA_CMD;
 
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
@@ -232,7 +235,7 @@ void MainWindow::GetJsonFromViewConstr(QByteArray JsonDoc)
 {
     //Передать серверу конфигурацию в виде JSON
 
-    TYPE_DATA t_data = CFG_MUTOMO;
+    TYPE_DATA t_data = DATA_CONFIG_MUTOMO;
 
     //qDebug() << JsonDoc;
 
@@ -260,6 +263,7 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
     //  Type
     out << t_data;
 
+
     //  Data
     out << data;
 
@@ -269,8 +273,10 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
 
     quint64 sizeBlock = m_pTcpSocket->write(rawData);
 
-    qDebug() << "Client received type:" << t_data;
-    qDebug() << "Client received data:" << data;
+    qDebug() << "Client sended type:" << t_data;
+    qDebug() << "Size of t_data:" << sizeof( t_data) << " bytes";
+    qDebug() << "Client sended data:" << data;
+    qDebug() << "Size of data:" << data.size() << " bytes";
     qDebug() << "Size of package: " << size_pkg;
     qDebug() << "Written to socket" << sizeBlock << "bytes.";
 }
