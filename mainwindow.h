@@ -14,12 +14,11 @@
 #include "viewconstr.h"
 
 class viewConstr;
+class settings;
 
 namespace Ui
 {
-
 class MainWindow;
-
 }
 
 class MainWindow : public QMainWindow
@@ -32,15 +31,16 @@ public:
     ~MainWindow();
 
     inline void ChannelCheck(quint32 freq, int ind); // выявление плат с каналами, в которых частота регистрации сигналов превышают порог
-    void GetJsonFromViewConstr(QByteArray JsonDoc);
+
     bool* badBoards;
     int numberOfBrokenDevice;
 
 private:
     Ui::MainWindow *ui;
 
-    enum TYPE_DATA{DATA_RAW, DATA_HIST, CFG_MUTOMO, CMD};
     QSettings qsettings;
+
+    enum TYPE_DATA{DATA_RAW, DATA_HIST, CFG_MUTOMO, CMD};
     int nPort;
     int LinesCount;
     const unsigned char ChannelsOnBoard;
@@ -77,11 +77,12 @@ private:
     void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
     void ClearVectorForCheckingDevices();
-    void DataToServer(TYPE_DATA t_data, quint32 data);
+    void DataToServer(TYPE_DATA t_data, QByteArray data);
     void DataHistRequest();
     void DataRawRequset();
 
 private slots:
+    void GetJsonFromViewConstr(QByteArray JsonDoc);
     void DrawPlot();
     void StopServer();
     void StartServer();
@@ -90,6 +91,7 @@ private slots:
     void mouseWheel();
     void slotReadyRead();
     void slotConnected();
+    void slotDisconnected();
     void on_actionConnect_to_triggered();
     void connectToHost(QString str);
     void xAxisChanged(QCPRange newRange);

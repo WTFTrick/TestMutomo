@@ -13,6 +13,7 @@ viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48
 
 viewConstr::~viewConstr()
 {
+    delete mw;
     screen->deleteLater();
     gv->deleteLater();
     ClearVectorOfBrokenDevices();
@@ -211,7 +212,9 @@ void viewConstr::ToJson()
 
     QString JsonDoc = docJSON.toJson();
     QByteArray json = docJSON.toJson();
-    mw->GetJsonFromViewConstr(json);
+    //mw->GetJsonFromViewConstr(json);
+
+    emit sendJson(json);
 
     // Writing data in file blocks.json
 
@@ -220,6 +223,7 @@ void viewConstr::ToJson()
     QTextStream outJson(&jsnFile);
     outJson << docJSON.toJson();
     jsnFile.close();*/
+
 }
 
 void viewConstr::onRotate(Qt::ScreenOrientation)
@@ -243,7 +247,7 @@ void viewConstr::onRotate(Qt::ScreenOrientation)
     */
 
     // ------------------
-    emit messg( "Change orientation"  );
+    //emit messg( "Change orientation"  );
     //gv->fitInView(-40, -40, scene->width()+40, scene->height()+40, Qt::KeepAspectRatio);
 }
 

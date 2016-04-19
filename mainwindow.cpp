@@ -3,6 +3,7 @@
 #include <QtNetwork>
 #include <QtGui>
 
+
 MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(49), ChannelsOnBoard(49),numberOfBrokenDevice(0),
     LinesCount(49), qsettings("settings.conf", QSettings::NativeFormat), ui(new Ui::MainWindow)
 {
@@ -14,7 +15,8 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     thresholdGraph = ui->customPlot->addGraph();
     threhshold_data = thresholdGraph->data();
 
-    if ( ! QFile::exists("settings.conf") ) {
+    if ( ! QFile::exists("settings.conf") )
+    {
         YlowerBound = 0;
         YupperBound = 150;
         XlowerBound = 0;
@@ -27,7 +29,7 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     {
         get_threshold(qsettings.value("settings/threshold").toInt(), qsettings.value("settings/xUpperBound").toInt(), qsettings.value("settings/yUpperBound").toInt());
         connectToHost(qsettings.value("settings/IP").toString());
-        ui->statusBar->showMessage("Application run. Threshold =" + qsettings.value("settings/threshold").toString());
+        ui->statusBar->showMessage("Application run. Threshold value is " + qsettings.value("settings/threshold").toString() + ".");
     }
 
     CreateThresholdLine();
@@ -73,13 +75,23 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     ClearVectorForCheckingDevices();
 
     ui->tabWidget->setFocus();
+
+#ifdef ANDROID
+    slotMessage("Run on Android");
+#else
+    slotMessage("Run on Desktop");
+#endif
+
 }
 
 MainWindow::~MainWindow()
 {
-    delete vw;
+    //StopServer();
+
     qsettings.sync();
-    StopServer();
+    delete vw;
+    delete settings_dialog;
+    delete ip_dialog;
     close();
 
     delete ui;
@@ -150,13 +162,22 @@ void MainWindow::StartServer()
     //Команда - начать генерацию данных на сервере и передачу клиенту
 
     quint8 data = 1;
-    TYPE_DATA t_data = CMD;
-    DataToServer(t_data, data);
+    QByteArray arrayStart;
+    arrayStart.setNum(data);
 
-    ui->pb_stopServer->setDisabled(false);
-    ui->pb_startServer->setDisabled(true);
-    ui->tabWidget->setFocus();
-    ui->statusBar->showMessage("Send 'start' command to server");
+    TYPE_DATA t_data = CMD;
+
+    if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
+    {
+        DataToServer(t_data, arrayStart);
+
+        ui->pb_stopServer->setDisabled(false);
+        ui->pb_startServer->setDisabled(true);
+        ui->tabWidget->setFocus();
+        ui->statusBar->showMessage("Send 'start' command to server");
+    }
+    else
+        ui->statusBar->showMessage("Client unconnected!");
 }
 
 void MainWindow::StopServer()
@@ -164,13 +185,21 @@ void MainWindow::StopServer()
     //Команда - остановить генерацию данных на сервере и передачу клиенту
 
     quint8 data = 0;
-    TYPE_DATA t_data = CMD;
-    DataToServer(t_data, data);
+    QByteArray arrayStop;
+    arrayStop.setNum(data);
 
-    ui->pb_startServer->setDisabled(false);
-    ui->pb_stopServer->setDisabled(true);
-    ui->tabWidget->setFocus();
-    ui->statusBar->showMessage("Send 'stop' command to server");
+    TYPE_DATA t_data = CMD;
+
+    if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
+    {
+        DataToServer(t_data, arrayStop);
+        ui->pb_startServer->setDisabled(false);
+        ui->pb_stopServer->setDisabled(true);
+        ui->tabWidget->setFocus();
+        ui->statusBar->showMessage("Send 'stop' command to server");
+    }
+    else
+        ui->statusBar->showMessage("Client unconnected!");
 }
 
 void MainWindow::DataHistRequest()
@@ -178,7 +207,12 @@ void MainWindow::DataHistRequest()
     //Запросить у сервера данные для гистограммы
 
     TYPE_DATA t_data = DATA_HIST;
-    DataToServer(t_data, 0 );
+    QByteArray null;
+    null.setNum(0);
+    if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
+        DataToServer(t_data, null );
+    else
+        ui->statusBar->showMessage("Client unconnected!");
 }
 
 void MainWindow::DataRawRequset()
@@ -186,7 +220,60 @@ void MainWindow::DataRawRequset()
     //Запросить у сервера сырые данные
 
     TYPE_DATA t_data = DATA_RAW;
-    DataToServer(t_data, 0 );
+    QByteArray null;
+    null.setNum(0);
+    if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
+        DataToServer(t_data, null );
+    else
+        ui->statusBar->showMessage("Client unconnected!");
+}
+
+void MainWindow::GetJsonFromViewConstr(QByteArray JsonDoc)
+{
+    //Передать серверу конфигурацию в виде JSON
+
+    TYPE_DATA t_data = CFG_MUTOMO;
+
+    //qDebug() << JsonDoc;
+
+    if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
+    {
+        DataToServer(t_data, JsonDoc);
+        ui->statusBar->showMessage("Send configuration to server");
+    }
+    else
+        ui->statusBar->showMessage("Client unconnected!");
+}
+
+void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
+{
+    //  Передача данных серверу
+    //  Блок данных |Size|Type|Data|
+
+    QByteArray rawData;
+    QDataStream out(&rawData, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_6);
+
+    //  Size
+    out << quint64(0);
+
+    //  Type
+    out << t_data;
+
+    //  Data
+    //qDebug() << data;
+    out << data;
+
+    out.device()->seek(0);
+    quint64 size_pkg = quint64(rawData.size() - sizeof(quint64));
+    out << size_pkg;
+
+    quint64 sizeBlock = m_pTcpSocket->write(rawData);
+
+    /*qDebug() << "Client received type:" << t;
+    qDebug() << "Client received data:" << data;
+    qDebug() << "Size of package: " << size_pkg;
+    qDebug() << "Written to socket" << sizeBlock << "bytes.";*/
 }
 
 void MainWindow::DrawPlot()
@@ -200,55 +287,16 @@ void MainWindow::DrawPlot()
         CreateLabels();
 }
 
-void MainWindow::GetJsonFromViewConstr(QByteArray JsonDoc)
-{
-    //Передать серверу конфигурацию в виде JSON
-
-    TYPE_DATA t_data = CFG_MUTOMO;
-    //DataToServer(t_data, JsonDoc);
-
-    qDebug() << "MainWindow Get JsonDoc";
-    qDebug() << JsonDoc;
-}
-
-void MainWindow::DataToServer(TYPE_DATA t_data, quint32 data)
-{
-    //  Передача данных серверу
-    //  Блок данных |Size|Type|Data|
-
-    QByteArray rawData;
-    QDataStream out(&rawData, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_6);
-
-    //  Size
-    out << quint64(0);
-
-    //  Type
-    quint8 t = t_data;
-    //out << t_data;
-    out << t;
-
-    //  Data
-    out << data;
-
-    out.device()->seek(0);
-    quint64 size_pkg = quint64(rawData.size() - sizeof(quint64));
-    out << size_pkg;
-
-    quint64 sizeBlock = m_pTcpSocket->write(rawData);
-
-
-    /*qDebug() << "Client received type:" << t;
-    qDebug() << "Client received data:" << data;
-    qDebug() << "Size of package: " << size_pkg;
-    qDebug() << "Written to socket" << sizeBlock << "bytes.";*/
-}
-
 void MainWindow::slotConnected()
 {
     qDebug() << "Received the connected() signal";
     qDebug() << "Connection successfull";
     ui->statusBar->showMessage("Connection to server successfull");
+}
+
+void MainWindow::slotDisconnected()
+{
+    ui->statusBar->showMessage("Disconnected");
 }
 
 void MainWindow::on_actionConnect_to_triggered()
@@ -271,6 +319,7 @@ void MainWindow::connectToHost(QString str)
     m_pTcpSocket->connectToHost(strHost, nPort);
     connect(m_pTcpSocket, SIGNAL(connected()), SLOT(slotConnected()));
     connect(m_pTcpSocket, SIGNAL(readyRead()), SLOT(slotReadyRead()));
+    connect(m_pTcpSocket, SIGNAL(disconnected()), SLOT(slotReadyRead()));
 }
 
 void MainWindow::mousePress()
@@ -356,7 +405,7 @@ void MainWindow::ScaleChanged()
 {
     const unsigned char PixelLimit = 19;
     double px_size = ui->customPlot->xAxis->coordToPixel(ChannelsOnBoard) - ui->customPlot->xAxis->coordToPixel(0);
-    qDebug() << "px_size =" << px_size;
+    //qDebug() << "px_size =" << px_size;
 
     if (px_size >= PixelLimit)
         fVisibleLabels = true;
@@ -466,6 +515,8 @@ void MainWindow::CreateConnections()
 
     // replot event
     connect(ui->customPlot, SIGNAL(beforeReplot()), this, SLOT(DrawPlot()));
+
+    connect(vw, SIGNAL(sendJson(QByteArray)), this, SLOT(GetJsonFromViewConstr(QByteArray)));
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -536,7 +587,9 @@ void MainWindow::get_threshold(quint16 threshold, quint16 xUpperBound, quint16 y
     qsettings.setValue("settings/yUpperBound", yUpperBound);
     qsettings.setValue("settings/xUpperBound", xUpperBound);
     QString sThr = QString::number(value_threshold);
-    ui->statusBar->showMessage("Threshold = " + sThr);
+    ui->statusBar->showMessage("New threshold = " + sThr);
+    ui->customPlot->xAxis->setRange( 0, XupperBound );
+    ui->customPlot->yAxis->setRange( 0, YupperBound );
     CreateThresholdLine();
 }
 
@@ -575,3 +628,4 @@ void MainWindow::ClearVectorForCheckingDevices()
     return QMainWindow::event(event);
 }
 */
+

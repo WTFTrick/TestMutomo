@@ -3,6 +3,9 @@
 
 #include <QDialog>
 #include <QDebug>
+#include <mainwindow.h>
+
+class MainWindow;
 
 namespace Ui {
 class settings;
@@ -27,6 +30,7 @@ signals:
 
 private:
     Ui::settings *ui;
+    QSettings qsettings;
 };
 
 #endif // SETTINGS_H

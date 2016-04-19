@@ -1,7 +1,7 @@
 #include "settings.h"
 #include "ui_settings.h"
 
-settings::settings(QWidget *parent) : QDialog(parent), ui(new Ui::settings)
+settings::settings(QWidget *parent) : QDialog(parent), ui(new Ui::settings), qsettings("settings.conf", QSettings::NativeFormat)
 {
     ui->setupUi(this);
     InterfaceSettings();
@@ -16,15 +16,27 @@ settings::~settings()
 
 void settings::InterfaceSettings()
 {
-    ui->label_threshold->setAlignment(Qt::AlignCenter); //Set label at center
+    ui->label_threshold->setAlignment(Qt::AlignCenter);     //Set label at center
     ui->label_xUpperBound->setAlignment(Qt::AlignCenter);
     ui->label_yUpperBound->setAlignment(Qt::AlignCenter);
-    ui->le_thresholdValue->setValidator( new QIntValidator(0, 100, this) );
-    ui->le_thresholdValue->setText("100");
-    ui->le_xUpperBound->setValidator( new QIntValidator(0, 3000, this) );
-    ui->le_xUpperBound->setText("2531");
-    ui->le_yUpperBound->setValidator( new QIntValidator(0, 500, this) );
-    ui->le_yUpperBound->setText("150");
+
+    ui->le_thresholdValue->setValidator( new QIntValidator(0, 100, this)    );
+    ui->le_yUpperBound->setValidator(   new QIntValidator(0, 500, this)     );
+    ui->le_xUpperBound->setValidator(   new QIntValidator(0, 3000, this)    );
+
+    if ( QFile::exists("settings.conf") )
+    {
+        ui->le_thresholdValue->setText( qsettings.value("settings/threshold").toString()    );
+        ui->le_xUpperBound->setText(    qsettings.value("settings/xUpperBound").toString()  );
+        ui->le_yUpperBound->setText(    qsettings.value("settings/yUpperBound").toString()  );
+    }
+    else
+    {
+        ui->le_thresholdValue->setText("100");
+        ui->le_xUpperBound->setText("2531");
+        ui->le_yUpperBound->setText("150");
+    }
+
     ui->le_thresholdValue->setFocus();
 }
 

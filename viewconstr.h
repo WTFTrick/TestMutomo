@@ -65,6 +65,7 @@ public slots:
 
 signals:
     void messg(QString str);
+    void sendJson(QByteArray JsonDoc);
 
 };
 
