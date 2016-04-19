@@ -47,17 +47,15 @@ public:
     quint8 countOfBoards;
 
     QVBoxLayout *mainLayout;
-    QWidget *window;
     QTcpSocket* m_pTcpSocket;
-    MainWindow* mw;
 
+    bool event(QEvent *event);
     void ClearJSONFile();
     void BrokenDevice();
     void CreateView();
     void CreateConnections();
     void ClearVectorOfBrokenDevices();
     void resizeEvent(QResizeEvent *event);
-    bool event(QEvent *event);
 
 public slots:
     void ToJson();

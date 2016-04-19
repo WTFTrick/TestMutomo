@@ -90,9 +90,9 @@ MainWindow::~MainWindow()
 
     qsettings.sync();
     delete vw;
-    delete settings_dialog;
-    delete ip_dialog;
-    close();
+    //delete settings_dialog;
+    //delete ip_dialog;
+    //close();
 
     delete ui;
 }
@@ -261,7 +261,6 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
     out << t_data;
 
     //  Data
-    //qDebug() << data;
     out << data;
 
     out.device()->seek(0);
@@ -270,10 +269,10 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
 
     quint64 sizeBlock = m_pTcpSocket->write(rawData);
 
-    /*qDebug() << "Client received type:" << t;
+    qDebug() << "Client received type:" << t_data;
     qDebug() << "Client received data:" << data;
     qDebug() << "Size of package: " << size_pkg;
-    qDebug() << "Written to socket" << sizeBlock << "bytes.";*/
+    qDebug() << "Written to socket" << sizeBlock << "bytes.";
 }
 
 void MainWindow::DrawPlot()

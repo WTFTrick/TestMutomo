@@ -13,7 +13,6 @@ viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48
 
 viewConstr::~viewConstr()
 {
-    delete mw;
     screen->deleteLater();
     gv->deleteLater();
     ClearVectorOfBrokenDevices();
@@ -210,9 +209,8 @@ void viewConstr::ToJson()
     }
     docJSON.setObject(jsonDetector);
 
-    QString JsonDoc = docJSON.toJson();
+    //QString JsonDoc = docJSON.toJson();
     QByteArray json = docJSON.toJson();
-    //mw->GetJsonFromViewConstr(json);
 
     emit sendJson(json);
 
