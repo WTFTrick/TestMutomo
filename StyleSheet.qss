@@ -5,7 +5,7 @@ QComboBox
     selection-background-color: #ffffff;
     background-color: #ffffff;
     border-style: solid;
-    border: 1px solid #3A3939;
+    border: 1px solid #0d0808;
     border-radius: 2px;
     padding: 2px;
     min-width: 50px;
@@ -13,7 +13,7 @@ QComboBox
 
 QComboBox:hover
 {
-    border: 2px solid #78879b;
+    border: 2px solid #0d0808;
     color: black;
 }
 
@@ -29,8 +29,8 @@ QComboBox QAbstractItemView
 {
     background-color: #ffffff;
     border-radius: 2px;
-    border: 1px solid #444;
-    selection-background-color: #3d8ec9;
+    border: 1px solid #0d0808;
+    selection-background-color: #ffffff;
 }
 
 QComboBox::drop-down
@@ -48,11 +48,11 @@ QComboBox::drop-down
 
 QComboBox::down-arrow
 {
-    image: url(/home/kopylov/projects/TMutomo-develope/rc/down_arrow_disabled.png);
+    image: url(:/qss_icons/rc/combobox_open.png);
 }
 
 QComboBox::down-arrow:on, QComboBox::down-arrow:hover,
 QComboBox::down-arrow:focus
 {
-    image: url(/home/kopylov/projects/TMutomo-develope/rc/down_arrow.png);
+    image: url(:/qss_icons/rc/combobox_open.png);
 }

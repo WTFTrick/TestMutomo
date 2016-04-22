@@ -5,8 +5,8 @@ bool f_orient = false;
 viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48),
     VectorOfRectanglesOverComboBoxes(48), VectorOfbadBoards(48), nmOfBoardsOnDetector(6),  QWidget(parent)
 {
-    CreateView();
     ClearVectorOfBrokenDevices();
+    CreateView();
     CreateConnections();
     ClearJSONFile();
 }
@@ -31,7 +31,7 @@ void viewConstr::CreateView()
     scene = new QGraphicsScene(this);
     gv = new QGraphicsView();
     gv->setScene(scene);
-    gv->setSceneRect(QRectF(175, 200 , 300, 300));
+    gv->setSceneRect(QRectF(125, 200 , 300, 300));
     gv->centerOn( 0 , 0 );
     gv->setAlignment(Qt::AlignCenter);
     gv->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -52,11 +52,9 @@ void viewConstr::CreateView()
     quint8 height = 60;
     int empty_area = count / 2.25;  // empty area between blocks of detectors, where can be radiograph object
     int xcb = width + 15;           // x coordinate for combobox, which containt x and y values
-    int xsb = width + 100;          // x coordinate for spinbox, which contain order nubmer
-    int NumberInSpinBox = 0;        // vaule, which will be in spinBox
     QSize ComboBoxFixedSize(60, 50);
     int counterForComboBox = 0;
-    int nullX = 0;
+    int nullX = 1;
 
     // Drawing a rectangles
     for (int i = 0; i < count; i = i + step)
@@ -73,15 +71,17 @@ void viewConstr::CreateView()
             if ((j < width) && (i != empty_area))
             {
                 QString s_numberOfBoardMT = QString::number( counterForComboBox );
+
+                RectanglesForComboBoxes = new QGraphicsRectItem();
+                RectanglesForComboBoxes = scene->addRect(j+8, i+5, 63, 53,  transparentPen, TBrush);
+                VectorOfRectanglesOverComboBoxes[counterForComboBox] = RectanglesForComboBoxes;
+
                 QComboBox* cmb = new QComboBox();
                 listComboBox << cmb;
                 cmb->setFixedSize( ComboBoxFixedSize );
                 cmb->addItem(  s_numberOfBoardMT );
                 gpw = scene->addWidget( cmb );
                 cmb->move(j+10,i+6);
-                RectanglesForComboBoxes = new QGraphicsRectItem();
-                RectanglesForComboBoxes = scene->addRect(j+10, i+6, 59, 49,  transparentPen, TBrush);
-                VectorOfRectanglesOverComboBoxes[counterForComboBox] = RectanglesForComboBoxes;
                 scene->update();
                 counterForComboBox++;
             }
@@ -163,9 +163,15 @@ void viewConstr::BrokenDevice()
 
     for ( int i = 0; i < countOfBoards; i++ )
         if ( VectorOfbadBoards[i] == 1)
+        {
             VectorOfRectanglesOverComboBoxes[i]->setPen(redPen);
+            VectorOfRectanglesOverComboBoxes[i]->setBrush(QBrush(Qt::red));
+        }
         else
+        {
             VectorOfRectanglesOverComboBoxes[i]->setPen(transparentPen);
+            VectorOfRectanglesOverComboBoxes[i]->setBrush(QBrush(Qt::transparent));
+        }
 
     ClearVectorOfBrokenDevices();
 }
@@ -216,8 +222,7 @@ void viewConstr::ToJson()
 void viewConstr::onRotate(Qt::ScreenOrientation)
 {
     scene->addRect(0, 0, 1, 1,  QPen(Qt::transparent), QBrush(Qt::transparent));
-    gv->setSceneRect(QRectF(175, 200 , 300, 300));
-    gv->centerOn( 0 , 0 );
+    gv->setSceneRect(QRectF(125, 200 , 300, 300));
 
     // don't work without changes in scene
     // ------------------

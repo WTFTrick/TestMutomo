@@ -8,6 +8,7 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
 {
     ui->setupUi(this);
 
+
     setWindowTitle("Mutomo Client");
     setCentralWidget(ui->tabWidget);
 
@@ -76,9 +77,23 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     ui->tabWidget->setFocus();
 
 #ifdef ANDROID
-    slotMessage("Run on Android");
+
+    QApplication::setStyle("fusion");
+
+    QFile f(":qdarkstyle/StyleSheet.qss");
+    if (!f.exists())
+    {
+        ui->statusBar->showMessage("Unable to set stylesheet, file not found\n");
+    }
+    else
+    {
+        f.open(QFile::ReadOnly | QFile::Text);
+        QTextStream ts(&f);
+        qApp->setStyleSheet(ts.readAll());
+    }
+
 #else
-    slotMessage("Run on Desktop");
+    //slotMessage("Run on Desktop");
 #endif
 
 }

@@ -36,3 +36,6 @@ MOBILITY =
 DISTFILES += \
     StyleSheet.qss
 
+RESOURCES += \
+    StyleSheet.qrc
+
