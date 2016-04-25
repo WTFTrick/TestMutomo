@@ -25,6 +25,8 @@ public:
 
     QJsonDocument docJSON;
 
+    bool OrientationChange;
+
     QList< QComboBox* > listComboBox;
     QList< QSpinBox* > ListSpinBox;
     QList< QComboBox* > ListCoordComboBox;

@@ -3,11 +3,10 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(49), ChannelsOnBoard(49),numberOfBrokenDevice(0),
+MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(48), ChannelsOnBoard(49),numberOfBrokenDevice(0),
     LinesCount(49), qsettings("settings.conf", QSettings::NativeFormat), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
 
     setWindowTitle("Mutomo Client");
     setCentralWidget(ui->tabWidget);
@@ -15,19 +14,20 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     thresholdGraph = ui->customPlot->addGraph();
     threhshold_data = thresholdGraph->data();
 
+    YlowerBound = 0;
+    XlowerBound = 0;
+    XupperBound = 2400;
+
     if ( ! QFile::exists("settings.conf") )
     {
-        YlowerBound = 0;
         YupperBound = 150;
-        XlowerBound = 0;
-        XupperBound = 2531;
         strHost = "0.0.0.0";
         value_threshold = 100;
         ui->statusBar->showMessage("Application run. Threshold =" + QString::number(value_threshold));
     }
     else
     {
-        get_threshold(qsettings.value("settings/threshold").toInt(), qsettings.value("settings/xUpperBound").toInt(), qsettings.value("settings/yUpperBound").toInt());
+        get_threshold(qsettings.value("settings/threshold").toInt(), qsettings.value("settings/yUpperBound").toInt());
         connectToHost(qsettings.value("settings/IP").toString());
         ui->statusBar->showMessage("Application run. Threshold value is " + qsettings.value("settings/threshold").toString() + ".");
     }
@@ -37,11 +37,14 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
     graph1 = ui->customPlot->addGraph();
     mapData = graph1->data();
 
+    ui->customPlot->installEventFilter(this);
+
     ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom );
     ui->customPlot->xAxis->setLabel("Номер канала");
     ui->customPlot->yAxis->setLabel("Частота, HZ");
-    ui->customPlot->xAxis->setRange(0, 2500);
-    ui->customPlot->yAxis->setRange(0, 100);
+    ui->customPlot->xAxis->setRange(XlowerBound, XupperBound);
+    ui->customPlot->yAxis->setRange(YlowerBound, YupperBound);
+
 
     graph1->setLineStyle((QCPGraph::LineStyle)(2));
 
@@ -76,11 +79,13 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
 
     ui->tabWidget->setFocus();
 
+    CreateThresholdDrag();
+
 #ifdef ANDROID
 
     QApplication::setStyle("fusion");
 
-    QFile f(":qdarkstyle/StyleSheet.qss");
+    QFile f(":qstyle/StyleSheet.qss");
     if (!f.exists())
     {
         ui->statusBar->showMessage("Unable to set stylesheet, file not found\n");
@@ -176,14 +181,28 @@ void MainWindow::StartServer()
     //Команда - начать генерацию данных на сервере и передачу клиенту
 
     quint32 data = 1;
+    TYPE_DATA t_data = DATA_CMD;
     QByteArray arrayStart;
-    arrayStart.setNum(data);
+    //arrayStart.setNum(t_data);
+    //arrayStart.setNum(data);
+
+    QDataStream out(&arrayStart, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_6);
+
+    out << quint64(0);
+
+    out << t_data;
+    out << data;
+
+    out.device()->seek(0);
+    quint64 size_pkg = quint64(arrayStart.size() - sizeof(quint64));
+    out << size_pkg;
+
+    qDebug() << arrayStart.toUInt();
+
     //arrayStart += data;
     //qDebug() << "size of QByteArray arrayStart = " << arrayStart.size();
     //qDebug() << "\n";
-
-
-    TYPE_DATA t_data = DATA_CMD;
 
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
@@ -204,9 +223,10 @@ void MainWindow::StopServer()
 
     quint32 data = 0;
     QByteArray arrayStop;
+    TYPE_DATA t_data = DATA_CMD;
+    arrayStop.setNum(t_data);
     arrayStop.setNum(data);
 
-    TYPE_DATA t_data = DATA_CMD;
 
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
@@ -268,6 +288,8 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
     //  Передача данных серверу
     //  Блок данных |Size|Type|Data|
 
+    //Передавать всё в QByteArray
+
     QByteArray rawData;
     QDataStream out(&rawData, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_6);
@@ -276,7 +298,7 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
     out << quint64(0);
 
     //  Type
-    out << t_data;
+    //out << t_data;
 
     //  Data
     out << data;
@@ -457,7 +479,7 @@ void MainWindow::CreateLines()
 
 void MainWindow::CreateThresholdLine()
 {
-    for (double i = 0; i < 2510; i += 1250 )
+    for (double i = 0; i < 2510; i += 2500 )
         threhshold_data->operator [](i) = QCPData(i, value_threshold);
 
     QPen pen;
@@ -467,6 +489,19 @@ void MainWindow::CreateThresholdLine()
     thresholdGraph->setPen(pen);
 
     ui->customPlot->replot();
+}
+
+void MainWindow::CreateThresholdDrag()
+{
+    thresholdCircle = ui->customPlot->addGraph();
+    thresholdCircleData = thresholdCircle->data();
+
+    for (double i = 0; i < 2; i ++ )
+        thresholdCircleData->operator [](i) = QCPData(2300, value_threshold);
+
+    thresholdCircle->setPen(QPen(Qt::red));
+    thresholdCircle->setLineStyle(QCPGraph::lsNone);
+    thresholdCircle->setScatterStyle(QCPScatterStyle::ssDisc);
 }
 
 void MainWindow::CreateLabels()
@@ -506,7 +541,7 @@ void MainWindow::CreateConnections()
 
     // connections between mainWindow and modal dialogs
     connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
-    connect(settings_dialog, SIGNAL(sendThreshold(quint16,quint16,quint16)), this, SLOT(get_threshold(quint16,quint16,quint16)));
+    connect(settings_dialog, SIGNAL(sendThreshold(quint16,quint16)), this, SLOT(get_threshold(quint16,quint16)));
 
     // QCustomPlot connects
     connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
@@ -521,6 +556,7 @@ void MainWindow::CreateConnections()
 
     // mouse click on some area of plot
     connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MousePress(QCPAbstractItem* , QMouseEvent*)));
+    connect(ui->customPlot, SIGNAL(plottableClick(QCPAbstractPlottable*,QMouseEvent*)), this, SLOT(MouseOnGraphPress(QCPAbstractPlottable*, QMouseEvent*)));
 
     // start/stop server buttons
     connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(StartServer()));
@@ -586,6 +622,33 @@ void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)
             ui->customPlot->replot();
         }
     }
+
+}
+
+void MainWindow::MouseOnGraphPress(QCPAbstractPlottable *plot, QMouseEvent *event)
+{
+    if (plot && event->type() == QEvent::MouseButtonPress)
+    {
+        qDebug() << "Pressed on Threshold Circle";
+        //QMouseEvent *_mouseEvent = static_cast<QMouseEvent*>(event);
+    }
+}
+
+bool MainWindow::eventFilter(QObject *target, QEvent *event)
+{
+    if(target == thresholdCircle && event->type() == QEvent::MouseButtonPress)
+    {
+        QMouseEvent *_mouseEvent = static_cast<QMouseEvent*>(event);
+
+        /*
+            Here you have mouseEvent object so you have x,y coordinate of
+            MouseEvent.
+            Now if you want to convert x,y coordiante of mouse to plot coordinates
+            you can easily use QCPAxis::pixelToCoord() method.
+
+        */
+    }
+    return false;
 }
 
 void MainWindow::on_actionSettings_triggered()
@@ -597,17 +660,14 @@ void MainWindow::on_actionSettings_triggered()
         qDebug() << "Open modal window thershold settings";
 }
 
-void MainWindow::get_threshold(quint16 threshold, quint16 xUpperBound, quint16 yUpperBound)
+void MainWindow::get_threshold(quint16 threshold, quint16 yUpperBound)
 {
     value_threshold = threshold;
     YupperBound = yUpperBound;
-    XupperBound = xUpperBound;
     qsettings.setValue("settings/threshold", threshold);
     qsettings.setValue("settings/yUpperBound", yUpperBound);
-    qsettings.setValue("settings/xUpperBound", xUpperBound);
     QString sThr = QString::number(value_threshold);
     ui->statusBar->showMessage("New threshold = " + sThr);
-    ui->customPlot->xAxis->setRange( 0, XupperBound );
     ui->customPlot->yAxis->setRange( 0, YupperBound );
     CreateThresholdLine();
 }

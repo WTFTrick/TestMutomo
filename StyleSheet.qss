@@ -11,12 +11,6 @@ QComboBox
     min-width: 50px;
 }
 
-QComboBox:hover
-{
-    border: 2px solid #0d0808;
-    color: black;
-}
-
 QComboBox:on
 {
     background-color: #ffffff;

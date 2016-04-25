@@ -17,23 +17,19 @@ settings::~settings()
 void settings::InterfaceSettings()
 {
     ui->label_threshold->setAlignment(Qt::AlignCenter);     //Set label at center
-    ui->label_xUpperBound->setAlignment(Qt::AlignCenter);
     ui->label_yUpperBound->setAlignment(Qt::AlignCenter);
 
     ui->le_thresholdValue->setValidator( new QIntValidator(0, 100, this)    );
     ui->le_yUpperBound->setValidator(   new QIntValidator(0, 500, this)     );
-    ui->le_xUpperBound->setValidator(   new QIntValidator(0, 3000, this)    );
 
     if ( QFile::exists("settings.conf") )
     {
         ui->le_thresholdValue->setText( qsettings.value("settings/threshold").toString()    );
-        ui->le_xUpperBound->setText(    qsettings.value("settings/xUpperBound").toString()  );
         ui->le_yUpperBound->setText(    qsettings.value("settings/yUpperBound").toString()  );
     }
     else
     {
         ui->le_thresholdValue->setText("100");
-        ui->le_xUpperBound->setText("2531");
         ui->le_yUpperBound->setText("150");
     }
 
@@ -48,15 +44,14 @@ void settings::CreateConnections()
 
 void settings::ok_clicked()
 {
-    if ((ui->le_thresholdValue->text() == "") || (ui->le_yUpperBound->text() == "") || (ui->le_xUpperBound->text() == ""))
+    if ((ui->le_thresholdValue->text() == "") || (ui->le_yUpperBound->text() == "") )
         qDebug() << "Edit line is empty! Enter some value!";
 
     else
     {
         quint16 threshold= ui->le_thresholdValue->text().toInt();
-        quint16 xUpperBound = ui->le_xUpperBound->text().toInt();
         quint16 yUpperBound = ui->le_yUpperBound->text().toInt();
-        emit sendThreshold(threshold, xUpperBound, yUpperBound);
+        emit sendThreshold(threshold, yUpperBound);
         close();
     }
 }

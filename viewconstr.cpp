@@ -22,6 +22,7 @@ viewConstr::~viewConstr()
 void viewConstr::CreateView()
 {
     //Create graphics view,scene, button and layout
+
     screen = QGuiApplication::primaryScreen();
     screen->setOrientationUpdateMask(Qt::PortraitOrientation| Qt::LandscapeOrientation| Qt::InvertedPortraitOrientation| Qt::InvertedLandscapeOrientation);
 
@@ -36,7 +37,6 @@ void viewConstr::CreateView()
     gv->setAlignment(Qt::AlignCenter);
     gv->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     gv->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
     mainLayout = new QVBoxLayout;
     mainLayout->addWidget(gv);
     mainLayout->addWidget(pb_toJson);
@@ -89,7 +89,6 @@ void viewConstr::CreateView()
     }
 
     //Drawing a comboboxes (which contain x and y) and spinboxes
-
     for (int k = 0; k < count; k += step)
     {
         if (k != empty_area)
@@ -103,6 +102,7 @@ void viewConstr::CreateView()
             cmb_coord->move(xcb,k+6);
         }
     }
+
 }
 
 void viewConstr::resizeEvent(QResizeEvent *event)
@@ -120,14 +120,15 @@ void viewConstr::resizeEvent(QResizeEvent *event)
     gv->repaint();
     */
 
-    gv->fitInView(-40, -40, scene->width()+40, scene->height()+40, Qt::KeepAspectRatio);
+    gv->fitInView(-40, -40, scene->width() + 40, scene->height() + 40, Qt::KeepAspectRatio);
+
     QWidget::resizeEvent(event);
 }
 
 bool viewConstr::event(QEvent *event)
 {
     if( event->type() == QEvent::Show)
-        gv->fitInView(-40, -40, scene->width()+40, scene->height()+40, Qt::KeepAspectRatio);
+        gv->fitInView(-40, -40,  scene->width() + 40, scene->height() + 40,  Qt::KeepAspectRatio);
 
     return QWidget::event(event);
 }
@@ -156,7 +157,6 @@ void viewConstr::ClearJSONFile()
 void viewConstr::BrokenDevice()
 {
     // Cycle for broken boards
-
     QPen redPen(Qt::red);
     QPen transparentPen(Qt::transparent);
     redPen.setWidth(2);
@@ -174,10 +174,12 @@ void viewConstr::BrokenDevice()
         }
 
     ClearVectorOfBrokenDevices();
+
 }
 
 void viewConstr::ToJson()
 {
+    //Добавить кнопку Get Config
     ClearJSONFile();
     QJsonObject jsonDevice;
     QJsonObject jsonDetector;
@@ -239,11 +241,9 @@ void viewConstr::onRotate(Qt::ScreenOrientation)
     */
 
     // ------------------
-    //emit messg( "Change orientation"  );
-    //gv->fitInView(-40, -40, scene->width()+40, scene->height()+40, Qt::KeepAspectRatio);
+
+    emit messg( "Change orientation"  );
 }
-
-
 
 
 

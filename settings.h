@@ -26,7 +26,7 @@ private slots:
     void cancel_clicked();
 
 signals:
-    void sendThreshold(quint16 threshold, quint16 xUpperBound, quint16 yUpperBound);
+    void sendThreshold(quint16 threshold, quint16 yUpperBound);
 
 private:
     Ui::settings *ui;

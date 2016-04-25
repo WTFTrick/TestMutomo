@@ -59,7 +59,9 @@ private:
     QCPDataMap  *mapData;
     QCPGraph    *graph1;
     QCPDataMap* threhshold_data;
+    QCPDataMap* thresholdCircleData;
     QCPGraph    *thresholdGraph;
+    QCPGraph    *thresholdCircle;
     QCustomPlot *customPlot;
     IPDialog* ip_dialog;                // exemplar of IPDialog class, for creating modal window for Connection.
     settings* settings_dialog;          // exemplar of settings class, for creating modal window for Settings.
@@ -72,6 +74,7 @@ private:
 
     void CreateLines();
     void CreateThresholdLine();
+    void CreateThresholdDrag();
     void CreateLabels();                 // function, that draw labels (number of MT48) on customPlot widget
     void PaintNumberOfBrokenDevices();  // paint number of broken device on graphic
     void CreatePlot(QVector<quint32> *arrData);
@@ -100,14 +103,16 @@ private slots:
     void on_pb_ZoomOut_clicked();
     void on_pb_ResetRange_clicked();
     void MousePress(QCPAbstractItem* item, QMouseEvent* event);
+    void MouseOnGraphPress(QCPAbstractPlottable* plot,QMouseEvent* event);
     void tabSelected();
     void on_actionSettings_triggered();
-    void get_threshold(quint16 threshold, quint16 xUpperBound, quint16 yUpperBound);
+    void get_threshold(quint16 threshold, quint16 yUpperBound);
     void slotMessage(QString str);
 
 protected:
     void resizeEvent(QResizeEvent* event);
     void changeEvent(QEvent *event);
+    bool eventFilter(QObject *target, QEvent *event);
 };
 
 #endif // MAINWINDOW_H
