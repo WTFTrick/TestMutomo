@@ -44,8 +44,8 @@ private:
     int nPort;
     int LinesCount;
     const unsigned char ChannelsOnBoard;
-    quint8 value_threshold;
-    quint32     m_nNextBlockSize;
+    quint32 value_threshold;
+    quint32 m_nNextBlockSize;
     quint32 xPosOfCircle;
     QString strHost;                    // String, that contain an IP-Adress of the server from modal window (Connection dialog)
 
@@ -76,7 +76,7 @@ private:
     QVector<bool> vectorForCheckingDevices;
 
     void CreateLines();
-    void CreateThresholdLine();
+    void DrawThresholdWidget();
     void CreateThresholdDragCircle();
     void CreateLabels();                 // function, that draw labels (number of MT48) on customPlot widget
     void PaintNumberOfBrokenDevices();  // paint number of broken device on graphic
@@ -112,13 +112,12 @@ private slots:
     void MouseRealesed(QMouseEvent* event);
     void tabSelected();
     void on_actionSettings_triggered();
-    void get_threshold(quint16 threshold, quint16 yUpperBound);
+    void get_threshold();
     void slotMessage(QString str);
 
 protected:
     void resizeEvent(QResizeEvent* event);
     void changeEvent(QEvent *event);
-    bool eventFilter(QObject *target, QEvent *event);
 };
 
 #endif // MAINWINDOW_H

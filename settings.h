@@ -5,17 +5,20 @@
 #include <QDebug>
 #include <mainwindow.h>
 
+#include "ui_settings.h"
+
 class MainWindow;
 
 namespace Ui {
 class settings;
 }
 
-class settings : public QDialog
+class settings : public QDialog, public Ui::settings
 {
     Q_OBJECT
 
 public:
+    //Ui::settings *ui;
     explicit settings(QWidget *parent = 0);
     ~settings();
     void InterfaceSettings();
@@ -29,7 +32,6 @@ signals:
     void sendThreshold(quint16 threshold, quint16 yUpperBound);
 
 private:
-    Ui::settings *ui;
     QSettings qsettings;
 };
 

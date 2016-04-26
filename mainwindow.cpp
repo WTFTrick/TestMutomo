@@ -24,6 +24,12 @@ MainWindow::MainWindow() :
     thresholdGraph = ui->customPlot->addGraph();
     threhshold_data = thresholdGraph->data();
 
+    QPen pen;
+    pen.setColor(QColor(255,0,0));
+    pen.setWidth(2);
+    pen.setStyle(Qt::DotLine);
+    thresholdGraph->setPen(pen);
+
     YlowerBound = 0;
     XlowerBound = 0;
     XupperBound = 2400;
@@ -37,12 +43,16 @@ MainWindow::MainWindow() :
     }
     else
     {
-        get_threshold(qsettings.value("settings/threshold").toInt(), qsettings.value("settings/yUpperBound").toInt());
-        connectToHost(qsettings.value("settings/IP").toString());
-        ui->statusBar->showMessage("Application run. Threshold value is " + qsettings.value("settings/threshold").toString() + ".");
+        value_threshold = qsettings.value("settings/threshold").toInt();
+        YupperBound = qsettings.value("settings/yUpperBound").toInt();
+        strHost = qsettings.value("settings/IP").toString();
+
+        ui->statusBar->showMessage("Application run. Threshold value is " + QString::number(value_threshold) + ".");
+
+        //get_threshold(qsettings.value("settings/threshold").toInt(), qsettings.value("settings/yUpperBound").toInt());
+        //connectToHost(qsettings.value("settings/IP").toString());
     }
 
-    CreateThresholdLine();
 
     graph1 = ui->customPlot->addGraph();
     mapData = graph1->data();
@@ -54,7 +64,6 @@ MainWindow::MainWindow() :
     ui->customPlot->yAxis->setLabel("Частота, HZ");
     ui->customPlot->xAxis->setRange(XlowerBound, XupperBound);
     ui->customPlot->yAxis->setRange(YlowerBound, YupperBound);
-
 
     graph1->setLineStyle((QCPGraph::LineStyle)(2));
 
@@ -73,10 +82,12 @@ MainWindow::MainWindow() :
     graphPen.setColor(QColor(0, 0, 0));
     graphPen.setWidthF(0.4);
     graph1->setPen(graphPen);
-    ui->customPlot->replot();
+
 
     ip_dialog = new IPDialog( this );
+
     settings_dialog = new settings( this );
+    settings_dialog->setModal(true);
 
     //MutomoHost = "10.162.1.110"
 
@@ -85,12 +96,20 @@ MainWindow::MainWindow() :
     bUpdatePlot = true;
     bUpdateViewConstr  = false;
 
-    ClearVectorForCheckingDevices();
+    thresholdCircle = ui->customPlot->addGraph();
+    thresholdCircleData = thresholdCircle->data();
+
+    thresholdCircle->setPen(QPen(Qt::red));
+    thresholdCircle->setLineStyle(QCPGraph::lsNone);
+    QCPScatterStyle ss_disc( QCPScatterStyle::ssCircle, diamCircle);
+    thresholdCircle->setScatterStyle(ss_disc);
+
+    DrawThresholdWidget();
+
+    ui->customPlot->replot();
 
     ui->tabWidget->setFocus();
 
-
-    CreateThresholdDragCircle();
 
 #ifdef ANDROID
 
@@ -118,7 +137,11 @@ MainWindow::~MainWindow()
 {
     //StopServer();
 
+    qsettings.setValue("settings/threshold", value_threshold);
+    qsettings.setValue("settings/yUpperBound", YupperBound);
+    qsettings.setValue("settings/IP", strHost);
     qsettings.sync();
+
     delete vw;
     delete settings_dialog;
     delete ip_dialog;
@@ -364,7 +387,7 @@ void MainWindow::connectToHost(QString str)
 {
     // Connecting to server
     strHost = str;
-    qsettings.setValue("settings/IP", str);
+    qsettings.setValue("settings/IP", strHost);
     //qDebug() << "Mainwindow ip:" << strHost;
 
     m_pTcpSocket = new QTcpSocket(this);
@@ -488,32 +511,18 @@ void MainWindow::CreateLines()
     //qDebug() << "y_1 = " << yAxisLowerBound << " y_2 = " << yAxisLowerBound + line_height;
 }
 
-void MainWindow::CreateThresholdLine()
+void MainWindow::DrawThresholdWidget()
 {
     for (double i = 0; i < 2510; i += 2500 )
         threhshold_data->operator [](i) = QCPData(i, value_threshold);
 
-    QPen pen;
-    pen.setColor(QColor(255,0,0));
-    pen.setWidth(2);
-    pen.setStyle(Qt::DotLine);
-    thresholdGraph->setPen(pen);
+    thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
 
     ui->customPlot->replot();
 }
 
 void MainWindow::CreateThresholdDragCircle()
 {
-    thresholdCircle = ui->customPlot->addGraph();
-    thresholdCircleData = thresholdCircle->data();
-
-    //for (double i = 0; i < 2; i ++ )
-    thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
-
-    thresholdCircle->setPen(QPen(Qt::red));
-    thresholdCircle->setLineStyle(QCPGraph::lsNone);
-    QCPScatterStyle ss_disc( QCPScatterStyle::ssCircle, diamCircle);
-    thresholdCircle->setScatterStyle(ss_disc);
 }
 
 void MainWindow::CreateLabels()
@@ -553,7 +562,7 @@ void MainWindow::CreateConnections()
 
     // connections between mainWindow and modal dialogs
     connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
-    connect(settings_dialog, SIGNAL(sendThreshold(quint16,quint16)), this, SLOT(get_threshold(quint16,quint16)));
+    //connect(settings_dialog, SIGNAL(sendThreshold(quint16,quint16)), this, SLOT(get_threshold(quint16,quint16)));
 
     // QCustomPlot connects
     connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(MouseRealesed(QMouseEvent*)));
@@ -650,8 +659,8 @@ void MainWindow::MouseOnDragCircleClicked(QCPAbstractPlottable *plot, QMouseEven
 
 void MainWindow::MousePressed(QMouseEvent *event)
 {
-    qDebug() << "event->x()" << event->x();
-    qDebug() << "event->pos().x()" << event->pos().x();
+    //qDebug() << "event->x()" << event->x();
+    //qDebug() << "event->pos().x()" << event->pos().x();
 
     double x = ui->customPlot->xAxis->pixelToCoord(event->pos().x());
     double y = ui->customPlot->yAxis->pixelToCoord(event->pos().y());
@@ -661,28 +670,27 @@ void MainWindow::MousePressed(QMouseEvent *event)
     quint32 rightBoundX  = thresholdCircleData->first().key + radius;
     quint32 topBoundY    = thresholdCircleData->first().value + radius;
     quint32 bottomBoundY = thresholdCircleData->first().value - radius;
+
     if ( (x >= leftBoundX)   && (x <= rightBoundX) &&
          (y >= bottomBoundY) && (y <= topBoundY))
     {
         //qDebug() << thresholdCircleData->first().value;
         //qDebug() << thresholdCircleData->first().key;
-        qDebug() << "\n====== In circle ======\n";
-        ui->statusBar->showMessage("In circle");
+        //qDebug() << "\n====== In circle ======\n";
+        //ui->statusBar->showMessage("In circle");
+
         PressedOnCircle = true;
     }
-    else
-    {
-        false;
-    }
 
-    qDebug() << "\nPressed on x:" << x;
+
+    /*qDebug() << "\nPressed on x:" << x;
     qDebug() << "Pressed on y:" << y;
     qDebug() << "leftBoundX:" << leftBoundX;
     qDebug() << "rightBoundX:" << rightBoundX;
     qDebug() << "topBoundY:" << topBoundY;
     qDebug() << "bottomBoundY:" << bottomBoundY;
     qDebug() << "X center of circle: " << thresholdCircleData->first().key;
-    qDebug() << "Y center of circle: " << thresholdCircleData->first().value;
+    qDebug() << "Y center of circle: " << thresholdCircleData->first().value;*/
 }
 
 void MainWindow::MoveThreshold(QMouseEvent *event)
@@ -690,58 +698,52 @@ void MainWindow::MoveThreshold(QMouseEvent *event)
     if (PressedOnCircle)
     {
         double y = ui->customPlot->yAxis->pixelToCoord(event->pos().y());
-        for (double i = 0; i < 2510; i += 2500 )
-            threhshold_data->operator [](i) = QCPData(i, y);
+        value_threshold = y;
 
-        thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, y);
+        for (double i = 0; i < 2510; i += 2500 )
+            threhshold_data->operator [](i) = QCPData(i, value_threshold);
+
+        thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
+
 
         ui->customPlot->replot();
-        value_threshold = y;
+        ui->statusBar->showMessage("Threshold value is " + QString::number(value_threshold) + ".");
     }
 }
 
 void MainWindow::MouseRealesed(QMouseEvent *event)
 {
-    PressedOnCircle = false;
-}
+    if ( PressedOnCircle )
+        PressedOnCircle = false;
 
-bool MainWindow::eventFilter(QObject *target, QEvent *event)
-{
-    if(target == thresholdCircle && event->type() == QEvent::MouseButtonPress)
-    {
-        QMouseEvent *_mouseEvent = static_cast<QMouseEvent*>(event);
-
-
-
-        /*
-            Here you have mouseEvent object so you have x,y coordinate of
-            MouseEvent.
-            Now if you want to convert x,y coordiante of mouse to plot coordinates
-            you can easily use QCPAxis::pixelToCoord() method.
-        */
-    }
-    return false;
+    //get_threshold(value_threshold,qsettings.value("settings/yUpperBound").toInt());
 }
 
 void MainWindow::on_actionSettings_triggered()
 {
     // Settings button action
 
-    settings_dialog->setModal(true);
+    settings_dialog->le_thresholdValue->setText( QString::number(value_threshold) );
+    settings_dialog->le_yUpperBound->setText( QString::number(YupperBound) );
+
     if (settings_dialog->exec() == QDialog::Accepted)
-        qDebug() << "Open modal window thershold settings";
+    {
+        value_threshold = settings_dialog->le_thresholdValue->text().toInt();
+        YupperBound = settings_dialog->le_yUpperBound->text().toInt();
+
+        //qDebug() << "New value of value_threshold = " << value_threshold;
+        //qDebug() << "Open modal window thershold settings";
+
+        get_threshold();
+    }
 }
 
-void MainWindow::get_threshold(quint16 threshold, quint16 yUpperBound)
+void MainWindow::get_threshold()
 {
-    value_threshold = threshold;
-    YupperBound = yUpperBound;
-    qsettings.setValue("settings/threshold", threshold);
-    qsettings.setValue("settings/yUpperBound", yUpperBound);
-    QString sThr = QString::number(value_threshold);
-    ui->statusBar->showMessage("New threshold = " + sThr);
+    ui->statusBar->showMessage("New threshold = " + QString::number(value_threshold));
     ui->customPlot->yAxis->setRange( 0, YupperBound );
-    CreateThresholdLine();
+
+    DrawThresholdWidget();
 }
 
 void MainWindow::slotMessage(QString str)
