@@ -3,8 +3,18 @@
 #include <QtNetwork>
 #include <QtGui>
 
-MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDevices(48), ChannelsOnBoard(49),numberOfBrokenDevice(0),
-    LinesCount(49), qsettings("settings.conf", QSettings::NativeFormat), ui(new Ui::MainWindow)
+MainWindow::MainWindow() :
+    nPort(2323),
+    m_nNextBlockSize(0),
+    vectorForCheckingDevices(48),
+    ChannelsOnBoard(49),
+    numberOfBrokenDevice(0),
+    LinesCount(49),
+    diamCircle(20),
+    xPosOfCircle(2300),
+    qsettings("settings.conf", QSettings::NativeFormat),
+    PressedOnCircle(false),
+    ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -79,7 +89,8 @@ MainWindow::MainWindow() : nPort(2323), m_nNextBlockSize(0),vectorForCheckingDev
 
     ui->tabWidget->setFocus();
 
-    CreateThresholdDrag();
+
+    CreateThresholdDragCircle();
 
 #ifdef ANDROID
 
@@ -491,17 +502,18 @@ void MainWindow::CreateThresholdLine()
     ui->customPlot->replot();
 }
 
-void MainWindow::CreateThresholdDrag()
+void MainWindow::CreateThresholdDragCircle()
 {
     thresholdCircle = ui->customPlot->addGraph();
     thresholdCircleData = thresholdCircle->data();
 
-    for (double i = 0; i < 2; i ++ )
-        thresholdCircleData->operator [](i) = QCPData(2300, value_threshold);
+    //for (double i = 0; i < 2; i ++ )
+    thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
 
     thresholdCircle->setPen(QPen(Qt::red));
     thresholdCircle->setLineStyle(QCPGraph::lsNone);
-    thresholdCircle->setScatterStyle(QCPScatterStyle::ssDisc);
+    QCPScatterStyle ss_disc( QCPScatterStyle::ssCircle, diamCircle);
+    thresholdCircle->setScatterStyle(ss_disc);
 }
 
 void MainWindow::CreateLabels()
@@ -544,7 +556,10 @@ void MainWindow::CreateConnections()
     connect(settings_dialog, SIGNAL(sendThreshold(quint16,quint16)), this, SLOT(get_threshold(quint16,quint16)));
 
     // QCustomPlot connects
+    connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(MouseRealesed(QMouseEvent*)));
+    connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(MoveThreshold(QMouseEvent*)));
     connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
+    connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(MousePressed(QMouseEvent*)));
     connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
     connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
     connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(yAxisChanged(QCPRange)));
@@ -555,9 +570,8 @@ void MainWindow::CreateConnections()
     connect(ui->pb_ResetRange, SIGNAL(clicked(bool)),           this, SLOT(ScaleChanged()));
 
     // mouse click on some area of plot
-    connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MousePress(QCPAbstractItem* , QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(plottableClick(QCPAbstractPlottable*,QMouseEvent*)), this, SLOT(MouseOnGraphPress(QCPAbstractPlottable*, QMouseEvent*)));
-
+    connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MouseClickOnTextItem(QCPAbstractItem* , QMouseEvent*)));
+    connect(ui->customPlot, SIGNAL(plottableClick(QCPAbstractPlottable*,QMouseEvent*)), this, SLOT(MouseOnDragCircleClicked(QCPAbstractPlottable*, QMouseEvent*)));
     // start/stop server buttons
     connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(StartServer()));
     connect(ui->pb_stopServer, SIGNAL(clicked(bool)), this, SLOT(StopServer()));
@@ -607,7 +621,7 @@ void MainWindow::tabSelected()
         bUpdateViewConstr = true;
 }
 
-void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)
+void MainWindow::MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event)
 {
     if (item)
     {
@@ -625,13 +639,70 @@ void MainWindow::MousePress(QCPAbstractItem* item, QMouseEvent* event)
 
 }
 
-void MainWindow::MouseOnGraphPress(QCPAbstractPlottable *plot, QMouseEvent *event)
+void MainWindow::MouseOnDragCircleClicked(QCPAbstractPlottable *plot, QMouseEvent *event)
 {
-    if (plot && event->type() == QEvent::MouseButtonPress)
+    if (plot == thresholdCircle)
     {
-        qDebug() << "Pressed on Threshold Circle";
+        //qDebug() << "Clicked on Threshold Circle";
         //QMouseEvent *_mouseEvent = static_cast<QMouseEvent*>(event);
     }
+}
+
+void MainWindow::MousePressed(QMouseEvent *event)
+{
+    qDebug() << "event->x()" << event->x();
+    qDebug() << "event->pos().x()" << event->pos().x();
+
+    double x = ui->customPlot->xAxis->pixelToCoord(event->pos().x());
+    double y = ui->customPlot->yAxis->pixelToCoord(event->pos().y());
+
+    quint8 radius  = diamCircle/2;
+    quint32 leftBoundX   = thresholdCircleData->first().key - radius;
+    quint32 rightBoundX  = thresholdCircleData->first().key + radius;
+    quint32 topBoundY    = thresholdCircleData->first().value + radius;
+    quint32 bottomBoundY = thresholdCircleData->first().value - radius;
+    if ( (x >= leftBoundX)   && (x <= rightBoundX) &&
+         (y >= bottomBoundY) && (y <= topBoundY))
+    {
+        //qDebug() << thresholdCircleData->first().value;
+        //qDebug() << thresholdCircleData->first().key;
+        qDebug() << "\n====== In circle ======\n";
+        ui->statusBar->showMessage("In circle");
+        PressedOnCircle = true;
+    }
+    else
+    {
+        false;
+    }
+
+    qDebug() << "\nPressed on x:" << x;
+    qDebug() << "Pressed on y:" << y;
+    qDebug() << "leftBoundX:" << leftBoundX;
+    qDebug() << "rightBoundX:" << rightBoundX;
+    qDebug() << "topBoundY:" << topBoundY;
+    qDebug() << "bottomBoundY:" << bottomBoundY;
+    qDebug() << "X center of circle: " << thresholdCircleData->first().key;
+    qDebug() << "Y center of circle: " << thresholdCircleData->first().value;
+}
+
+void MainWindow::MoveThreshold(QMouseEvent *event)
+{
+    if (PressedOnCircle)
+    {
+        double y = ui->customPlot->yAxis->pixelToCoord(event->pos().y());
+        for (double i = 0; i < 2510; i += 2500 )
+            threhshold_data->operator [](i) = QCPData(i, y);
+
+        thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, y);
+
+        ui->customPlot->replot();
+        value_threshold = y;
+    }
+}
+
+void MainWindow::MouseRealesed(QMouseEvent *event)
+{
+    PressedOnCircle = false;
 }
 
 bool MainWindow::eventFilter(QObject *target, QEvent *event)
@@ -640,12 +711,13 @@ bool MainWindow::eventFilter(QObject *target, QEvent *event)
     {
         QMouseEvent *_mouseEvent = static_cast<QMouseEvent*>(event);
 
+
+
         /*
             Here you have mouseEvent object so you have x,y coordinate of
             MouseEvent.
             Now if you want to convert x,y coordiante of mouse to plot coordinates
             you can easily use QCPAxis::pixelToCoord() method.
-
         */
     }
     return false;

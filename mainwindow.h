@@ -46,6 +46,7 @@ private:
     const unsigned char ChannelsOnBoard;
     quint8 value_threshold;
     quint32     m_nNextBlockSize;
+    quint32 xPosOfCircle;
     QString strHost;                    // String, that contain an IP-Adress of the server from modal window (Connection dialog)
 
     double yAxisLowerBound;
@@ -66,7 +67,9 @@ private:
     IPDialog* ip_dialog;                // exemplar of IPDialog class, for creating modal window for Connection.
     settings* settings_dialog;          // exemplar of settings class, for creating modal window for Settings.
     viewConstr* vw;                     // exemplar of viewConstr class, for creating second tab in TabWidget
+    const quint8 diamCircle;
 
+    bool PressedOnCircle;
     bool fVisibleLabels;                // bool variable, if true - draw number of MT48 on customPlot
     bool bUpdatePlot;                   // bool variable, if true - user can see Chart on customPlot
     bool bUpdateViewConstr;             // bool variable, if true - drawes a red rectangles over broken devices in second tab
@@ -74,7 +77,7 @@ private:
 
     void CreateLines();
     void CreateThresholdLine();
-    void CreateThresholdDrag();
+    void CreateThresholdDragCircle();
     void CreateLabels();                 // function, that draw labels (number of MT48) on customPlot widget
     void PaintNumberOfBrokenDevices();  // paint number of broken device on graphic
     void CreatePlot(QVector<quint32> *arrData);
@@ -102,8 +105,11 @@ private slots:
     void on_pb_ZoomIn_clicked();
     void on_pb_ZoomOut_clicked();
     void on_pb_ResetRange_clicked();
-    void MousePress(QCPAbstractItem* item, QMouseEvent* event);
-    void MouseOnGraphPress(QCPAbstractPlottable* plot,QMouseEvent* event);
+    void MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event);
+    void MouseOnDragCircleClicked(QCPAbstractPlottable* plot,QMouseEvent* event);
+    void MousePressed(QMouseEvent* event);
+    void MoveThreshold(QMouseEvent* event);
+    void MouseRealesed(QMouseEvent* event);
     void tabSelected();
     void on_actionSettings_triggered();
     void get_threshold(quint16 threshold, quint16 yUpperBound);
