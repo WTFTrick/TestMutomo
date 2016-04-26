@@ -237,13 +237,8 @@ void MainWindow::StartServer()
     quint64 size_pkg = quint64(arrayStart.size() - sizeof(quint64));
     out << size_pkg;
 
-    //qDebug() << arrayStart.toUInt();
-    //arrayStart += data;
-    //qDebug() << "size of QByteArray arrayStart = " << arrayStart.size();
-    //qDebug() << "\n";
-
-    qDebug() << "ba_data:" << ba_data;
-    qDebug() << "Data To Server:" << arrayStart;
+    //qDebug() << "ba_data:" << ba_data;
+    //qDebug() << "Data To Server:" << arrayStart;
 
 
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
@@ -340,7 +335,6 @@ void MainWindow::GetJsonFromViewConstr(QByteArray JsonDoc)
     quint64 size_pkg = quint64(arrayJson.size() - sizeof(quint64));
     out << size_pkg;
 
-    //qDebug() << JsonDoc;
 
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
@@ -378,15 +372,16 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
 
     quint64 sizeBlock = m_pTcpSocket->write(rawData);
 */
+
     quint64 sizeBlock = m_pTcpSocket->write(data);
 
-    qDebug() << "Client sent type:" << t_data;
+    /*qDebug() << "Client sent type:" << t_data;
     qDebug() << "Size of t_data:" << sizeof( t_data) << " bytes";
     qDebug() << "Client sent data:" << data;
     qDebug() << "Size of data:" << data.size() << " bytes";
     //qDebug() << "Client sent rawData:" << rawData;
     //qDebug() << "Size of package: " << size_pkg;
-    qDebug() << "Written to socket" << sizeBlock << "bytes";
+    qDebug() << "Written to socket" << sizeBlock << "bytes";*/
 }
 
 void MainWindow::DrawPlot()
