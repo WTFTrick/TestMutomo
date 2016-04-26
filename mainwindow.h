@@ -30,6 +30,9 @@ public:
     explicit MainWindow();
     ~MainWindow();
 
+
+    QTcpSocket* m_pTcpSocket;
+
     inline void ChannelCheck(quint32 freq, int ind); // выявление плат с каналами, в которых частота регистрации сигналов превышают порог
 
     bool* badBoards;
@@ -46,7 +49,7 @@ private:
     const unsigned char ChannelsOnBoard;
     quint32 value_threshold;
     quint32 m_nNextBlockSize;
-    quint32 xPosOfCircle;
+    quint32 xPosOfCircle;               // X coordinate of threshold circle;
     QString strHost;                    // String, that contain an IP-Adress of the server from modal window (Connection dialog)
 
     double yAxisLowerBound;
@@ -55,7 +58,6 @@ private:
     double XlowerBound;
     double XupperBound;
 
-    QTcpSocket* m_pTcpSocket;
     QCPItemText * NumberOfBoard;
     QCPDataMap  *mapData;
     QCPGraph    *graph1;
@@ -67,18 +69,17 @@ private:
     IPDialog* ip_dialog;                // exemplar of IPDialog class, for creating modal window for Connection.
     settings* settings_dialog;          // exemplar of settings class, for creating modal window for Settings.
     viewConstr* vw;                     // exemplar of viewConstr class, for creating second tab in TabWidget
-    const quint8 diamCircle;
+    const quint8 diamCircle;            // variable, that means diametr of threshold circle
 
-    bool PressedOnCircle;
+    bool PressedOnCircle;               // bool variable, if true - work MouseMove event and threshold line+circles move on Y axis
     bool fVisibleLabels;                // bool variable, if true - draw number of MT48 on customPlot
     bool bUpdatePlot;                   // bool variable, if true - user can see Chart on customPlot
     bool bUpdateViewConstr;             // bool variable, if true - drawes a red rectangles over broken devices in second tab
     QVector<bool> vectorForCheckingDevices;
 
     void CreateLines();
-    void DrawThresholdWidget();
-    void CreateThresholdDragCircle();
-    void CreateLabels();                 // function, that draw labels (number of MT48) on customPlot widget
+    void DrawThresholdWidget();         // Threshold line + circle
+    void CreateLabels();                // function, that draw labels (number of MT48) on customPlot widget
     void PaintNumberOfBrokenDevices();  // paint number of broken device on graphic
     void CreatePlot(QVector<quint32> *arrData);
     void CreateConnections();
@@ -106,7 +107,6 @@ private slots:
     void on_pb_ZoomOut_clicked();
     void on_pb_ResetRange_clicked();
     void MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event);
-    void MouseOnDragCircleClicked(QCPAbstractPlottable* plot,QMouseEvent* event);
     void MousePressed(QMouseEvent* event);
     void MoveThreshold(QMouseEvent* event);
     void MouseRealesed(QMouseEvent* event);

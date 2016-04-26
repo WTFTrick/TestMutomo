@@ -46,6 +46,7 @@ MainWindow::MainWindow() :
         value_threshold = qsettings.value("settings/threshold").toInt();
         YupperBound = qsettings.value("settings/yUpperBound").toInt();
         strHost = qsettings.value("settings/IP").toString();
+        connectToHost(strHost);
 
         ui->statusBar->showMessage("Application run. Threshold value is " + QString::number(value_threshold) + ".");
 
@@ -69,6 +70,7 @@ MainWindow::MainWindow() :
 
     ui->customPlot->addLayer("BG",ui->customPlot->layer("graph1"), QCustomPlot::limBelow);
     ui->customPlot->setCurrentLayer("BG");
+
     ui->pb_stopServer->setDisabled(true);
 
     vw = new viewConstr( this );
@@ -82,7 +84,6 @@ MainWindow::MainWindow() :
     graphPen.setColor(QColor(0, 0, 0));
     graphPen.setWidthF(0.4);
     graph1->setPen(graphPen);
-
 
     ip_dialog = new IPDialog( this );
 
@@ -101,15 +102,15 @@ MainWindow::MainWindow() :
 
     thresholdCircle->setPen(QPen(Qt::red));
     thresholdCircle->setLineStyle(QCPGraph::lsNone);
-    QCPScatterStyle ss_disc( QCPScatterStyle::ssCircle, diamCircle);
+    QCPScatterStyle ss_disc( QCPScatterStyle::ssCircle, QPen(Qt::red), QBrush(Qt::white), diamCircle);
     thresholdCircle->setScatterStyle(ss_disc);
 
-    DrawThresholdWidget();
+    /*ui->customPlot->addLayer("abovemain", ui->customPlot->layer("main"), QCustomPlot::limAbove);
+    thresholdCircle->setLayer("abovemain");*/
 
-    ui->customPlot->replot();
+    //DrawThresholdWidget();
 
     ui->tabWidget->setFocus();
-
 
 #ifdef ANDROID
 
@@ -217,8 +218,12 @@ void MainWindow::StartServer()
     quint32 data = 1;
     TYPE_DATA t_data = DATA_CMD;
     QByteArray arrayStart;
-    //arrayStart.setNum(t_data);
     //arrayStart.setNum(data);
+
+
+    QByteArray ba_data;
+    //ba_data.push_back(1);
+    ba_data.setNum(data);
 
     QDataStream out(&arrayStart, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_6);
@@ -226,17 +231,20 @@ void MainWindow::StartServer()
     out << quint64(0);
 
     out << t_data;
-    out << data;
+    out << ba_data;
 
     out.device()->seek(0);
     quint64 size_pkg = quint64(arrayStart.size() - sizeof(quint64));
     out << size_pkg;
 
-    qDebug() << arrayStart.toUInt();
-
+    //qDebug() << arrayStart.toUInt();
     //arrayStart += data;
     //qDebug() << "size of QByteArray arrayStart = " << arrayStart.size();
     //qDebug() << "\n";
+
+    qDebug() << "ba_data:" << ba_data;
+    qDebug() << "Data To Server:" << arrayStart;
+
 
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
@@ -258,9 +266,22 @@ void MainWindow::StopServer()
     quint32 data = 0;
     QByteArray arrayStop;
     TYPE_DATA t_data = DATA_CMD;
-    arrayStop.setNum(t_data);
-    arrayStop.setNum(data);
 
+    QByteArray ba_data;
+    //ba_data.push_back(1);
+    ba_data.setNum(data);
+
+    QDataStream out(&arrayStop, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_6);
+
+    out << quint64(0);
+
+    out << t_data;
+    out << ba_data;
+
+    out.device()->seek(0);
+    quint64 size_pkg = quint64(arrayStop.size() - sizeof(quint64));
+    out << size_pkg;
 
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
@@ -306,11 +327,24 @@ void MainWindow::GetJsonFromViewConstr(QByteArray JsonDoc)
 
     TYPE_DATA t_data = DATA_CONFIG_MUTOMO;
 
+    QByteArray arrayJson;
+    QDataStream out(&arrayJson, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_6);
+
+    out << quint64(0);
+
+    out << t_data;
+    out << JsonDoc;
+
+    out.device()->seek(0);
+    quint64 size_pkg = quint64(arrayJson.size() - sizeof(quint64));
+    out << size_pkg;
+
     //qDebug() << JsonDoc;
 
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
-        DataToServer(t_data, JsonDoc);
+        DataToServer(t_data, arrayJson);
         ui->statusBar->showMessage("Send configuration to server");
     }
     else
@@ -323,7 +357,7 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
     //  Блок данных |Size|Type|Data|
 
     //Передавать всё в QByteArray
-
+/*
     QByteArray rawData;
     QDataStream out(&rawData, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_6);
@@ -332,22 +366,26 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
     out << quint64(0);
 
     //  Type
-    //out << t_data;
+    out << t_data;
 
     //  Data
     out << data;
 
     out.device()->seek(0);
     quint64 size_pkg = quint64(rawData.size() - sizeof(quint64));
+    //quint64 size_pkg = quint64(rawData.size());
     out << size_pkg;
 
     quint64 sizeBlock = m_pTcpSocket->write(rawData);
+*/
+    quint64 sizeBlock = m_pTcpSocket->write(data);
 
     qDebug() << "Client sent type:" << t_data;
     qDebug() << "Size of t_data:" << sizeof( t_data) << " bytes";
     qDebug() << "Client sent data:" << data;
     qDebug() << "Size of data:" << data.size() << " bytes";
-    qDebug() << "Size of package: " << size_pkg;
+    //qDebug() << "Client sent rawData:" << rawData;
+    //qDebug() << "Size of package: " << size_pkg;
     qDebug() << "Written to socket" << sizeBlock << "bytes";
 }
 
@@ -360,6 +398,8 @@ void MainWindow::DrawPlot()
     CreateLines();
     if ( fVisibleLabels )
         CreateLabels();
+
+    DrawThresholdWidget();
 }
 
 void MainWindow::slotConnected()
@@ -387,7 +427,6 @@ void MainWindow::connectToHost(QString str)
 {
     // Connecting to server
     strHost = str;
-    qsettings.setValue("settings/IP", strHost);
     //qDebug() << "Mainwindow ip:" << strHost;
 
     m_pTcpSocket = new QTcpSocket(this);
@@ -521,10 +560,6 @@ void MainWindow::DrawThresholdWidget()
     ui->customPlot->replot();
 }
 
-void MainWindow::CreateThresholdDragCircle()
-{
-}
-
 void MainWindow::CreateLabels()
 {
     // Add a QCPItemText (number of MT48 on customPlot)
@@ -580,7 +615,7 @@ void MainWindow::CreateConnections()
 
     // mouse click on some area of plot
     connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MouseClickOnTextItem(QCPAbstractItem* , QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(plottableClick(QCPAbstractPlottable*,QMouseEvent*)), this, SLOT(MouseOnDragCircleClicked(QCPAbstractPlottable*, QMouseEvent*)));
+
     // start/stop server buttons
     connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(StartServer()));
     connect(ui->pb_stopServer, SIGNAL(clicked(bool)), this, SLOT(StopServer()));
@@ -601,6 +636,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
     ScaleChanged();
+
 }
 
 void MainWindow::changeEvent(QEvent *event)
@@ -648,15 +684,6 @@ void MainWindow::MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event)
 
 }
 
-void MainWindow::MouseOnDragCircleClicked(QCPAbstractPlottable *plot, QMouseEvent *event)
-{
-    if (plot == thresholdCircle)
-    {
-        //qDebug() << "Clicked on Threshold Circle";
-        //QMouseEvent *_mouseEvent = static_cast<QMouseEvent*>(event);
-    }
-}
-
 void MainWindow::MousePressed(QMouseEvent *event)
 {
     //qDebug() << "event->x()" << event->x();
@@ -698,23 +725,30 @@ void MainWindow::MoveThreshold(QMouseEvent *event)
     if (PressedOnCircle)
     {
         double y = ui->customPlot->yAxis->pixelToCoord(event->pos().y());
-        value_threshold = y;
 
-        for (double i = 0; i < 2510; i += 2500 )
-            threhshold_data->operator [](i) = QCPData(i, value_threshold);
+        if ( y <= YupperBound && y >= 30 )
+        {
 
-        thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
+            value_threshold = y;
+
+            for (double i = 0; i < 2510; i += 2500 )
+                threhshold_data->operator [](i) = QCPData(i, value_threshold);
+
+            thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
 
 
-        ui->customPlot->replot();
-        ui->statusBar->showMessage("Threshold value is " + QString::number(value_threshold) + ".");
+            ui->customPlot->replot();
+            ui->statusBar->showMessage("Threshold value is " + QString::number(value_threshold) + ".");
+        }
     }
 }
 
 void MainWindow::MouseRealesed(QMouseEvent *event)
 {
     if ( PressedOnCircle )
+    {
         PressedOnCircle = false;
+    }
 
     //get_threshold(value_threshold,qsettings.value("settings/yUpperBound").toInt());
 }

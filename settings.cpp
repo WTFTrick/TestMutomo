@@ -21,7 +21,7 @@ void settings::InterfaceSettings()
     label_yUpperBound->setAlignment(Qt::AlignCenter);
 
 
-    le_thresholdValue->setValidator( new QIntValidator(0, 100, this)    );
+    le_thresholdValue->setValidator( new QIntValidator(0, 350, this)    );
     le_yUpperBound->setValidator(   new QIntValidator(0, 500, this)     );
 
     le_thresholdValue->setFocus();
