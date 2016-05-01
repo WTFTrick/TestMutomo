@@ -10,8 +10,8 @@ MainWindow::MainWindow() :
     ChannelsOnBoard(49),
     numberOfBrokenDevice(0),
     LinesCount(49),
-    diamCircle(20),
     xPosOfCircle(2300),
+    diamCircle(20),
     qsettings("settings.conf", QSettings::NativeFormat),
     PressedOnCircle(false),
     ui(new Ui::MainWindow)
@@ -21,18 +21,9 @@ MainWindow::MainWindow() :
     setWindowTitle("Mutomo Client");
     setCentralWidget(ui->tabWidget);
 
-    thresholdGraph = ui->customPlot->addGraph();
-    threhshold_data = thresholdGraph->data();
-
-    QPen pen;
-    pen.setColor(QColor(255,0,0));
-    pen.setWidth(2);
-    pen.setStyle(Qt::DotLine);
-    thresholdGraph->setPen(pen);
-
     YlowerBound = 0;
     XlowerBound = 0;
-    XupperBound = 2400;
+    XupperBound = 2475;
 
     if ( ! QFile::exists("settings.conf") )
     {
@@ -49,11 +40,7 @@ MainWindow::MainWindow() :
         connectToHost(strHost);
 
         ui->statusBar->showMessage("Application run. Threshold value is " + QString::number(value_threshold) + ".");
-
-        //get_threshold(qsettings.value("settings/threshold").toInt(), qsettings.value("settings/yUpperBound").toInt());
-        //connectToHost(qsettings.value("settings/IP").toString());
     }
-
 
     graph1 = ui->customPlot->addGraph();
     mapData = graph1->data();
@@ -68,7 +55,7 @@ MainWindow::MainWindow() :
 
     graph1->setLineStyle((QCPGraph::LineStyle)(2));
 
-    ui->customPlot->addLayer("BG",ui->customPlot->layer("graph1"), QCustomPlot::limBelow);
+    ui->customPlot->addLayer("BG",ui->customPlot->layer("bg"), QCustomPlot::limBelow);
     ui->customPlot->setCurrentLayer("BG");
 
     ui->pb_stopServer->setDisabled(true);
@@ -94,28 +81,9 @@ MainWindow::MainWindow() :
 
     CreateConnections();
 
-    bUpdatePlot = true;
-    bUpdateViewConstr  = false;
-
-    thresholdCircle = ui->customPlot->addGraph();
-    thresholdCircleData = thresholdCircle->data();
-
-    thresholdCircle->setPen(QPen(Qt::red));
-    thresholdCircle->setLineStyle(QCPGraph::lsNone);
-    QCPScatterStyle ss_disc( QCPScatterStyle::ssCircle, QPen(Qt::red), QBrush(Qt::white), diamCircle);
-    thresholdCircle->setScatterStyle(ss_disc);
-
-    /*ui->customPlot->addLayer("abovemain", ui->customPlot->layer("main"), QCustomPlot::limAbove);
-    thresholdCircle->setLayer("abovemain");*/
-
-    //DrawThresholdWidget();
-
-    ui->tabWidget->setFocus();
-
 #ifdef ANDROID
-
+    // Set Style for Android App
     QApplication::setStyle("fusion");
-
     QFile f(":qstyle/StyleSheet.qss");
     if (!f.exists())
     {
@@ -128,16 +96,44 @@ MainWindow::MainWindow() :
         qApp->setStyleSheet(ts.readAll());
     }
 
+    //Set Threshold Circle Diametr for Android
+    diamCircle = 80;
 #else
-    //slotMessage("Run on Desktop");
+    //Set Threshold Circle Diametr for Desktop
+    diamCircle = 20;
 #endif
 
+    bUpdatePlot = true;
+    bUpdateViewConstr  = false;
+
+    // Threshold line and circle
+    // =========================================
+    thresholdGraph = ui->customPlot->addGraph();
+    threhshold_data = thresholdGraph->data();
+
+    QPen pen;
+    pen.setColor(QColor(255,0,0));
+    pen.setWidth(2);
+    pen.setStyle(Qt::DotLine);
+    thresholdGraph->setPen(pen);
+
+    thresholdCircle = ui->customPlot->addGraph();
+    thresholdCircleData = thresholdCircle->data();
+
+    thresholdCircle->setPen(QPen(Qt::red));
+    thresholdCircle->setLineStyle(QCPGraph::lsNone);
+    QCPScatterStyle ss_disc( QCPScatterStyle::ssCircle, QPen(Qt::red), QBrush(Qt::white), diamCircle);
+    thresholdCircle->setScatterStyle(ss_disc);
+    // =========================================
+
+    ui->customPlot->addLayer("belowmain", ui->customPlot->layer("main"), QCustomPlot::limBelow);
+    graph1->setLayer("belowmain");
+
+    ui->tabWidget->setFocus();
 }
 
 MainWindow::~MainWindow()
 {
-    //StopServer();
-
     qsettings.setValue("settings/threshold", value_threshold);
     qsettings.setValue("settings/yUpperBound", YupperBound);
     qsettings.setValue("settings/IP", strHost);
@@ -351,7 +347,7 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
     //  Блок данных |Size|Type|Data|
 
     //Передавать всё в QByteArray
-/*
+    /*
     QByteArray rawData;
     QDataStream out(&rawData, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_6);
@@ -431,11 +427,6 @@ void MainWindow::connectToHost(QString str)
     connect(m_pTcpSocket, SIGNAL(disconnected()), SLOT(slotReadyRead()));
 }
 
-void MainWindow::mousePress()
-{
-    ui->customPlot->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-}
-
 void MainWindow::mouseWheel()
 {
     ui->customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
@@ -470,14 +461,23 @@ void MainWindow::xAxisChanged(QCPRange newRange)
         if (fixedRange.upper > XupperBound || qFuzzyCompare(newRange.size(), XupperBound-XlowerBound))
             fixedRange.upper = XupperBound;
         ui->customPlot->xAxis->setRange(fixedRange);
-    } else if (fixedRange.upper > XupperBound)
-    {
-        fixedRange.upper = XupperBound;
-        fixedRange.lower = XupperBound - newRange.size();
-        if (fixedRange.lower < XlowerBound || qFuzzyCompare(newRange.size(), XupperBound-XlowerBound))
-            fixedRange.lower = XlowerBound;
-        ui->customPlot->xAxis->setRange(fixedRange);
     }
+    else
+        if (fixedRange.upper > XupperBound)
+        {
+            fixedRange.upper = XupperBound;
+            fixedRange.lower = XupperBound - newRange.size();
+            if (fixedRange.lower < XlowerBound || qFuzzyCompare(newRange.size(), XupperBound-XlowerBound))
+                fixedRange.lower = XlowerBound;
+            ui->customPlot->xAxis->setRange(fixedRange);
+        }
+
+    //xPosOfCircle = fixedRange.upper - 50;
+    //xPosOfCircle = ui->customPlot->xAxis->coordToPixel(fixedRange.upper);
+    //xPosOfCircle -= 50;
+    //qDebug() << "fixedRange.upper = " << fixedRange.upper;
+    //qDebug() << "xPosOfCircle = " << xPosOfCircle;
+    //qDebug() << "\n";
 }
 
 void MainWindow::yAxisChanged(QCPRange newRange)
@@ -540,6 +540,7 @@ void MainWindow::CreateLines()
         tickHLine->start->setCoords(i, yAxisLowerBound);
         tickHLine->end->setCoords(i, yAxisLowerBound + line_height);
         tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
+        tickHLine->setLayer("belowmain");
     }
 
     //qDebug() << "y_1 = " << yAxisLowerBound << " y_2 = " << yAxisLowerBound + line_height;
@@ -551,6 +552,7 @@ void MainWindow::DrawThresholdWidget()
         threhshold_data->operator [](i) = QCPData(i, value_threshold);
 
     thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
+    //qDebug() << "xPosOfCircle = " << xPosOfCircle;
 
     ui->customPlot->replot();
 }
@@ -597,7 +599,6 @@ void MainWindow::CreateConnections()
     // QCustomPlot connects
     connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(MouseRealesed(QMouseEvent*)));
     connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(MoveThreshold(QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
     connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(MousePressed(QMouseEvent*)));
     connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
     connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
@@ -676,7 +677,6 @@ void MainWindow::MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event)
             ui->customPlot->replot();
         }
     }
-
 }
 
 void MainWindow::MousePressed(QMouseEvent *event)
@@ -702,6 +702,7 @@ void MainWindow::MousePressed(QMouseEvent *event)
         //ui->statusBar->showMessage("In circle");
 
         PressedOnCircle = true;
+        ui->customPlot->setInteractions(0x000);
     }
 
 
@@ -721,7 +722,7 @@ void MainWindow::MoveThreshold(QMouseEvent *event)
     {
         double y = ui->customPlot->yAxis->pixelToCoord(event->pos().y());
 
-        if ( y <= YupperBound && y >= 30 )
+        if ( y <= YupperBound && y >= 10 )
         {
 
             value_threshold = y;
@@ -743,6 +744,7 @@ void MainWindow::MouseRealesed(QMouseEvent *event)
     if ( PressedOnCircle )
     {
         PressedOnCircle = false;
+        ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom );
     }
 
     //get_threshold(value_threshold,qsettings.value("settings/yUpperBound").toInt());

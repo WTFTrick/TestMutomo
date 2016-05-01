@@ -69,7 +69,7 @@ private:
     IPDialog* ip_dialog;                // exemplar of IPDialog class, for creating modal window for Connection.
     settings* settings_dialog;          // exemplar of settings class, for creating modal window for Settings.
     viewConstr* vw;                     // exemplar of viewConstr class, for creating second tab in TabWidget
-    const quint8 diamCircle;            // variable, that means diametr of threshold circle
+    int diamCircle;                     // variable, that means diametr of threshold circle
 
     bool PressedOnCircle;               // bool variable, if true - work MouseMove event and threshold line+circles move on Y axis
     bool fVisibleLabels;                // bool variable, if true - draw number of MT48 on customPlot
@@ -94,7 +94,6 @@ private slots:
     void StopServer();
     void StartServer();
     void ScaleChanged();
-    void mousePress();
     void mouseWheel();
     void slotReadyRead();
     void slotConnected();

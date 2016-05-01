@@ -1,8 +1,10 @@
 #include "settings.h"
 #include "ui_settings.h"
 
-settings::settings(QWidget *parent) : QDialog(parent), /*ui(new Ui::settings),*/
+settings::settings(QWidget *parent) :
+    QDialog(parent),
     qsettings("settings.conf", QSettings::NativeFormat)
+  /*, ui(new Ui::settings)*/
 {
     setupUi(this);
     InterfaceSettings();
@@ -20,9 +22,8 @@ void settings::InterfaceSettings()
     label_threshold->setAlignment(Qt::AlignCenter);     //Set label at center
     label_yUpperBound->setAlignment(Qt::AlignCenter);
 
-
-    le_thresholdValue->setValidator( new QIntValidator(0, 350, this)    );
-    le_yUpperBound->setValidator(   new QIntValidator(0, 500, this)     );
+    le_thresholdValue->setValidator( new QIntValidator(10, 350, this) );
+    le_yUpperBound->   setValidator( new QIntValidator(0, 500, this)  );
 
     le_thresholdValue->setFocus();
 }

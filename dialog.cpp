@@ -3,7 +3,9 @@
 #include <QtNetwork>
 #include <QtGui>
 
-IPDialog::IPDialog(QWidget *parent) : QDialog(parent), ui(new Ui::IPDialog)
+IPDialog::IPDialog(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::IPDialog)
 {
     ui->setupUi(this);
 
@@ -18,17 +20,13 @@ IPDialog::IPDialog(QWidget *parent) : QDialog(parent), ui(new Ui::IPDialog)
     }
     else
         ui->listWidget->setCurrentRow(0);
-
-    /*ui->pb_add->setFixedWidth(120);
-    ui->pb_connect->setFixedWidth(120);
-    ui->pb_close->setFixedWidth(120);
-    ui->pb_del->setFixedWidth(120);*/
 }
 
 IPDialog::~IPDialog()
 {
     ipFile.close();
     delete ui;
+    close();
 }
 
 void IPDialog::on_pb_close_clicked()
@@ -68,22 +66,22 @@ void IPDialog::on_pb_add_clicked()
 
 void IPDialog::ReadFromFile()
 {
-        QString tempstr;
-        QStringList list;
-        QTextStream stream;
-        stream.setDevice(&ipFile);
+    QString tempstr;
+    QStringList list;
+    QTextStream stream;
+    stream.setDevice(&ipFile);
 
-        if(ipFile.open(QIODevice::ReadWrite|QIODevice::Text))
+    if(ipFile.open(QIODevice::ReadWrite|QIODevice::Text))
+    {
+        while(!stream.atEnd())
         {
-            while(!stream.atEnd())
-            {
-                tempstr = stream.readLine();
-                list.append(tempstr);
-                QListWidgetItem *pIt;
-                pIt = new QListWidgetItem(tempstr, ui->listWidget);
-            }
+            tempstr = stream.readLine();
+            list.append(tempstr);
+            QListWidgetItem *pIt;
+            pIt = new QListWidgetItem(tempstr, ui->listWidget);
         }
-        ipFile.close();
+    }
+    ipFile.close();
 }
 
 void IPDialog::on_pb_del_clicked()

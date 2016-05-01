@@ -1,9 +1,15 @@
 #include "viewconstr.h"
 
-bool f_orient = false;
+//bool f_orient = false;
 
-viewConstr::viewConstr(QWidget *parent) : count(720), step(80), countOfBoards(48),
-    VectorOfRectanglesOverComboBoxes(48), VectorOfbadBoards(48), nmOfBoardsOnDetector(6),  QWidget(parent)
+viewConstr::viewConstr(QWidget *parent) :
+    count(720),
+    step(80),
+    countOfBoards(48),
+    VectorOfRectanglesOverComboBoxes(48),
+    VectorOfbadBoards(48),
+    nmOfBoardsOnDetector(6),
+    QWidget(parent)
 {
     ClearVectorOfBrokenDevices();
     CreateView();
