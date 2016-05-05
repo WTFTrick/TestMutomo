@@ -10,7 +10,7 @@ MainWindow::MainWindow() :
     ChannelsOnBoard(49),
     numberOfBrokenDevice(0),
     LinesCount(49),
-    xPosOfCircle(2178),
+    xPosOfCircle(2227.5),
     diamCircle(20),
     qsettings("settings.conf", QSettings::NativeFormat),
     PressedOnCircle(false),
@@ -473,20 +473,26 @@ void MainWindow::xAxisChanged(QCPRange newRange)
             ui->customPlot->xAxis->setRange(fixedRange);
         }
 
-    const double positionCoefficient = 0.88;
-    const quint32 rangeLimit = 900; //variable, that limited circle circle can move left over center without this variable
+    // Settings for Threshold Circle Displacement
+    const quint32 rangeLimit = 900; //variable, that limited circle, without this variable circle can move left over center.
+    const double displacementCoefficient1 = 0.9;
+    const double displacementCoefficient2 = 0.57;
 
-    if ( ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower < rangeLimit)
-        xPosOfCircle = ui->customPlot->xAxis->range().center() + ( ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().center() ) * 0.58;
+    if ( fixedRange.upper - fixedRange.lower > rangeLimit)
+        xPosOfCircle = fixedRange.upper * displacementCoefficient1;
     else
-        xPosOfCircle = ui->customPlot->xAxis->range().upper * positionCoefficient;
+        xPosOfCircle = fixedRange.center() +
+                ( ( fixedRange.upper - fixedRange.center() ) * displacementCoefficient2 );
 
 
     /*
-    qDebug() << "----------------------------------------------";
-    qDebug() << "lower bound:" << ui->customPlot->xAxis->range().lower << "upper bound" << ui->customPlot->xAxis->range().upper;
-    qDebug() << "Different between upper and lower:"<< ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower;
-    qDebug() << "Position of circle" << xPosOfCircle;
+    qDebug() << "Lower bound:" << ui->customPlot->xAxis->range().lower
+             << "; Upper bound" << ui->customPlot->xAxis->range().upper << ";";
+
+    qDebug() << "Different between upper bound and lower bound:"
+             << ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower << ";";
+
+    qDebug() << "Position of circle:" << xPosOfCircle;
     qDebug() << "----------------------------------------------";
     */
 }
