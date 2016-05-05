@@ -58,6 +58,8 @@ private:
     double XlowerBound;
     double XupperBound;
 
+    double lastPosition;
+
     QCPItemText * NumberOfBoard;
     QCPDataMap  *mapData;
     QCPGraph    *graph1;

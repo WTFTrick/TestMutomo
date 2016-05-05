@@ -681,11 +681,10 @@ void MainWindow::MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event)
 
 void MainWindow::MousePressed(QMouseEvent *event)
 {
-    //qDebug() << "event->x()" << event->x();
-    //qDebug() << "event->pos().x()" << event->pos().x();
-
     double x = ui->customPlot->xAxis->pixelToCoord(event->pos().x());
     double y = ui->customPlot->yAxis->pixelToCoord(event->pos().y());
+
+    double pixelAtY = event->pos().y();
 
     quint8 radius  = diamCircle/2;
     quint32 leftBoundX   = thresholdCircleData->first().key - radius;
@@ -696,15 +695,11 @@ void MainWindow::MousePressed(QMouseEvent *event)
     if ( (x >= leftBoundX)   && (x <= rightBoundX) &&
          (y >= bottomBoundY) && (y <= topBoundY))
     {
-        //qDebug() << thresholdCircleData->first().value;
-        //qDebug() << thresholdCircleData->first().key;
-        //qDebug() << "\n====== In circle ======\n";
-        //ui->statusBar->showMessage("In circle");
-
         PressedOnCircle = true;
+
+        lastPosition = pixelAtY;
         ui->customPlot->setInteractions(0x000);
     }
-
 
     /*qDebug() << "\nPressed on x:" << x;
     qDebug() << "Pressed on y:" << y;
@@ -720,21 +715,36 @@ void MainWindow::MoveThreshold(QMouseEvent *event)
 {
     if (PressedOnCircle)
     {
+        const quint8 pixelLimitToMoveCircle = 5;
+        const quint8 yBoundForCircle = 20;
+
         double y = ui->customPlot->yAxis->pixelToCoord(event->pos().y());
+        double pixelAtYNew = event->pos().y();
 
-        if ( y <= YupperBound && y >= 10 )
+        if ( y <= YupperBound && y >= yBoundForCircle )
         {
-
             value_threshold = y;
 
-            for (double i = 0; i < 2510; i += 2500 )
-                threhshold_data->operator [](i) = QCPData(i, value_threshold);
+            bool f_replot;
+            if (abs(lastPosition - pixelAtYNew) > pixelLimitToMoveCircle)
+            {
+                f_replot = true;
+                lastPosition = pixelAtYNew;
+            }
+            else
+            {
+                f_replot = false;
+            }
 
-            thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
+            if (f_replot)
+            {
+                for (double i = 0; i < 2510; i += 2500 )
+                    threhshold_data->operator [](i) = QCPData(i, value_threshold);
 
-
-            ui->customPlot->replot();
-            ui->statusBar->showMessage("Threshold value is " + QString::number(value_threshold) + ".");
+                thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
+                ui->customPlot->replot();
+                ui->statusBar->showMessage("Threshold value is " + QString::number(value_threshold) + ".");
+            }
         }
     }
 }

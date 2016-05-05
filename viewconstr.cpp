@@ -32,7 +32,7 @@ void viewConstr::CreateView()
     screen = QGuiApplication::primaryScreen();
     screen->setOrientationUpdateMask(Qt::PortraitOrientation| Qt::LandscapeOrientation| Qt::InvertedPortraitOrientation| Qt::InvertedLandscapeOrientation);
 
-    pb_toJson = new QPushButton("To JSON");
+    pb_toJson = new QPushButton("Send Configuration");
     pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed,QSizePolicy::Policy::Fixed);
 
     scene = new QGraphicsScene(this);
