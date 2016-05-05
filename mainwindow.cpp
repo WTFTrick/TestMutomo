@@ -474,27 +474,21 @@ void MainWindow::xAxisChanged(QCPRange newRange)
         }
 
     // Settings for Threshold Circle Displacement
-    const quint32 rangeLimit = 900; //variable, that limited circle, without this variable circle can move left over center.
-    const double displacementCoefficient1 = 0.9;
-    const double displacementCoefficient2 = 0.57;
 
-    if ( fixedRange.upper - fixedRange.lower > rangeLimit)
-        xPosOfCircle = fixedRange.upper * displacementCoefficient1;
-    else
+    const double displacementCoefficient = 0.8;
+
         xPosOfCircle = fixedRange.center() +
-                ( ( fixedRange.upper - fixedRange.center() ) * displacementCoefficient2 );
+                ( ( fixedRange.upper - fixedRange.center() ) * displacementCoefficient );
 
-
-    /*
-    qDebug() << "Lower bound:" << ui->customPlot->xAxis->range().lower
-             << "; Upper bound" << ui->customPlot->xAxis->range().upper << ";";
+    qDebug() << "Lower bound:" << fixedRange.lower
+             << "; Upper bound" << fixedRange.upper << ";";
 
     qDebug() << "Different between upper bound and lower bound:"
-             << ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower << ";";
+             << fixedRange.upper - fixedRange.lower << ";";
 
     qDebug() << "Position of circle:" << xPosOfCircle;
     qDebug() << "----------------------------------------------";
-    */
+
 }
 
 void MainWindow::yAxisChanged(QCPRange newRange)
