@@ -49,7 +49,7 @@ private:
     const unsigned char ChannelsOnBoard;
     quint32 value_threshold;
     quint32 m_nNextBlockSize;
-    quint32 xPosOfCircle;               // X coordinate of threshold circle;
+    double xPosOfCircle;               // X coordinate of threshold circle;
     QString strHost;                    // String, that contain an IP-Adress of the server from modal window (Connection dialog)
 
     double yAxisLowerBound;

@@ -10,7 +10,7 @@ MainWindow::MainWindow() :
     ChannelsOnBoard(49),
     numberOfBrokenDevice(0),
     LinesCount(49),
-    xPosOfCircle(2300),
+    xPosOfCircle(2178),
     diamCircle(20),
     qsettings("settings.conf", QSettings::NativeFormat),
     PressedOnCircle(false),
@@ -454,6 +454,7 @@ void MainWindow::on_pb_ResetRange_clicked()
 void MainWindow::xAxisChanged(QCPRange newRange)
 {
     QCPRange fixedRange(newRange);
+
     if (fixedRange.lower < XlowerBound)
     {
         fixedRange.lower = XlowerBound;
@@ -472,12 +473,22 @@ void MainWindow::xAxisChanged(QCPRange newRange)
             ui->customPlot->xAxis->setRange(fixedRange);
         }
 
-    //xPosOfCircle = fixedRange.upper - 50;
-    //xPosOfCircle = ui->customPlot->xAxis->coordToPixel(fixedRange.upper);
-    //xPosOfCircle -= 50;
-    //qDebug() << "fixedRange.upper = " << fixedRange.upper;
-    //qDebug() << "xPosOfCircle = " << xPosOfCircle;
-    //qDebug() << "\n";
+    const double positionCoefficient = 0.88;
+    const quint32 rangeLimit = 900; //variable, that limited circle circle can move left over center without this variable
+
+    if ( ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower < rangeLimit)
+        xPosOfCircle = ui->customPlot->xAxis->range().center() + ( ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().center() ) * 0.58;
+    else
+        xPosOfCircle = ui->customPlot->xAxis->range().upper * positionCoefficient;
+
+
+    /*
+    qDebug() << "----------------------------------------------";
+    qDebug() << "lower bound:" << ui->customPlot->xAxis->range().lower << "upper bound" << ui->customPlot->xAxis->range().upper;
+    qDebug() << "Different between upper and lower:"<< ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower;
+    qDebug() << "Position of circle" << xPosOfCircle;
+    qDebug() << "----------------------------------------------";
+    */
 }
 
 void MainWindow::yAxisChanged(QCPRange newRange)
