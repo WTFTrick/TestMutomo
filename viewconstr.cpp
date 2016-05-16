@@ -79,7 +79,7 @@ void viewConstr::CreateView()
                 QString s_numberOfBoardMT = QString::number( counterForComboBox );
 
                 RectanglesForComboBoxes = new QGraphicsRectItem();
-                RectanglesForComboBoxes = scene->addRect(j+8, i+5, 63, 53,  transparentPen, TBrush);
+                RectanglesForComboBoxes = scene->addRect(j + 8, i + 5, 63, 53,  transparentPen, TBrush);
                 VectorOfRectanglesOverComboBoxes[counterForComboBox] = RectanglesForComboBoxes;
 
                 QComboBox* cmb = new QComboBox();
@@ -153,7 +153,7 @@ void viewConstr::ClearVectorOfBrokenDevices()
 
 void viewConstr::ClearJSONFile()
 {
-    QFile file("blocks.json");
+    QFile file("config.json");
     if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
     {
         file.write("");
@@ -185,12 +185,15 @@ void viewConstr::BrokenDevice()
 
 void viewConstr::ToJson()
 {
-    //Добавить кнопку Get Config
+    //==================================================================
+
+    //Old version
+
     ClearJSONFile();
-    QJsonObject jsonDevice;
+    const short nmDetectors = 8;
+    /*QJsonObject jsonDevice;
     QJsonObject jsonDetector;
     QJsonObject jsonTempInDetector;
-    const short nmDetectors = 8;
 
     // Creating a structure of JSON file
     for (int indDetector = 0; indDetector < nmDetectors; ++indDetector)
@@ -210,21 +213,57 @@ void viewConstr::ToJson()
 
         jsonDetector[nameField] = jsonTempInDetector;
     }
+
     docJSON.setObject(jsonDetector);
 
     //QString JsonDoc = docJSON.toJson();
-    QByteArray json = docJSON.toJson();
+    //QByteArray json = docJSON.toJson();
 
-    emit sendJson(json);
+    //emit sendJson(json);*/
 
-    // Writing data in file blocks.json
 
-    /*QFile jsnFile("blocks.json");
+
+    //====================================================================
+
+    //New version
+
+    QJsonObject jsonMainObj;
+    QJsonArray  jsonTypeConfig;
+
+    for (quint8 indChamber = 0; indChamber < nmDetectors; indChamber++ )
+    {
+        QJsonObject jsonChamberObj;
+        jsonChamberObj["chamber"] = indChamber;
+        jsonChamberObj["coordinate"] = ListCoordComboBox[indChamber]->currentText();
+
+        //jsonChamberObj["num_layers"]   = ui->sbNumberLayers->value();
+        //jsonChamberObj["num_tubes"]    = ui->sbNumberTubesInLayer->value();
+        //jsonChamberObj["type_device"]  = ui->cbTypeDevice->currentText();
+
+        // Record device numbers
+        QJsonArray jsonDevices;
+
+        for (quint8 indDevice = 0; indDevice < nmOfBoardsOnDetector; ++indDevice){
+            jsonDevices.push_back( listComboBox[(indChamber*nmOfBoardsOnDetector) + indDevice]->currentText() );
+        }
+        jsonChamberObj["devices"] = jsonDevices;
+        jsonTypeConfig.append( jsonChamberObj );
+    }
+    jsonMainObj["MuTomo"] = jsonTypeConfig;
+
+    // Record main json-object to file
+    QJsonDocument json_cfg( jsonMainObj );
+
+    // Writing data in file config.json
+    /*QFile jsnFile("config.json");
     jsnFile.open(QFile::Append);
     QTextStream outJson(&jsnFile);
-    outJson << docJSON.toJson();
+    outJson << json_cfg.toJson();
     jsnFile.close();*/
 
+    // Send QByteArray to server
+    QByteArray json_config = json_cfg.toJson();
+    emit sendJson(json_config);
 }
 
 void viewConstr::onRotate(Qt::ScreenOrientation)

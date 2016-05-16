@@ -82,20 +82,6 @@ MainWindow::MainWindow() :
     CreateConnections();
 
 #ifdef ANDROID
-    // Set Style for Android App
-    QApplication::setStyle("fusion");
-    QFile f(":qstyle/StyleSheet.qss");
-    if (!f.exists())
-    {
-        ui->statusBar->showMessage("Unable to set stylesheet, file not found\n");
-    }
-    else
-    {
-        f.open(QFile::ReadOnly | QFile::Text);
-        QTextStream ts(&f);
-        qApp->setStyleSheet(ts.readAll());
-    }
-
     //Set Threshold Circle Diametr for Android
     diamCircle = 80;
 #else
@@ -477,9 +463,10 @@ void MainWindow::xAxisChanged(QCPRange newRange)
 
     const double displacementCoefficient = 0.8;
 
-        xPosOfCircle = fixedRange.center() +
-                ( ( fixedRange.upper - fixedRange.center() ) * displacementCoefficient );
+    xPosOfCircle = fixedRange.center() +
+            ( ( fixedRange.upper - fixedRange.center() ) * displacementCoefficient );
 
+    /*
     qDebug() << "Lower bound:" << fixedRange.lower
              << "; Upper bound" << fixedRange.upper << ";";
 
@@ -488,6 +475,7 @@ void MainWindow::xAxisChanged(QCPRange newRange)
 
     qDebug() << "Position of circle:" << xPosOfCircle;
     qDebug() << "----------------------------------------------";
+    */
 
 }
 
