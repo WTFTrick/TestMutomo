@@ -23,10 +23,10 @@ void settings::InterfaceSettings()
     label_threshold->setAlignment(Qt::AlignCenter);     //Set label at center
     label_yUpperBound->setAlignment(Qt::AlignCenter);
 
-    le_thresholdValue->setValidator( new QIntValidator(20, 350, this) );
-    le_yUpperBound->   setValidator( new QIntValidator(0, 500, this)  );
+    //sp_thresholdValue->setValidator( new QIntValidator(20, 350, this) );
+    //sp_yUpperBound->   setValidator( new QIntValidator(0, 500, this)  );
 
-    le_thresholdValue->setFocus();
+    sp_thresholdValue->setFocus();
 }
 
 void settings::CreateConnections()
@@ -37,13 +37,13 @@ void settings::CreateConnections()
 
 void settings::ok_clicked()
 {
-    if ((le_thresholdValue->text() == "") || (le_yUpperBound->text() == "") )
+    if ((sp_thresholdValue->value() == 0) || (sp_yUpperBound->value() == 0) )
         qDebug() << "Edit line is empty! Enter some value!";
 
     else
     {
-        quint16 threshold= le_thresholdValue->text().toInt();
-        quint16 yUpperBound = le_yUpperBound->text().toInt();
+        quint16 threshold = sp_thresholdValue->value();
+        quint16 yUpperBound = sp_yUpperBound->value();
         emit sendThreshold(threshold, yUpperBound);
         accept();
     }

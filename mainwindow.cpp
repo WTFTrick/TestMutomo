@@ -763,13 +763,13 @@ void MainWindow::on_actionSettings_triggered()
 {
     // Settings button action
 
-    settings_dialog->le_thresholdValue->setText( QString::number(value_threshold) );
-    settings_dialog->le_yUpperBound->setText( QString::number(YupperBound) );
+    settings_dialog->sp_thresholdValue->setValue( value_threshold );
+    settings_dialog->sp_yUpperBound->setValue( YupperBound );
 
     if (settings_dialog->exec() == QDialog::Accepted)
     {
-        value_threshold = settings_dialog->le_thresholdValue->text().toInt();
-        YupperBound = settings_dialog->le_yUpperBound->text().toInt();
+        value_threshold = settings_dialog->sp_thresholdValue->value();
+        YupperBound = settings_dialog->sp_yUpperBound->value();
 
         //qDebug() << "New value of value_threshold = " << value_threshold;
         //qDebug() << "Open modal window thershold settings";
