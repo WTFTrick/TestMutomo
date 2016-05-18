@@ -19,6 +19,7 @@ settings::~settings()
 
 void settings::InterfaceSettings()
 {
+    setWindowTitle("Настройки");
     label_threshold->setAlignment(Qt::AlignCenter);     //Set label at center
     label_yUpperBound->setAlignment(Qt::AlignCenter);
 

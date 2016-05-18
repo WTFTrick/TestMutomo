@@ -32,7 +32,7 @@ void viewConstr::CreateView()
     screen = QGuiApplication::primaryScreen();
     screen->setOrientationUpdateMask(Qt::PortraitOrientation| Qt::LandscapeOrientation| Qt::InvertedPortraitOrientation| Qt::InvertedLandscapeOrientation);
 
-    pb_toJson = new QPushButton("Send Configuration");
+    pb_toJson = new QPushButton("Отправить конфигурацию серверу");
     pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed,QSizePolicy::Policy::Fixed);
 
     scene = new QGraphicsScene(this);
@@ -141,7 +141,7 @@ bool viewConstr::event(QEvent *event)
 
 void viewConstr::CreateConnections()
 {
-    connect(pb_toJson, SIGNAL(clicked(bool)), this, SLOT(ToJson()));
+    connect(pb_toJson, SIGNAL(clicked(bool)), this, SLOT(createJSONConfiguration()));
     connect(screen, SIGNAL(orientationChanged(Qt::ScreenOrientation)), this, SLOT(onRotate(Qt::ScreenOrientation)));
 }
 
@@ -183,7 +183,7 @@ void viewConstr::BrokenDevice()
 
 }
 
-void viewConstr::ToJson()
+void viewConstr::createJSONConfiguration()
 {
     //==================================================================
 

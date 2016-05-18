@@ -9,6 +9,7 @@ IPDialog::IPDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    setWindowTitle("Подключение");
     ui->ip_lineEdit->setValidator( new QIntValidator(0, 255, this) );
     ui->ip_lineEdit->setInputMask("000.000.000.000;_");
     ipFile.setFileName("./IPAdress.txt");

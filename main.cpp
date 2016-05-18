@@ -3,10 +3,11 @@
 
 int main(int argc, char *argv[])
 {
+    Qt::AA_EnableHighDpiScaling;
+
     QApplication a(argc, argv);
 
     QApplication::setStyle("fusion");
-
 
 #ifdef ANDROID
 
@@ -23,6 +24,7 @@ int main(int argc, char *argv[])
     }
 
 #endif
+
 
     MainWindow w;
     w.show();

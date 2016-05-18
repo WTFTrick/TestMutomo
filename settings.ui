@@ -72,7 +72,7 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>Enter Y upper bound:</string>
+       <string>Введите верхнюю границу Y</string>
       </property>
      </widget>
     </item>
@@ -100,7 +100,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>OK</string>
+          <string>Ок</string>
          </property>
         </widget>
        </item>
@@ -126,7 +126,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Cancel</string>
+          <string>Отмена</string>
          </property>
         </widget>
        </item>
@@ -155,7 +155,7 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>Enter threshold value:</string>
+       <string>Введите пороговое значение</string>
       </property>
      </widget>
     </item>

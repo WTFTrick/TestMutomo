@@ -60,7 +60,7 @@ public:
     void resizeEvent(QResizeEvent *event);
 
 public slots:
-    void ToJson();
+    void createJSONConfiguration();
     void onRotate(Qt::ScreenOrientation);
 
 signals:

@@ -18,7 +18,7 @@ MainWindow::MainWindow() :
 {
     ui->setupUi(this);
 
-    setWindowTitle("Mutomo Client");
+    setWindowTitle("MuTomo Клиент");
     setCentralWidget(ui->tabWidget);
 
     YlowerBound = 0;
@@ -30,7 +30,7 @@ MainWindow::MainWindow() :
         YupperBound = 150;
         strHost = "0.0.0.0";
         value_threshold = 100;
-        ui->statusBar->showMessage("Application run. Threshold =" + QString::number(value_threshold));
+        ui->statusBar->showMessage("Приложение запущено. Пороговое значение равно " + QString::number(value_threshold) + ".");
     }
     else
     {
@@ -39,7 +39,7 @@ MainWindow::MainWindow() :
         strHost = qsettings.value("settings/IP").toString();
         connectToHost(strHost);
 
-        ui->statusBar->showMessage("Application run. Threshold value is " + QString::number(value_threshold) + ".");
+        ui->statusBar->showMessage("Приложение запущено. Пороговое значение равно " + QString::number(value_threshold) + ".");
     }
 
     graph1 = ui->customPlot->addGraph();
@@ -61,7 +61,7 @@ MainWindow::MainWindow() :
     ui->pb_stopServer->setDisabled(true);
 
     vw = new viewConstr( this );
-    ui->tabWidget->addTab(vw, tr("Configuration"));
+    ui->tabWidget->addTab(vw, tr("Конфигурация"));
     ui->pb_ResetRange->setFocus();
 
     fVisibleLabels = false;
@@ -230,10 +230,10 @@ void MainWindow::StartServer()
         ui->pb_stopServer->setDisabled(false);
         ui->pb_startServer->setDisabled(true);
         ui->tabWidget->setFocus();
-        ui->statusBar->showMessage("Send 'start' command to server");
+        ui->statusBar->showMessage("Серверу отправлена команда 'старт'");
     }
     else
-        ui->statusBar->showMessage("Client unconnected!");
+        ui->statusBar->showMessage("Клиент не подключен!");
 }
 
 void MainWindow::StopServer()
@@ -266,10 +266,10 @@ void MainWindow::StopServer()
         ui->pb_startServer->setDisabled(false);
         ui->pb_stopServer->setDisabled(true);
         ui->tabWidget->setFocus();
-        ui->statusBar->showMessage("Send 'stop' command to server");
+        ui->statusBar->showMessage("Серверу отправлена команда 'стоп'");
     }
     else
-        ui->statusBar->showMessage("Client unconnected!");
+        ui->statusBar->showMessage("Клиент не подключен!");
 }
 
 void MainWindow::DataHistRequest()
@@ -282,7 +282,7 @@ void MainWindow::DataHistRequest()
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
         DataToServer(t_data, null );
     else
-        ui->statusBar->showMessage("Client unconnected!");
+        ui->statusBar->showMessage("Клиент не подключен!");
 }
 
 void MainWindow::DataRawRequset()
@@ -295,7 +295,7 @@ void MainWindow::DataRawRequset()
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
         DataToServer(t_data, null );
     else
-        ui->statusBar->showMessage("Client unconnected!");
+        ui->statusBar->showMessage("Клиент не подключен!");
 }
 
 void MainWindow::GetJsonFromViewConstr(QByteArray JsonDoc)
@@ -321,10 +321,10 @@ void MainWindow::GetJsonFromViewConstr(QByteArray JsonDoc)
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
         DataToServer(t_data, arrayJson);
-        ui->statusBar->showMessage("Send configuration to server");
+        ui->statusBar->showMessage("Серверу отправлена конфигурация");
     }
     else
-        ui->statusBar->showMessage("Client unconnected!");
+        ui->statusBar->showMessage("Клиент не подключен!");
 }
 
 void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
@@ -383,12 +383,12 @@ void MainWindow::slotConnected()
 {
     qDebug() << "Received the connected() signal";
     qDebug() << "Connection successfull";
-    ui->statusBar->showMessage("Connection to server successfull");
+    ui->statusBar->showMessage("Клиент подключился к серверу!");
 }
 
 void MainWindow::slotDisconnected()
 {
-    ui->statusBar->showMessage("Disconnected");
+    ui->statusBar->showMessage("Клиент отключился от сервера");
 }
 
 void MainWindow::on_actionConnect_to_triggered()
@@ -434,7 +434,7 @@ void MainWindow::on_pb_ZoomOut_clicked()
 void MainWindow::on_pb_ResetRange_clicked()
 {
     ui->customPlot->xAxis->setRange(0, 2500);
-    ui->customPlot->yAxis->setRange(0, 100);
+    ui->customPlot->yAxis->setRange(0, YupperBound);
 }
 
 void MainWindow::xAxisChanged(QCPRange newRange)
@@ -742,7 +742,7 @@ void MainWindow::MoveThreshold(QMouseEvent *event)
 
                 thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
                 ui->customPlot->replot();
-                ui->statusBar->showMessage("Threshold value is " + QString::number(value_threshold) + ".");
+                ui->statusBar->showMessage("Пороговое значение равно " + QString::number(value_threshold) + ".");
             }
         }
     }
@@ -780,7 +780,7 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::get_threshold()
 {
-    ui->statusBar->showMessage("New threshold = " + QString::number(value_threshold));
+    ui->statusBar->showMessage("Новое пороговое значение равно " + QString::number(value_threshold));
     ui->customPlot->yAxis->setRange( 0, YupperBound );
 
     DrawThresholdWidget();
