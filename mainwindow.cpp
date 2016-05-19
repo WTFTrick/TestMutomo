@@ -528,7 +528,7 @@ void MainWindow::CreateLines()
     // Add QCPItemLine
 
     //const char line_height = 30;
-    const unsigned char nmBoards = 48; // Number of boards
+    const unsigned char nmBoards = 49; // Number of boards
     const char width_line = 3;
     calculating_height_of_lines
             = ( ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower ) / 3;
