@@ -535,6 +535,9 @@ void MainWindow::CreateLines()
 
     uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
 
+    const uint countOfChannelsInDetector = ChannelsOnBoard * 6;
+    const uint heightOfLinesForDetectors = calculating_height_of_lines + 5;
+
     for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
     {
         QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
@@ -543,7 +546,19 @@ void MainWindow::CreateLines()
         tickHLine->end->setCoords(i, yAxisLowerBound + calculating_height_of_lines );
         tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
         tickHLine->setLayer("belowmain");
+
     }
+
+    for (uint i = 0; i < nmChannelsMutomo; i += countOfChannelsInDetector)
+    {
+        QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
+        ui->customPlot->addItem(tickHLine);
+        tickHLine->start->setCoords(i, yAxisLowerBound);
+        tickHLine->end->setCoords(i, yAxisLowerBound + heightOfLinesForDetectors);
+        tickHLine->setPen(QPen(QColor(0, 0, 255), width_line));
+        tickHLine->setLayer("belowmain");
+    }
+
 }
 
 void MainWindow::CreateLabels()
@@ -551,8 +566,8 @@ void MainWindow::CreateLabels()
     // Add a QCPItemText (number of MT48 on customPlot)
     unsigned char CounterOfBoards = 0; // Counter for boards
     const unsigned char nmBoards = 48; // Number of boards
-    const short label_center_x = ChannelsOnBoard / 2;
-    double label_center_y = calculating_height_of_lines / 5;
+    const short coord_label_center_x = ChannelsOnBoard / 2;
+    double coord_label_center_y = calculating_height_of_lines / 5;
 
     //qDebug() << "label_center_y" << label_center_y;
 
@@ -567,7 +582,7 @@ void MainWindow::CreateLabels()
         {
             NumberOfBoard = new QCPItemText(ui->customPlot);
             ui->customPlot->addItem(NumberOfBoard);
-            NumberOfBoard->position->setCoords(i + label_center_x, yAxisLowerBound + label_center_y);
+            NumberOfBoard->position->setCoords(i + coord_label_center_x, yAxisLowerBound + coord_label_center_y);
             NumberOfBoard->setText(NOB);
             NumberOfBoard->setFont(QFont(font().family(), 11));
 
