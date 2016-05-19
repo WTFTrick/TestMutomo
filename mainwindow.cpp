@@ -230,7 +230,7 @@ void MainWindow::StartServer()
         ui->pb_stopServer->setDisabled(false);
         ui->pb_startServer->setDisabled(true);
         ui->tabWidget->setFocus();
-        ui->statusBar->showMessage("Серверу отправлена команда 'старт'");
+        ui->statusBar->showMessage("Серверу отправлена команда 'старт'.");
     }
     else
         ui->statusBar->showMessage("Клиент не подключен!");
@@ -266,7 +266,7 @@ void MainWindow::StopServer()
         ui->pb_startServer->setDisabled(false);
         ui->pb_stopServer->setDisabled(true);
         ui->tabWidget->setFocus();
-        ui->statusBar->showMessage("Серверу отправлена команда 'стоп'");
+        ui->statusBar->showMessage("Серверу отправлена команда 'стоп'.");
     }
     else
         ui->statusBar->showMessage("Клиент не подключен!");
@@ -321,7 +321,7 @@ void MainWindow::GetJsonFromViewConstr(QByteArray JsonDoc)
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
         DataToServer(t_data, arrayJson);
-        ui->statusBar->showMessage("Серверу отправлена конфигурация");
+        ui->statusBar->showMessage("Конфигурация отправлена на сервер.");
     }
     else
         ui->statusBar->showMessage("Клиент не подключен!");
@@ -383,12 +383,12 @@ void MainWindow::slotConnected()
 {
     qDebug() << "Received the connected() signal";
     qDebug() << "Connection successfull";
-    ui->statusBar->showMessage("Клиент подключился к серверу!");
+    ui->statusBar->showMessage("Клиент подключился к серверу.");
 }
 
 void MainWindow::slotDisconnected()
 {
-    ui->statusBar->showMessage("Клиент отключился от сервера");
+    ui->statusBar->showMessage("Клиент отключился от сервера.");
 }
 
 void MainWindow::on_actionConnect_to_triggered()

@@ -22,10 +22,6 @@ void settings::InterfaceSettings()
     setWindowTitle("Настройки");
     label_threshold->setAlignment(Qt::AlignCenter);     //Set label at center
     label_yUpperBound->setAlignment(Qt::AlignCenter);
-
-    //sp_thresholdValue->setValidator( new QIntValidator(20, 350, this) );
-    //sp_yUpperBound->   setValidator( new QIntValidator(0, 500, this)  );
-
     sp_thresholdValue->setFocus();
 }
 

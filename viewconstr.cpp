@@ -287,7 +287,7 @@ void viewConstr::onRotate(Qt::ScreenOrientation)
 
     // ------------------
 
-    emit messg( "Change orientation"  );
+    //emit messg( "Change orientation"  );
 }
 
 
