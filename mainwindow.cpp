@@ -86,7 +86,7 @@ MainWindow::MainWindow() :
     diamCircle = 80;
 #else
     //Set Threshold Circle Diametr for Desktop
-    diamCircle = 20;
+    diamCircle = 30;
 #endif
 
     bUpdatePlot = true;
@@ -502,7 +502,6 @@ void MainWindow::yAxisChanged(QCPRange newRange)
         }
     }
 
-
     yAxisLowerBound = fixedRange.lower;
 
     // debug information
@@ -513,6 +512,7 @@ void MainWindow::ScaleChanged()
 {
     const unsigned char PixelLimit = 19;
     double px_size = ui->customPlot->xAxis->coordToPixel(ChannelsOnBoard) - ui->customPlot->xAxis->coordToPixel(0);
+
     //qDebug() << "px_size =" << px_size;
 
     if (px_size >= PixelLimit)
@@ -526,9 +526,12 @@ void MainWindow::ScaleChanged()
 void MainWindow::CreateLines()
 {
     // Add QCPItemLine
+
+    //const char line_height = 30;
     const unsigned char nmBoards = 48; // Number of boards
-    const char line_height = 30;
     const char width_line = 3;
+    calculating_height_of_lines
+            = ( ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower ) / 3;
 
     uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
 
@@ -537,23 +540,10 @@ void MainWindow::CreateLines()
         QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
         ui->customPlot->addItem(tickHLine);
         tickHLine->start->setCoords(i, yAxisLowerBound);
-        tickHLine->end->setCoords(i, yAxisLowerBound + line_height);
+        tickHLine->end->setCoords(i, yAxisLowerBound + calculating_height_of_lines );
         tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
         tickHLine->setLayer("belowmain");
     }
-
-    //qDebug() << "y_1 = " << yAxisLowerBound << " y_2 = " << yAxisLowerBound + line_height;
-}
-
-void MainWindow::DrawThresholdWidget()
-{
-    for (double i = 0; i < 2510; i += 2500 )
-        threhshold_data->operator [](i) = QCPData(i, value_threshold);
-
-    thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
-    //qDebug() << "xPosOfCircle = " << xPosOfCircle;
-
-    ui->customPlot->replot();
 }
 
 void MainWindow::CreateLabels()
@@ -562,8 +552,12 @@ void MainWindow::CreateLabels()
     unsigned char CounterOfBoards = 0; // Counter for boards
     const unsigned char nmBoards = 48; // Number of boards
     const short label_center_x = ChannelsOnBoard / 2;
-    const char label_center_y = 7;
+    double label_center_y = calculating_height_of_lines / 5;
+
+    //qDebug() << "label_center_y" << label_center_y;
+
     uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
+
 
     for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
     {
@@ -585,6 +579,17 @@ void MainWindow::CreateLabels()
 
         CounterOfBoards++;
     }
+}
+
+void MainWindow::DrawThresholdWidget()
+{
+    for (double i = 0; i < 2510; i += 2500 )
+        threhshold_data->operator [](i) = QCPData(i, value_threshold);
+
+    thresholdCircleData->operator [](0) = QCPData(xPosOfCircle, value_threshold);
+    //qDebug() << "xPosOfCircle = " << xPosOfCircle;
+
+    ui->customPlot->replot();
 }
 
 void MainWindow::CreateConnections()

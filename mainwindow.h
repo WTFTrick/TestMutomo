@@ -53,6 +53,7 @@ private:
     QString strHost;                    // String, that contain an IP-Adress of the server from modal window (Connection dialog)
 
     double yAxisLowerBound;
+    double  calculating_height_of_lines;
     double YlowerBound;
     double YupperBound;
     double XlowerBound;
