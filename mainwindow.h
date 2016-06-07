@@ -61,6 +61,11 @@ private:
 
     double lastPosition;
 
+    QVector<QCPItemLine*> vecOfLines;
+
+    uint nmChannelsMutomo;
+    QCPItemLine *tickHLine;
+    QCPItemLine *tickBLine;
     QCPItemText * NumberOfBoard;
     QCPDataMap  *mapData;
     QCPGraph    *graph1;
@@ -116,6 +121,7 @@ private slots:
     void on_actionSettings_triggered();
     void get_threshold();
     void slotMessage(QString str);
+    void check_grid(bool checked_state);
 
 protected:
     void resizeEvent(QResizeEvent* event);

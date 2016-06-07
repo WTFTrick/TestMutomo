@@ -22,13 +22,15 @@ void settings::InterfaceSettings()
     setWindowTitle("Настройки");
     label_threshold->setAlignment(Qt::AlignCenter);     //Set label at center
     label_yUpperBound->setAlignment(Qt::AlignCenter);
-    sp_thresholdValue->setFocus();
+    label_threshold->setFocus();
+    checkbxForGrid->setChecked(true);
 }
 
 void settings::CreateConnections()
 {
     connect(pb_OK, SIGNAL(clicked(bool)), this, SLOT(ok_clicked()));
     connect(pb_cancel, SIGNAL(clicked(bool)), this, SLOT(cancel_clicked()));
+    connect(checkbxForGrid, SIGNAL(clicked(bool)), this, SLOT(checkbox_checked()));
 }
 
 void settings::ok_clicked()
@@ -48,5 +50,13 @@ void settings::ok_clicked()
 void settings::cancel_clicked()
 {
     reject();
+}
+
+void settings::checkbox_checked()
+{
+    if (checkbxForGrid->checkState() == true)
+        emit checkbox_grid(true);
+    else
+        emit checkbox_grid(false);
 }
 

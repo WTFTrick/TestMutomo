@@ -27,9 +27,11 @@ public:
 private slots:
     void ok_clicked();
     void cancel_clicked();
+    void checkbox_checked();
 
 signals:
     void sendThreshold(quint16 threshold, quint16 yUpperBound);
+    void checkbox_grid(bool checked);
 
 private:
     QSettings qsettings;

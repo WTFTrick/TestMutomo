@@ -32,8 +32,11 @@ void viewConstr::CreateView()
     screen = QGuiApplication::primaryScreen();
     screen->setOrientationUpdateMask(Qt::PortraitOrientation| Qt::LandscapeOrientation| Qt::InvertedPortraitOrientation| Qt::InvertedLandscapeOrientation);
 
-    pb_toJson = new QPushButton("Отправить конфигурацию серверу");
+    pb_toJson = new QPushButton("Сохранить конфигурацию");
     pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed,QSizePolicy::Policy::Fixed);
+
+    //QWidget* spacer = new QWidget();
+    //spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     scene = new QGraphicsScene(this);
     gv = new QGraphicsView();
@@ -46,6 +49,7 @@ void viewConstr::CreateView()
     mainLayout = new QVBoxLayout;
     mainLayout->addWidget(gv);
     mainLayout->addWidget(pb_toJson);
+    //mainLayout->addWidget(spacer);
     setLayout(mainLayout);
 
     QBrush TBrush(Qt::transparent);

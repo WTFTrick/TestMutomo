@@ -533,14 +533,16 @@ void MainWindow::CreateLines()
     calculating_height_of_lines
             = ( ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower ) / 3;
 
-    uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
+    nmChannelsMutomo = nmBoards*ChannelsOnBoard;
+    vecOfLines.resize(nmChannelsMutomo);
 
     const uint countOfChannelsInDetector = ChannelsOnBoard * 6;
     const uint heightOfLinesForDetectors = calculating_height_of_lines + 5;
 
     for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
     {
-        QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
+        tickHLine = new QCPItemLine(ui->customPlot);
+        vecOfLines.insert(i, tickHLine);
         ui->customPlot->addItem(tickHLine);
         tickHLine->start->setCoords(i, yAxisLowerBound);
         tickHLine->end->setCoords(i, yAxisLowerBound + calculating_height_of_lines );
@@ -551,12 +553,12 @@ void MainWindow::CreateLines()
 
     for (uint i = 0; i < nmChannelsMutomo; i += countOfChannelsInDetector)
     {
-        QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
-        ui->customPlot->addItem(tickHLine);
-        tickHLine->start->setCoords(i, yAxisLowerBound);
-        tickHLine->end->setCoords(i, yAxisLowerBound + heightOfLinesForDetectors);
-        tickHLine->setPen(QPen(QColor(0, 0, 255), width_line));
-        tickHLine->setLayer("belowmain");
+        tickBLine = new QCPItemLine(ui->customPlot);
+        ui->customPlot->addItem(tickBLine);
+        tickBLine->start->setCoords(i, yAxisLowerBound);
+        tickBLine->end->setCoords(i, yAxisLowerBound + heightOfLinesForDetectors);
+        tickBLine->setPen(QPen(QColor(0, 0, 255), width_line));
+        tickBLine->setLayer("belowmain");
     }
 
 }
@@ -614,6 +616,7 @@ void MainWindow::CreateConnections()
     // connections between mainWindow and modal dialogs
     connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
     //connect(settings_dialog, SIGNAL(sendThreshold(quint16,quint16)), this, SLOT(get_threshold(quint16,quint16)));
+    connect(settings_dialog, SIGNAL(checkbox_grid(bool)), this, SLOT(check_grid(bool)));
 
     // QCustomPlot connects
     connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(MouseRealesed(QMouseEvent*)));
@@ -809,6 +812,29 @@ void MainWindow::get_threshold()
 void MainWindow::slotMessage(QString str)
 {
     ui->statusBar->showMessage(str);
+}
+
+void MainWindow::check_grid(bool checked_state)
+{
+    qDebug() << "Вкл/выкл сетку" << checked_state;
+    //qDebug() << ui->customPlot->itemCount();
+
+    if (!checked_state)
+    {
+        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
+        {
+            vecOfLines.at(i)->setVisible(false);
+            qDebug() << vecOfLines.at(i);
+        }
+    }
+    else
+    {
+        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
+        {
+            vecOfLines.at(i)->setVisible(true);
+        }
+    }
+    ui->customPlot->replot();
 }
 
 void MainWindow::ChannelCheck(quint32 freq, int ind)
