@@ -691,7 +691,7 @@ void MainWindow::tabSelected()
         ScaleChanged();
     }
 
-    if (ui->tabWidget->currentIndex() == 1)
+    if (ui->tabWidget->currentIndex() == 2)
         bUpdateViewConstr = true;
 }
 
