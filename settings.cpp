@@ -54,9 +54,11 @@ void settings::cancel_clicked()
 
 void settings::checkbox_checked()
 {
-    if (checkbxForGrid->checkState() == true)
+    if (checkbxForGrid->checkState() == Qt::CheckState(Qt::Checked))
         emit checkbox_grid(true);
     else
         emit checkbox_grid(false);
+
+    //qDebug() << "checkbxForGrid->checkState() =" << checkbxForGrid->checkState();
 }
 

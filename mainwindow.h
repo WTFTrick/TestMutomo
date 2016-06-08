@@ -79,6 +79,7 @@ private:
     viewConstr* vw;                     // exemplar of viewConstr class, for creating second tab in TabWidget
     int diamCircle;                     // variable, that means diametr of threshold circle
 
+    bool fGridVisible;
     bool PressedOnCircle;               // bool variable, if true - work MouseMove event and threshold line+circles move on Y axis
     bool fVisibleLabels;                // bool variable, if true - draw number of MT48 on customPlot
     bool bUpdatePlot;                   // bool variable, if true - user can see Chart on customPlot

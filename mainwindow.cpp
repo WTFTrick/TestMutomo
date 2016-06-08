@@ -72,6 +72,8 @@ MainWindow::MainWindow() :
     graphPen.setWidthF(0.4);
     graph1->setPen(graphPen);
 
+    fGridVisible = true;
+
     ip_dialog = new IPDialog( this );
 
     settings_dialog = new settings( this );
@@ -526,7 +528,6 @@ void MainWindow::ScaleChanged()
 void MainWindow::CreateLines()
 {
     // Add QCPItemLine
-
     //const char line_height = 30;
     const unsigned char nmBoards = 49; // Number of boards
     const char width_line = 3;
@@ -539,32 +540,37 @@ void MainWindow::CreateLines()
     const uint countOfChannelsInDetector = ChannelsOnBoard * 6;
     const uint heightOfLinesForDetectors = calculating_height_of_lines + 5;
 
-    for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
-    {
-        tickHLine = new QCPItemLine(ui->customPlot);
-        vecOfLines.insert(i, tickHLine);
-        ui->customPlot->addItem(tickHLine);
-        tickHLine->start->setCoords(i, yAxisLowerBound);
-        tickHLine->end->setCoords(i, yAxisLowerBound + calculating_height_of_lines );
-        tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
-        tickHLine->setLayer("belowmain");
 
-    }
-
-    for (uint i = 0; i < nmChannelsMutomo; i += countOfChannelsInDetector)
+    if (fGridVisible)
     {
-        tickBLine = new QCPItemLine(ui->customPlot);
-        ui->customPlot->addItem(tickBLine);
-        tickBLine->start->setCoords(i, yAxisLowerBound);
-        tickBLine->end->setCoords(i, yAxisLowerBound + heightOfLinesForDetectors);
-        tickBLine->setPen(QPen(QColor(0, 0, 255), width_line));
-        tickBLine->setLayer("belowmain");
+        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
+        {
+            tickHLine = new QCPItemLine(ui->customPlot);
+            vecOfLines.insert(i, tickHLine);
+            ui->customPlot->addItem(tickHLine);
+            tickHLine->start->setCoords(i, yAxisLowerBound);
+            tickHLine->end->setCoords(i, yAxisLowerBound + calculating_height_of_lines );
+            tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
+            tickHLine->setLayer("belowmain");
+
+        }
+
+        for (uint i = 0; i < nmChannelsMutomo; i += countOfChannelsInDetector)
+        {
+            tickBLine = new QCPItemLine(ui->customPlot);
+            ui->customPlot->addItem(tickBLine);
+            tickBLine->start->setCoords(i, yAxisLowerBound);
+            tickBLine->end->setCoords(i, yAxisLowerBound + heightOfLinesForDetectors);
+            tickBLine->setPen(QPen(QColor(0, 0, 255), width_line));
+            tickBLine->setLayer("belowmain");
+        }
     }
 
 }
 
 void MainWindow::CreateLabels()
 {
+
     // Add a QCPItemText (number of MT48 on customPlot)
     unsigned char CounterOfBoards = 0; // Counter for boards
     const unsigned char nmBoards = 48; // Number of boards
@@ -576,26 +582,30 @@ void MainWindow::CreateLabels()
     uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
 
 
-    for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
+    if (fGridVisible)
     {
-        QString NOB = QString("%1").arg(CounterOfBoards);
-
-        if (fVisibleLabels)
+        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
         {
-            NumberOfBoard = new QCPItemText(ui->customPlot);
-            ui->customPlot->addItem(NumberOfBoard);
-            NumberOfBoard->position->setCoords(i + coord_label_center_x, yAxisLowerBound + coord_label_center_y);
-            NumberOfBoard->setText(NOB);
-            NumberOfBoard->setFont(QFont(font().family(), 11));
+            QString NOB = QString("%1").arg(CounterOfBoards);
 
-            if ( vectorForCheckingDevices[ CounterOfBoards ] == true )
-                NumberOfBoard->setColor(QColor(255, 0, 0));
-            else
-                NumberOfBoard->setColor(QColor(0, 0, 0));
+            if (fVisibleLabels)
+            {
+                NumberOfBoard = new QCPItemText(ui->customPlot);
+                ui->customPlot->addItem(NumberOfBoard);
+                NumberOfBoard->position->setCoords(i + coord_label_center_x, yAxisLowerBound + coord_label_center_y);
+                NumberOfBoard->setText(NOB);
+                NumberOfBoard->setFont(QFont(font().family(), 11));
+
+                if ( vectorForCheckingDevices[ CounterOfBoards ] == true )
+                    NumberOfBoard->setColor(QColor(255, 0, 0));
+                else
+                    NumberOfBoard->setColor(QColor(0, 0, 0));
+            }
+
+            CounterOfBoards++;
         }
-
-        CounterOfBoards++;
     }
+
 }
 
 void MainWindow::DrawThresholdWidget()
@@ -816,15 +826,16 @@ void MainWindow::slotMessage(QString str)
 
 void MainWindow::check_grid(bool checked_state)
 {
-    qDebug() << "Вкл/выкл сетку" << checked_state;
+    qDebug() << "Вкл/выкл сетку: " << checked_state;
+    fGridVisible = checked_state;
     //qDebug() << ui->customPlot->itemCount();
 
-    if (!checked_state)
+    /*if (!fGridVisible)
     {
         for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
         {
             vecOfLines.at(i)->setVisible(false);
-            qDebug() << vecOfLines.at(i);
+            //qDebug() << vecOfLines.at(i);
         }
     }
     else
@@ -833,7 +844,8 @@ void MainWindow::check_grid(bool checked_state)
         {
             vecOfLines.at(i)->setVisible(true);
         }
-    }
+    }*/
+
     ui->customPlot->replot();
 }
 
