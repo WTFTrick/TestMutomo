@@ -22,6 +22,10 @@ viewConstr::~viewConstr()
     screen->deleteLater();
     gv->deleteLater();
     ClearVectorOfBrokenDevices();
+    delete scene;
+    delete mainLayout;
+    delete horLayout;
+    delete RectanglesForComboBoxes;
     //close();
 }
 
@@ -33,10 +37,14 @@ void viewConstr::CreateView()
     screen->setOrientationUpdateMask(Qt::PortraitOrientation| Qt::LandscapeOrientation| Qt::InvertedPortraitOrientation| Qt::InvertedLandscapeOrientation);
 
     pb_toJson = new QPushButton("Сохранить конфигурацию");
-    pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed,QSizePolicy::Policy::Fixed);
+    pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
 
-    //QWidget* spacer = new QWidget();
-    //spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QSpacerItem *spacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    horLayout = new QHBoxLayout;
+    horLayout->addItem(spacer);
+    horLayout->addWidget(pb_toJson);
+    horLayout->addItem(spacer);
 
     scene = new QGraphicsScene(this);
     gv = new QGraphicsView();
@@ -48,8 +56,7 @@ void viewConstr::CreateView()
     gv->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mainLayout = new QVBoxLayout;
     mainLayout->addWidget(gv);
-    mainLayout->addWidget(pb_toJson);
-    //mainLayout->addWidget(spacer);
+    mainLayout->addLayout(horLayout);
     setLayout(mainLayout);
 
     QBrush TBrush(Qt::transparent);

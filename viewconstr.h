@@ -49,6 +49,7 @@ public:
     quint8 countOfBoards;
 
     QVBoxLayout *mainLayout;
+    QHBoxLayout *horLayout;
 
     QGridLayout *gridLayout;
 
