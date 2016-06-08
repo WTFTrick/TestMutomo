@@ -115,6 +115,7 @@ private slots:
     void on_pb_ZoomOut_clicked();
     void on_pb_ResetRange_clicked();
     void MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event);
+    void MouseDoubleClickOnThresholdWidget(QCPAbstractPlottable* plot, QMouseEvent* event);
     void MousePressed(QMouseEvent* event);
     void MoveThreshold(QMouseEvent* event);
     void MouseRealesed(QMouseEvent* event);

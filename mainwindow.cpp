@@ -644,6 +644,7 @@ void MainWindow::CreateConnections()
 
     // mouse click on some area of plot
     connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MouseClickOnTextItem(QCPAbstractItem* , QMouseEvent*)));
+    connect(ui->customPlot, SIGNAL(plottableDoubleClick(QCPAbstractPlottable*,QMouseEvent*)), this, SLOT(MouseDoubleClickOnThresholdWidget(QCPAbstractPlottable*,QMouseEvent*)));
 
     // start/stop server buttons
     connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(StartServer()));
@@ -709,6 +710,14 @@ void MainWindow::MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event)
             ui->customPlot->xAxis->setRange(left , right);
             ui->customPlot->replot();
         }
+    }
+}
+
+void MainWindow::MouseDoubleClickOnThresholdWidget(QCPAbstractPlottable *plot, QMouseEvent *event)
+{
+    if (thresholdCircle)
+    {
+        on_actionSettings_triggered();
     }
 }
 

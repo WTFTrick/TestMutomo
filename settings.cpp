@@ -14,7 +14,7 @@ settings::settings(QWidget *parent) :
 settings::~settings()
 {
     qsettings.setValue("settings/ComboBoxForGrid", checkbxForGrid->isChecked());
-    close();
+    //close();
     //delete ui;
 }
 

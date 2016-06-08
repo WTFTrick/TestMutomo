@@ -22,7 +22,7 @@ viewConstr::~viewConstr()
     screen->deleteLater();
     gv->deleteLater();
     ClearVectorOfBrokenDevices();
-    close();
+    //close();
 }
 
 void viewConstr::CreateView()
