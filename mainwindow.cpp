@@ -31,7 +31,8 @@ MainWindow::MainWindow() :
         strHost = "0.0.0.0";
         value_threshold = 100;
         ui->statusBar->showMessage("Приложение запущено. Пороговое значение равно " + QString::number(value_threshold) + ".");
-        fGridVisible = true;
+        fDetecGridVisible = true;
+        fDeviceGridVisible = true;
     }
     else
     {
@@ -39,7 +40,8 @@ MainWindow::MainWindow() :
         YupperBound = qsettings.value("settings/yUpperBound").toInt();
         strHost = qsettings.value("settings/IP").toString();
         connectToHost(strHost);
-        fGridVisible = qsettings.value("settings/GridCheck").toBool();
+        fDetecGridVisible = qsettings.value("settings/DetecGridCheck").toBool();
+        fDeviceGridVisible = qsettings.value("settings/DeviceGridCheck").toBool();
 
         ui->statusBar->showMessage("Приложение запущено. Пороговое значение равно " + QString::number(value_threshold) + ".");
     }
@@ -125,7 +127,8 @@ MainWindow::~MainWindow()
     qsettings.setValue("settings/threshold", value_threshold);
     qsettings.setValue("settings/yUpperBound", YupperBound);
     qsettings.setValue("settings/IP", strHost);
-    qsettings.setValue("settings/GridCheck", fGridVisible);
+    qsettings.setValue("settings/DetecGridCheck", fDetecGridVisible);
+    qsettings.setValue("settings/DeviceGridCheck", fDeviceGridVisible);
     qsettings.sync();
 
     delete vw;
@@ -542,7 +545,7 @@ void MainWindow::CreateLines()
     const uint heightOfLinesForDetectors = calculating_height_of_lines + 5;
 
 
-    if (fGridVisible)
+    if (fDeviceGridVisible)
     {
         for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
         {
@@ -555,15 +558,21 @@ void MainWindow::CreateLines()
             tickHLine->setLayer("belowmain");
 
         }
+    }
 
+    if (fDetecGridVisible)
+    {
         for (uint i = 0; i < nmChannelsMutomo; i += countOfChannelsInDetector)
         {
-            tickBLine = new QCPItemLine(ui->customPlot);
-            ui->customPlot->addItem(tickBLine);
-            tickBLine->start->setCoords(i, yAxisLowerBound);
-            tickBLine->end->setCoords(i, yAxisLowerBound + heightOfLinesForDetectors);
-            tickBLine->setPen(QPen(QColor(0, 0, 255), width_line));
-            tickBLine->setLayer("belowmain");
+            if (i != 0)
+            {
+                tickBLine = new QCPItemLine(ui->customPlot);
+                ui->customPlot->addItem(tickBLine);
+                tickBLine->start->setCoords(i, yAxisLowerBound);
+                tickBLine->end->setCoords(i, yAxisLowerBound + heightOfLinesForDetectors);
+                tickBLine->setPen(QPen(QColor(0, 0, 255), width_line));
+                tickBLine->setLayer("belowmain");
+            }
         }
     }
 
@@ -582,8 +591,7 @@ void MainWindow::CreateLabels()
 
     uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
 
-
-    if (fGridVisible)
+    if (fDeviceGridVisible)
     {
         for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
         {
@@ -627,7 +635,8 @@ void MainWindow::CreateConnections()
     // connections between mainWindow and modal dialogs
     connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
     //connect(settings_dialog, SIGNAL(sendThreshold(quint16,quint16)), this, SLOT(get_threshold(quint16,quint16)));
-    connect(settings_dialog, SIGNAL(checkbox_grid(bool)), this, SLOT(check_grid(bool)));
+    connect(settings_dialog, SIGNAL(checkboxDetec_grid(bool)), this, SLOT(check_DetecGrid(bool)));
+    connect(settings_dialog, SIGNAL(checkboxDevice_grid(bool)), this, SLOT(check_DeviceGrid(bool)));
 
     // QCustomPlot connects
     connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(MouseRealesed(QMouseEvent*)));
@@ -834,9 +843,15 @@ void MainWindow::slotMessage(QString str)
     ui->statusBar->showMessage(str);
 }
 
-void MainWindow::check_grid(bool checked_state)
+void MainWindow::check_DetecGrid(bool checked_state)
 {
-    fGridVisible = checked_state;
+    fDetecGridVisible = checked_state;
+    ui->customPlot->replot();
+}
+
+void MainWindow::check_DeviceGrid(bool checked_state)
+{
+    fDeviceGridVisible = checked_state;
     ui->customPlot->replot();
 }
 

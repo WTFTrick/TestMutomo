@@ -79,7 +79,8 @@ private:
     viewConstr* vw;                     // exemplar of viewConstr class, for creating second tab in TabWidget
     int diamCircle;                     // variable, that means diametr of threshold circle
 
-    bool fGridVisible;
+    bool fDeviceGridVisible;
+    bool fDetecGridVisible;
     bool PressedOnCircle;               // bool variable, if true - work MouseMove event and threshold line+circles move on Y axis
     bool fVisibleLabels;                // bool variable, if true - draw number of MT48 on customPlot
     bool bUpdatePlot;                   // bool variable, if true - user can see Chart on customPlot
@@ -123,7 +124,8 @@ private slots:
     void on_actionSettings_triggered();
     void get_threshold();
     void slotMessage(QString str);
-    void check_grid(bool checked_state);
+    void check_DetecGrid(bool checked_state);
+    void check_DeviceGrid(bool checked_state);
 
 protected:
     void resizeEvent(QResizeEvent* event);

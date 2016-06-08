@@ -13,7 +13,8 @@ settings::settings(QWidget *parent) :
 
 settings::~settings()
 {
-    qsettings.setValue("settings/ComboBoxForGrid", checkbxForGrid->isChecked());
+    qsettings.setValue("settings/ComboBoxForDetecGrid", checkbxForDetecGrid->isChecked());
+    qsettings.setValue("settings/ComboBoxForDeviceGrid", checkbxForDeviceGrid->isChecked());
     //close();
     //delete ui;
 }
@@ -26,16 +27,23 @@ void settings::InterfaceSettings()
     label_threshold->setFocus();
 
     if ( QFile::exists("settings.conf") )
-        checkbxForGrid->setChecked(qsettings.value("settings/ComboBoxForGrid").toBool());
+    {
+        checkbxForDetecGrid->setChecked(qsettings.value("settings/ComboBoxForDetecGrid").toBool());
+        checkbxForDeviceGrid->setChecked(qsettings.value("settings/ComboBoxForDeviceGrid").toBool());
+    }
     else
-        checkbxForGrid->setChecked(true);
+    {
+        checkbxForDetecGrid->setChecked(true);
+        checkbxForDeviceGrid->setChecked(true);
+    }
 }
 
 void settings::CreateConnections()
 {
     connect(pb_OK, SIGNAL(clicked(bool)), this, SLOT(ok_clicked()));
     connect(pb_cancel, SIGNAL(clicked(bool)), this, SLOT(cancel_clicked()));
-    connect(checkbxForGrid, SIGNAL(clicked(bool)), this, SLOT(checkbox_checked()));
+    connect(checkbxForDetecGrid, SIGNAL(clicked(bool)), this, SLOT(checkboxDetec_checked()));
+    connect(checkbxForDeviceGrid, SIGNAL(clicked(bool)), this, SLOT(checkboxDevice_checked()));
 }
 
 void settings::ok_clicked()
@@ -57,11 +65,18 @@ void settings::cancel_clicked()
     reject();
 }
 
-void settings::checkbox_checked()
+void settings::checkboxDetec_checked()
 {
-    if (checkbxForGrid->checkState() == Qt::CheckState(Qt::Checked))
-        emit checkbox_grid(true);
+    if (checkbxForDetecGrid->checkState() == Qt::CheckState(Qt::Checked))
+        emit checkboxDetec_grid(true);
     else
-        emit checkbox_grid(false);
+        emit checkboxDetec_grid(false);
 }
 
+void settings::checkboxDevice_checked()
+{
+    if (checkbxForDeviceGrid->checkState() == Qt::CheckState(Qt::Checked))
+        emit checkboxDevice_grid(true);
+    else
+        emit checkboxDevice_grid(false);
+}
