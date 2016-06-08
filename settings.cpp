@@ -13,6 +13,7 @@ settings::settings(QWidget *parent) :
 
 settings::~settings()
 {
+    qsettings.setValue("settings/ComboBoxForGrid", checkbxForGrid->isChecked());
     close();
     //delete ui;
 }
@@ -23,7 +24,11 @@ void settings::InterfaceSettings()
     label_threshold->setAlignment(Qt::AlignCenter);     //Set label at center
     label_yUpperBound->setAlignment(Qt::AlignCenter);
     label_threshold->setFocus();
-    checkbxForGrid->setChecked(true);
+
+    if ( QFile::exists("settings.conf") )
+        checkbxForGrid->setChecked(qsettings.value("settings/ComboBoxForGrid").toBool());
+    else
+        checkbxForGrid->setChecked(true);
 }
 
 void settings::CreateConnections()
@@ -58,7 +63,5 @@ void settings::checkbox_checked()
         emit checkbox_grid(true);
     else
         emit checkbox_grid(false);
-
-    //qDebug() << "checkbxForGrid->checkState() =" << checkbxForGrid->checkState();
 }
 

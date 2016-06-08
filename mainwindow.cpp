@@ -31,6 +31,7 @@ MainWindow::MainWindow() :
         strHost = "0.0.0.0";
         value_threshold = 100;
         ui->statusBar->showMessage("Приложение запущено. Пороговое значение равно " + QString::number(value_threshold) + ".");
+        fGridVisible = true;
     }
     else
     {
@@ -38,6 +39,7 @@ MainWindow::MainWindow() :
         YupperBound = qsettings.value("settings/yUpperBound").toInt();
         strHost = qsettings.value("settings/IP").toString();
         connectToHost(strHost);
+        fGridVisible = qsettings.value("settings/GridCheck").toBool();
 
         ui->statusBar->showMessage("Приложение запущено. Пороговое значение равно " + QString::number(value_threshold) + ".");
     }
@@ -71,8 +73,6 @@ MainWindow::MainWindow() :
     graphPen.setColor(QColor(0, 0, 0));
     graphPen.setWidthF(0.4);
     graph1->setPen(graphPen);
-
-    fGridVisible = true;
 
     ip_dialog = new IPDialog( this );
 
@@ -125,6 +125,7 @@ MainWindow::~MainWindow()
     qsettings.setValue("settings/threshold", value_threshold);
     qsettings.setValue("settings/yUpperBound", YupperBound);
     qsettings.setValue("settings/IP", strHost);
+    qsettings.setValue("settings/GridCheck", fGridVisible);
     qsettings.sync();
 
     delete vw;
@@ -826,26 +827,7 @@ void MainWindow::slotMessage(QString str)
 
 void MainWindow::check_grid(bool checked_state)
 {
-    qDebug() << "Вкл/выкл сетку: " << checked_state;
     fGridVisible = checked_state;
-    //qDebug() << ui->customPlot->itemCount();
-
-    /*if (!fGridVisible)
-    {
-        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
-        {
-            vecOfLines.at(i)->setVisible(false);
-            //qDebug() << vecOfLines.at(i);
-        }
-    }
-    else
-    {
-        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
-        {
-            vecOfLines.at(i)->setVisible(true);
-        }
-    }*/
-
     ui->customPlot->replot();
 }
 
