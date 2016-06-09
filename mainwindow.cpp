@@ -105,11 +105,11 @@ MainWindow::MainWindow() :
     thresholdGraph = ui->customPlot->addGraph();
     threhshold_data = thresholdGraph->data();
 
-    QPen pen;
-    pen.setColor(QColor(255,0,0));
-    pen.setWidth(2);
-    pen.setStyle(Qt::DotLine);
-    thresholdGraph->setPen(pen);
+    QPen pen1;
+    pen1.setColor(QColor(255,0,0));
+    pen1.setWidth(2);
+    pen1.setStyle(Qt::DotLine);
+    thresholdGraph->setPen(pen1);
 
     thresholdCircle = ui->customPlot->addGraph();
     thresholdCircleData = thresholdCircle->data();
