@@ -212,21 +212,31 @@
             </spacer>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_3">
-             <property name="text">
-              <string>Напряжение</string>
+            <widget class="QSpinBox" name="spinBox">
+             <property name="suffix">
+              <string> V</string>
+             </property>
+             <property name="maximum">
+              <number>3000</number>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_2">
+            <widget class="QPushButton" name="pb_SetV">
+             <property name="text">
+              <string>Установить</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pb_Start">
              <property name="text">
               <string>Старт</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="pb_Stop">
              <property name="text">
               <string>Стоп</string>
              </property>
