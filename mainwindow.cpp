@@ -21,6 +21,9 @@ MainWindow::MainWindow() :
     setWindowTitle("MuTomo Клиент");
     setCentralWidget(ui->tabWidget);
 
+    settings_dialog = new settings( this );
+    settings_dialog->setModal(true);
+
     YlowerBound = 0;
     XlowerBound = 0;
     XupperBound = 2475;
@@ -33,6 +36,8 @@ MainWindow::MainWindow() :
         ui->statusBar->showMessage("Приложение запущено. Пороговое значение равно " + QString::number(value_threshold) + ".");
         fDetecGridVisible = true;
         fDeviceGridVisible = true;
+        settings_dialog->checkbxForDetecGrid->setChecked(true);
+        settings_dialog->checkbxForDeviceGrid->setChecked(true);
     }
     else
     {
@@ -42,6 +47,8 @@ MainWindow::MainWindow() :
         connectToHost(strHost);
         fDetecGridVisible = qsettings.value("settings/DetecGridCheck").toBool();
         fDeviceGridVisible = qsettings.value("settings/DeviceGridCheck").toBool();
+        settings_dialog->checkbxForDetecGrid->setChecked(qsettings.value("settings/CheckBoxForDetecGrid").toBool());
+        settings_dialog->checkbxForDeviceGrid->setChecked(qsettings.value("settings/CheckBoxForDeviceGrid").toBool());
 
         ui->statusBar->showMessage("Приложение запущено. Пороговое значение равно " + QString::number(value_threshold) + ".");
     }
@@ -77,9 +84,6 @@ MainWindow::MainWindow() :
     graph1->setPen(graphPen);
 
     ip_dialog = new IPDialog( this );
-
-    settings_dialog = new settings( this );
-    settings_dialog->setModal(true);
 
     //MutomoHost = "10.162.1.110"
 
@@ -129,6 +133,8 @@ MainWindow::~MainWindow()
     qsettings.setValue("settings/IP", strHost);
     qsettings.setValue("settings/DetecGridCheck", fDetecGridVisible);
     qsettings.setValue("settings/DeviceGridCheck", fDeviceGridVisible);
+    qsettings.setValue("settings/CheckBoxForDetecGrid", settings_dialog->checkbxForDetecGrid->isChecked());
+    qsettings.setValue("settings/CheckBoxForDeviceGrid", settings_dialog->checkbxForDeviceGrid->isChecked());
     qsettings.sync();
 
     delete vw;

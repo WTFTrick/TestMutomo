@@ -2,8 +2,7 @@
 #include "ui_settings.h"
 
 settings::settings(QWidget *parent) :
-    QDialog(parent),
-    qsettings("settings.conf", QSettings::NativeFormat)
+    QDialog(parent)
   /*, ui(new Ui::settings)*/
 {
     setupUi(this);
@@ -13,9 +12,6 @@ settings::settings(QWidget *parent) :
 
 settings::~settings()
 {
-    qsettings.setValue("settings/ComboBoxForDetecGrid", checkbxForDetecGrid->isChecked());
-    qsettings.setValue("settings/ComboBoxForDeviceGrid", checkbxForDeviceGrid->isChecked());
-    //close();
     //delete ui;
 }
 
@@ -25,17 +21,6 @@ void settings::InterfaceSettings()
     label_threshold->setAlignment(Qt::AlignCenter);     //Set label at center
     label_yUpperBound->setAlignment(Qt::AlignCenter);
     label_threshold->setFocus();
-
-    if ( QFile::exists("settings.conf") )
-    {
-        checkbxForDetecGrid->setChecked(qsettings.value("settings/ComboBoxForDetecGrid").toBool());
-        checkbxForDeviceGrid->setChecked(qsettings.value("settings/ComboBoxForDeviceGrid").toBool());
-    }
-    else
-    {
-        checkbxForDetecGrid->setChecked(true);
-        checkbxForDeviceGrid->setChecked(true);
-    }
 }
 
 void settings::CreateConnections()

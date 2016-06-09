@@ -34,9 +34,6 @@ signals:
     void sendThreshold(quint16 threshold, quint16 yUpperBound);
     void checkboxDetec_grid(bool checked);
     void checkboxDevice_grid(bool checked);
-
-private:
-    QSettings qsettings;
 };
 
 #endif // SETTINGS_H
