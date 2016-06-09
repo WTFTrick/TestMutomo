@@ -548,12 +548,11 @@ void MainWindow::CreateLines()
     vecOfLines.resize(nmChannelsMutomo);
 
     const uint countOfChannelsInDetector = ChannelsOnBoard * 6;
-    const uint heightOfLinesForDetectors = calculating_height_of_lines + 5;
-
+    double heightOfLinesForDetectors = calculating_height_of_lines + calculating_height_of_lines/3;
 
     if (fDeviceGridVisible)
     {
-        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
+        for (uint i = ChannelsOnBoard; i < nmChannelsMutomo; i += ChannelsOnBoard)
         {
             tickHLine = new QCPItemLine(ui->customPlot);
             vecOfLines.insert(i, tickHLine);
@@ -568,17 +567,14 @@ void MainWindow::CreateLines()
 
     if (fDetecGridVisible)
     {
-        for (uint i = 0; i < nmChannelsMutomo; i += countOfChannelsInDetector)
+        for (uint i = countOfChannelsInDetector; i < nmChannelsMutomo; i += countOfChannelsInDetector)
         {
-            if (i != 0)
-            {
-                tickBLine = new QCPItemLine(ui->customPlot);
-                ui->customPlot->addItem(tickBLine);
-                tickBLine->start->setCoords(i, yAxisLowerBound);
-                tickBLine->end->setCoords(i, yAxisLowerBound + heightOfLinesForDetectors);
-                tickBLine->setPen(QPen(QColor(0, 0, 255), width_line));
-                tickBLine->setLayer("belowmain");
-            }
+            tickBLine = new QCPItemLine(ui->customPlot);
+            ui->customPlot->addItem(tickBLine);
+            tickBLine->start->setCoords(i, yAxisLowerBound);
+            tickBLine->end->setCoords(i, yAxisLowerBound + heightOfLinesForDetectors);
+            tickBLine->setPen(QPen(QColor(0, 0, 255), width_line));
+            tickBLine->setLayer("belowmain");
         }
     }
 
