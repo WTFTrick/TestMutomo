@@ -21,6 +21,9 @@ MainWindow::MainWindow() :
     setWindowTitle("MuTomo Клиент");
     setCentralWidget(ui->tabWidget);
 
+    settings_dialog = new settings( this );
+    settings_dialog->setModal(true);
+
     YlowerBound = 0;
     XlowerBound = 0;
     XupperBound = 2475;
@@ -31,6 +34,10 @@ MainWindow::MainWindow() :
         strHost = "0.0.0.0";
         value_threshold = 100;
         ui->statusBar->showMessage("Приложение запущено. Пороговое значение равно " + QString::number(value_threshold) + ".");
+        fDetecGridVisible = true;
+        fDeviceGridVisible = true;
+        settings_dialog->checkbxForDetecGrid->setChecked(true);
+        settings_dialog->checkbxForDeviceGrid->setChecked(true);
     }
     else
     {
@@ -38,6 +45,10 @@ MainWindow::MainWindow() :
         YupperBound = qsettings.value("settings/yUpperBound").toInt();
         strHost = qsettings.value("settings/IP").toString();
         connectToHost(strHost);
+        fDetecGridVisible = qsettings.value("settings/DetecGridCheck").toBool();
+        fDeviceGridVisible = qsettings.value("settings/DeviceGridCheck").toBool();
+        settings_dialog->checkbxForDetecGrid->setChecked(qsettings.value("settings/CheckBoxForDetecGrid").toBool());
+        settings_dialog->checkbxForDeviceGrid->setChecked(qsettings.value("settings/CheckBoxForDeviceGrid").toBool());
 
         ui->statusBar->showMessage("Приложение запущено. Пороговое значение равно " + QString::number(value_threshold) + ".");
     }
@@ -73,9 +84,6 @@ MainWindow::MainWindow() :
     graph1->setPen(graphPen);
 
     ip_dialog = new IPDialog( this );
-
-    settings_dialog = new settings( this );
-    settings_dialog->setModal(true);
 
     //MutomoHost = "10.162.1.110"
 
@@ -123,6 +131,10 @@ MainWindow::~MainWindow()
     qsettings.setValue("settings/threshold", value_threshold);
     qsettings.setValue("settings/yUpperBound", YupperBound);
     qsettings.setValue("settings/IP", strHost);
+    qsettings.setValue("settings/DetecGridCheck", fDetecGridVisible);
+    qsettings.setValue("settings/DeviceGridCheck", fDeviceGridVisible);
+    qsettings.setValue("settings/CheckBoxForDetecGrid", settings_dialog->checkbxForDetecGrid->isChecked());
+    qsettings.setValue("settings/CheckBoxForDeviceGrid", settings_dialog->checkbxForDeviceGrid->isChecked());
     qsettings.sync();
 
     delete vw;
@@ -526,43 +538,55 @@ void MainWindow::ScaleChanged()
 void MainWindow::CreateLines()
 {
     // Add QCPItemLine
-
     //const char line_height = 30;
     const unsigned char nmBoards = 49; // Number of boards
     const char width_line = 3;
     calculating_height_of_lines
             = ( ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower ) / 3;
 
-    uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
+    nmChannelsMutomo = nmBoards*ChannelsOnBoard;
+    vecOfLines.resize(nmChannelsMutomo);
 
     const uint countOfChannelsInDetector = ChannelsOnBoard * 6;
     const uint heightOfLinesForDetectors = calculating_height_of_lines + 5;
 
-    for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
-    {
-        QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
-        ui->customPlot->addItem(tickHLine);
-        tickHLine->start->setCoords(i, yAxisLowerBound);
-        tickHLine->end->setCoords(i, yAxisLowerBound + calculating_height_of_lines );
-        tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
-        tickHLine->setLayer("belowmain");
 
+    if (fDeviceGridVisible)
+    {
+        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
+        {
+            tickHLine = new QCPItemLine(ui->customPlot);
+            vecOfLines.insert(i, tickHLine);
+            ui->customPlot->addItem(tickHLine);
+            tickHLine->start->setCoords(i, yAxisLowerBound);
+            tickHLine->end->setCoords(i, yAxisLowerBound + calculating_height_of_lines );
+            tickHLine->setPen(QPen(QColor(0, 255, 0), width_line));
+            tickHLine->setLayer("belowmain");
+
+        }
     }
 
-    for (uint i = 0; i < nmChannelsMutomo; i += countOfChannelsInDetector)
+    if (fDetecGridVisible)
     {
-        QCPItemLine *tickHLine = new QCPItemLine(ui->customPlot);
-        ui->customPlot->addItem(tickHLine);
-        tickHLine->start->setCoords(i, yAxisLowerBound);
-        tickHLine->end->setCoords(i, yAxisLowerBound + heightOfLinesForDetectors);
-        tickHLine->setPen(QPen(QColor(0, 0, 255), width_line));
-        tickHLine->setLayer("belowmain");
+        for (uint i = 0; i < nmChannelsMutomo; i += countOfChannelsInDetector)
+        {
+            if (i != 0)
+            {
+                tickBLine = new QCPItemLine(ui->customPlot);
+                ui->customPlot->addItem(tickBLine);
+                tickBLine->start->setCoords(i, yAxisLowerBound);
+                tickBLine->end->setCoords(i, yAxisLowerBound + heightOfLinesForDetectors);
+                tickBLine->setPen(QPen(QColor(0, 0, 255), width_line));
+                tickBLine->setLayer("belowmain");
+            }
+        }
     }
 
 }
 
 void MainWindow::CreateLabels()
 {
+
     // Add a QCPItemText (number of MT48 on customPlot)
     unsigned char CounterOfBoards = 0; // Counter for boards
     const unsigned char nmBoards = 48; // Number of boards
@@ -573,27 +597,30 @@ void MainWindow::CreateLabels()
 
     uint nmChannelsMutomo = nmBoards*ChannelsOnBoard;
 
-
-    for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
+    if (fDeviceGridVisible)
     {
-        QString NOB = QString("%1").arg(CounterOfBoards);
-
-        if (fVisibleLabels)
+        for (uint i = 0; i < nmChannelsMutomo; i += ChannelsOnBoard)
         {
-            NumberOfBoard = new QCPItemText(ui->customPlot);
-            ui->customPlot->addItem(NumberOfBoard);
-            NumberOfBoard->position->setCoords(i + coord_label_center_x, yAxisLowerBound + coord_label_center_y);
-            NumberOfBoard->setText(NOB);
-            NumberOfBoard->setFont(QFont(font().family(), 11));
+            QString NOB = QString("%1").arg(CounterOfBoards);
 
-            if ( vectorForCheckingDevices[ CounterOfBoards ] == true )
-                NumberOfBoard->setColor(QColor(255, 0, 0));
-            else
-                NumberOfBoard->setColor(QColor(0, 0, 0));
+            if (fVisibleLabels)
+            {
+                NumberOfBoard = new QCPItemText(ui->customPlot);
+                ui->customPlot->addItem(NumberOfBoard);
+                NumberOfBoard->position->setCoords(i + coord_label_center_x, yAxisLowerBound + coord_label_center_y);
+                NumberOfBoard->setText(NOB);
+                NumberOfBoard->setFont(QFont(font().family(), 11));
+
+                if ( vectorForCheckingDevices[ CounterOfBoards ] == true )
+                    NumberOfBoard->setColor(QColor(255, 0, 0));
+                else
+                    NumberOfBoard->setColor(QColor(0, 0, 0));
+            }
+
+            CounterOfBoards++;
         }
-
-        CounterOfBoards++;
     }
+
 }
 
 void MainWindow::DrawThresholdWidget()
@@ -614,6 +641,8 @@ void MainWindow::CreateConnections()
     // connections between mainWindow and modal dialogs
     connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
     //connect(settings_dialog, SIGNAL(sendThreshold(quint16,quint16)), this, SLOT(get_threshold(quint16,quint16)));
+    connect(settings_dialog, SIGNAL(checkboxDetec_grid(bool)), this, SLOT(check_DetecGrid(bool)));
+    connect(settings_dialog, SIGNAL(checkboxDevice_grid(bool)), this, SLOT(check_DeviceGrid(bool)));
 
     // QCustomPlot connects
     connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(MouseRealesed(QMouseEvent*)));
@@ -630,6 +659,7 @@ void MainWindow::CreateConnections()
 
     // mouse click on some area of plot
     connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MouseClickOnTextItem(QCPAbstractItem* , QMouseEvent*)));
+    connect(ui->customPlot, SIGNAL(plottableDoubleClick(QCPAbstractPlottable*,QMouseEvent*)), this, SLOT(MouseDoubleClickOnThresholdWidget(QCPAbstractPlottable*,QMouseEvent*)));
 
     // start/stop server buttons
     connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(StartServer()));
@@ -677,7 +707,7 @@ void MainWindow::tabSelected()
         ScaleChanged();
     }
 
-    if (ui->tabWidget->currentIndex() == 1)
+    if (ui->tabWidget->currentIndex() == 2)
         bUpdateViewConstr = true;
 }
 
@@ -695,6 +725,14 @@ void MainWindow::MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event)
             ui->customPlot->xAxis->setRange(left , right);
             ui->customPlot->replot();
         }
+    }
+}
+
+void MainWindow::MouseDoubleClickOnThresholdWidget(QCPAbstractPlottable *plot, QMouseEvent *event)
+{
+    if (thresholdCircle)
+    {
+        on_actionSettings_triggered();
     }
 }
 
@@ -809,6 +847,18 @@ void MainWindow::get_threshold()
 void MainWindow::slotMessage(QString str)
 {
     ui->statusBar->showMessage(str);
+}
+
+void MainWindow::check_DetecGrid(bool checked_state)
+{
+    fDetecGridVisible = checked_state;
+    ui->customPlot->replot();
+}
+
+void MainWindow::check_DeviceGrid(bool checked_state)
+{
+    fDeviceGridVisible = checked_state;
+    ui->customPlot->replot();
 }
 
 void MainWindow::ChannelCheck(quint32 freq, int ind)

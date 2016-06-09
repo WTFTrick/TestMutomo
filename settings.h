@@ -27,12 +27,13 @@ public:
 private slots:
     void ok_clicked();
     void cancel_clicked();
+    void checkboxDetec_checked();
+    void checkboxDevice_checked();
 
 signals:
     void sendThreshold(quint16 threshold, quint16 yUpperBound);
-
-private:
-    QSettings qsettings;
+    void checkboxDetec_grid(bool checked);
+    void checkboxDevice_grid(bool checked);
 };
 
 #endif // SETTINGS_H

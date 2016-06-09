@@ -2,8 +2,7 @@
 #include "ui_settings.h"
 
 settings::settings(QWidget *parent) :
-    QDialog(parent),
-    qsettings("settings.conf", QSettings::NativeFormat)
+    QDialog(parent)
   /*, ui(new Ui::settings)*/
 {
     setupUi(this);
@@ -13,7 +12,6 @@ settings::settings(QWidget *parent) :
 
 settings::~settings()
 {
-    close();
     //delete ui;
 }
 
@@ -22,13 +20,15 @@ void settings::InterfaceSettings()
     setWindowTitle("Настройки");
     label_threshold->setAlignment(Qt::AlignCenter);     //Set label at center
     label_yUpperBound->setAlignment(Qt::AlignCenter);
-    sp_thresholdValue->setFocus();
+    label_threshold->setFocus();
 }
 
 void settings::CreateConnections()
 {
     connect(pb_OK, SIGNAL(clicked(bool)), this, SLOT(ok_clicked()));
     connect(pb_cancel, SIGNAL(clicked(bool)), this, SLOT(cancel_clicked()));
+    connect(checkbxForDetecGrid, SIGNAL(clicked(bool)), this, SLOT(checkboxDetec_checked()));
+    connect(checkbxForDeviceGrid, SIGNAL(clicked(bool)), this, SLOT(checkboxDevice_checked()));
 }
 
 void settings::ok_clicked()
@@ -50,3 +50,18 @@ void settings::cancel_clicked()
     reject();
 }
 
+void settings::checkboxDetec_checked()
+{
+    if (checkbxForDetecGrid->checkState() == Qt::CheckState(Qt::Checked))
+        emit checkboxDetec_grid(true);
+    else
+        emit checkboxDetec_grid(false);
+}
+
+void settings::checkboxDevice_checked()
+{
+    if (checkbxForDeviceGrid->checkState() == Qt::CheckState(Qt::Checked))
+        emit checkboxDevice_grid(true);
+    else
+        emit checkboxDevice_grid(false);
+}

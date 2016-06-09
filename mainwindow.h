@@ -61,6 +61,11 @@ private:
 
     double lastPosition;
 
+    QVector<QCPItemLine*> vecOfLines;
+
+    uint nmChannelsMutomo;
+    QCPItemLine *tickHLine;
+    QCPItemLine *tickBLine;
     QCPItemText * NumberOfBoard;
     QCPDataMap  *mapData;
     QCPGraph    *graph1;
@@ -74,6 +79,8 @@ private:
     viewConstr* vw;                     // exemplar of viewConstr class, for creating second tab in TabWidget
     int diamCircle;                     // variable, that means diametr of threshold circle
 
+    bool fDeviceGridVisible;
+    bool fDetecGridVisible;
     bool PressedOnCircle;               // bool variable, if true - work MouseMove event and threshold line+circles move on Y axis
     bool fVisibleLabels;                // bool variable, if true - draw number of MT48 on customPlot
     bool bUpdatePlot;                   // bool variable, if true - user can see Chart on customPlot
@@ -109,6 +116,7 @@ private slots:
     void on_pb_ZoomOut_clicked();
     void on_pb_ResetRange_clicked();
     void MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event);
+    void MouseDoubleClickOnThresholdWidget(QCPAbstractPlottable* plot, QMouseEvent* event);
     void MousePressed(QMouseEvent* event);
     void MoveThreshold(QMouseEvent* event);
     void MouseRealesed(QMouseEvent* event);
@@ -116,6 +124,8 @@ private slots:
     void on_actionSettings_triggered();
     void get_threshold();
     void slotMessage(QString str);
+    void check_DetecGrid(bool checked_state);
+    void check_DeviceGrid(bool checked_state);
 
 protected:
     void resizeEvent(QResizeEvent* event);

@@ -27,7 +27,7 @@ IPDialog::~IPDialog()
 {
     ipFile.close();
     delete ui;
-    close();
+    //close();
 }
 
 void IPDialog::on_pb_close_clicked()

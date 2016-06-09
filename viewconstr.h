@@ -49,6 +49,10 @@ public:
     quint8 countOfBoards;
 
     QVBoxLayout *mainLayout;
+    QHBoxLayout *horLayout;
+
+    QGridLayout *gridLayout;
+
     QTcpSocket* m_pTcpSocket;
 
     bool event(QEvent *event);
