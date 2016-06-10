@@ -140,9 +140,54 @@ MainWindow::~MainWindow()
     delete vw;
     delete settings_dialog;
     delete ip_dialog;
-    close();
 
     delete ui;
+}
+
+void MainWindow::CreateConnections()
+{
+    //qDebug() << "CreateConnections";
+
+    // connections between mainWindow and modal dialogs
+    connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
+    //connect(settings_dialog, SIGNAL(sendThreshold(quint16,quint16)), this, SLOT(get_threshold(quint16,quint16)));
+    connect(settings_dialog, SIGNAL(checkboxDetec_grid(bool)), this, SLOT(check_DetecGrid(bool)));
+    connect(settings_dialog, SIGNAL(checkboxDevice_grid(bool)), this, SLOT(check_DeviceGrid(bool)));
+
+    // QCustomPlot connects
+    connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(MouseRealesed(QMouseEvent*)));
+    connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(MoveThreshold(QMouseEvent*)));
+    connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(MousePressed(QMouseEvent*)));
+    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
+    connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
+    connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(yAxisChanged(QCPRange)));
+
+    // scaled plot
+    connect(ui->pb_ZoomIn, SIGNAL(clicked(bool)),               this, SLOT(ScaleChanged()));
+    connect(ui->pb_ZoomOut, SIGNAL(clicked(bool)),              this, SLOT(ScaleChanged()));
+    connect(ui->pb_ResetRange, SIGNAL(clicked(bool)),           this, SLOT(ScaleChanged()));
+
+    // mouse click on some area of plot
+    connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MouseClickOnTextItem(QCPAbstractItem* , QMouseEvent*)));
+    connect(ui->customPlot, SIGNAL(plottableDoubleClick(QCPAbstractPlottable*,QMouseEvent*)), this, SLOT(MouseDoubleClickOnThresholdWidget(QCPAbstractPlottable*,QMouseEvent*)));
+
+    // start/stop server buttons
+    connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(StartServer()));
+    connect(ui->pb_stopServer, SIGNAL(clicked(bool)), this, SLOT(StopServer()));
+
+    // tab changed event
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected()));
+
+    // info from viewConstr class to MainWindow StatusBar
+    connect(vw, SIGNAL(messg(QString)), this, SLOT(slotMessage(QString)));
+
+    // replot event
+    connect(ui->customPlot, SIGNAL(beforeReplot()), this, SLOT(DrawPlot()));
+
+    connect(vw, SIGNAL(sendJson(QByteArray)), this, SLOT(GetJsonFromViewConstr(QByteArray)));
+
+    // tab HSP
+    connect(ui->pb_SetV, SIGNAL(clicked()), this, SLOT(slSetVoltageRequest()));
 }
 
 void MainWindow::CreatePlot(QVector<quint32> *arrData)
@@ -210,7 +255,7 @@ void MainWindow::StartServer()
     //Команда - начать генерацию данных на сервере и передачу клиенту
 
     quint32 data = 1;
-    TYPE_DATA t_data = DATA_CMD;
+    TYPE_DATA t_data = CMD;
     QByteArray arrayStart;
     //arrayStart.setNum(data);
 
@@ -254,7 +299,7 @@ void MainWindow::StopServer()
 
     quint32 data = 0;
     QByteArray arrayStop;
-    TYPE_DATA t_data = DATA_CMD;
+    TYPE_DATA t_data = CMD;
 
     QByteArray ba_data;
     //ba_data.push_back(1);
@@ -284,7 +329,7 @@ void MainWindow::StopServer()
         ui->statusBar->showMessage("Клиент не подключен!");
 }
 
-void MainWindow::DataHistRequest()
+void MainWindow::slDataHistRequest()
 {
     //Запросить у сервера данные для гистограммы
 
@@ -297,7 +342,7 @@ void MainWindow::DataHistRequest()
         ui->statusBar->showMessage("Клиент не подключен!");
 }
 
-void MainWindow::DataRawRequset()
+void MainWindow::slDataRawRequest()
 {
     //Запросить у сервера сырые данные
 
@@ -306,6 +351,38 @@ void MainWindow::DataRawRequset()
     null.setNum(0);
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
         DataToServer(t_data, null );
+    else
+        ui->statusBar->showMessage("Клиент не подключен!");
+}
+
+void MainWindow::slSetVoltageRequest()
+{
+    QByteArray pkgData;
+
+    int data = ui->spVoltage->value();
+    TYPE_DATA t_data = SET_VOLTAGE;
+
+    QByteArray ba_data;
+    ba_data.setNum(data);
+
+    QDataStream out(&pkgData, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_6);
+    out << quint64(0);
+    out << t_data;
+    out << ba_data;
+    out.device()->seek(0);
+    quint64 size_pkg = quint64(pkgData.size() - sizeof(quint64));
+    out << size_pkg;
+
+    //qDebug() << "ba_data:" << ba_data;
+    //qDebug() << "Data To Server:" << pkgData;
+
+
+    if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
+    {
+        DataToServer(t_data, pkgData);
+        ui->statusBar->showMessage("Серверу отправлена команда 'установка напряжения'.");
+    }
     else
         ui->statusBar->showMessage("Клиент не подключен!");
 }
@@ -628,49 +705,6 @@ void MainWindow::DrawThresholdWidget()
     //qDebug() << "xPosOfCircle = " << xPosOfCircle;
 
     ui->customPlot->replot();
-}
-
-void MainWindow::CreateConnections()
-{
-    //qDebug() << "CreateConnections";
-
-    // connections between mainWindow and modal dialogs
-    connect(ip_dialog, SIGNAL(sendData(QString)), this, SLOT(connectToHost(QString)));
-    //connect(settings_dialog, SIGNAL(sendThreshold(quint16,quint16)), this, SLOT(get_threshold(quint16,quint16)));
-    connect(settings_dialog, SIGNAL(checkboxDetec_grid(bool)), this, SLOT(check_DetecGrid(bool)));
-    connect(settings_dialog, SIGNAL(checkboxDevice_grid(bool)), this, SLOT(check_DeviceGrid(bool)));
-
-    // QCustomPlot connects
-    connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(MouseRealesed(QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(MoveThreshold(QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(MousePressed(QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
-    connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
-    connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(yAxisChanged(QCPRange)));
-
-    // scaled plot
-    connect(ui->pb_ZoomIn, SIGNAL(clicked(bool)),               this, SLOT(ScaleChanged()));
-    connect(ui->pb_ZoomOut, SIGNAL(clicked(bool)),              this, SLOT(ScaleChanged()));
-    connect(ui->pb_ResetRange, SIGNAL(clicked(bool)),           this, SLOT(ScaleChanged()));
-
-    // mouse click on some area of plot
-    connect(ui->customPlot, SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*)), this,SLOT(MouseClickOnTextItem(QCPAbstractItem* , QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(plottableDoubleClick(QCPAbstractPlottable*,QMouseEvent*)), this, SLOT(MouseDoubleClickOnThresholdWidget(QCPAbstractPlottable*,QMouseEvent*)));
-
-    // start/stop server buttons
-    connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(StartServer()));
-    connect(ui->pb_stopServer, SIGNAL(clicked(bool)), this, SLOT(StopServer()));
-
-    // tab changed event
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected()));
-
-    // info from viewConstr class to MainWindow StatusBar
-    connect(vw, SIGNAL(messg(QString)), this, SLOT(slotMessage(QString)));
-
-    // replot event
-    connect(ui->customPlot, SIGNAL(beforeReplot()), this, SLOT(DrawPlot()));
-
-    connect(vw, SIGNAL(sendJson(QByteArray)), this, SLOT(GetJsonFromViewConstr(QByteArray)));
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)

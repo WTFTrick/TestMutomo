@@ -43,7 +43,7 @@ private:
 
     QSettings qsettings;
 
-    enum TYPE_DATA {DATA_RAW, DATA_HIST, DATA_CONFIG_MUTOMO, DATA_CMD};
+    enum TYPE_DATA {DATA_RAW, DATA_HIST, DATA_CONFIG_MUTOMO, CMD, SET_VOLTAGE};
     int nPort;
     int LinesCount;
     const unsigned char ChannelsOnBoard;
@@ -95,8 +95,8 @@ private:
     void CreateConnections();
     void ClearVectorForCheckingDevices();
     void DataToServer(TYPE_DATA t_data, QByteArray data);
-    void DataHistRequest();
-    void DataRawRequset();
+
+
 
 private slots:
     void GetJsonFromViewConstr(QByteArray JsonDoc);
@@ -126,6 +126,10 @@ private slots:
     void slotMessage(QString str);
     void check_DetecGrid(bool checked_state);
     void check_DeviceGrid(bool checked_state);
+
+    void slDataHistRequest();
+    void slDataRawRequest();
+    void slSetVoltageRequest();
 
 protected:
     void resizeEvent(QResizeEvent* event);
