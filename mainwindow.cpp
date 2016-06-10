@@ -172,8 +172,8 @@ void MainWindow::CreateConnections()
     connect(ui->customPlot, SIGNAL(plottableDoubleClick(QCPAbstractPlottable*,QMouseEvent*)), this, SLOT(MouseDoubleClickOnThresholdWidget(QCPAbstractPlottable*,QMouseEvent*)));
 
     // start/stop server buttons
-    connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(StartServer()));
-    connect(ui->pb_stopServer, SIGNAL(clicked(bool)), this, SLOT(StopServer()));
+    connect(ui->pb_startServer, SIGNAL(clicked(bool)), this, SLOT(slStartDAQ()));
+    connect(ui->pb_stopServer, SIGNAL(clicked(bool)), this, SLOT(slStopDAQ()));
 
     // tab changed event
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected()));
@@ -186,8 +186,11 @@ void MainWindow::CreateConnections()
 
     connect(vw, SIGNAL(sendJson(QByteArray)), this, SLOT(GetJsonFromViewConstr(QByteArray)));
 
-    // tab HSP
-    connect(ui->pb_SetV, SIGNAL(clicked()), this, SLOT(slSetVoltageRequest()));
+    // tab hv-scan
+    connect(ui->pbSetVoltage,       &QPushButton::clicked, this, &MainWindow::slSetVoltage);
+    connect(ui->pbStopSetVoltage,   &QPushButton::clicked, this, &MainWindow::slStopSetVoltage);
+    connect(ui->pbStartHVScan,      &QPushButton::clicked, this, &MainWindow::slStartHVScan);
+    connect(ui->pbStopHVScan,       &QPushButton::clicked, this, &MainWindow::slStopHVScan);
 }
 
 void MainWindow::CreatePlot(QVector<quint32> *arrData)
@@ -250,34 +253,23 @@ void MainWindow::slotReadyRead()
     }
 }
 
-void MainWindow::StartServer()
+void MainWindow::slStartDAQ()
 {
-    //Команда - начать генерацию данных на сервере и передачу клиенту
+    QByteArray arrayStart;
 
     quint32 data = 1;
     TYPE_DATA t_data = CMD;
-    QByteArray arrayStart;
-    //arrayStart.setNum(data);
-
-
     QByteArray ba_data;
-    //ba_data.push_back(1);
     ba_data.setNum(data);
 
     QDataStream out(&arrayStart, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_6);
-
     out << quint64(0);
-
     out << t_data;
     out << ba_data;
-
     out.device()->seek(0);
     quint64 size_pkg = quint64(arrayStart.size() - sizeof(quint64));
     out << size_pkg;
-
-    //qDebug() << "ba_data:" << ba_data;
-    //qDebug() << "Data To Server:" << arrayStart;
 
 
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
@@ -293,16 +285,13 @@ void MainWindow::StartServer()
         ui->statusBar->showMessage("Клиент не подключен!");
 }
 
-void MainWindow::StopServer()
+void MainWindow::slStopDAQ()
 {
-    //Команда - остановить генерацию данных на сервере и передачу клиенту
-
     quint32 data = 0;
     QByteArray arrayStop;
     TYPE_DATA t_data = CMD;
 
     QByteArray ba_data;
-    //ba_data.push_back(1);
     ba_data.setNum(data);
 
     QDataStream out(&arrayStop, QIODevice::WriteOnly);
@@ -331,8 +320,7 @@ void MainWindow::StopServer()
 
 void MainWindow::slDataHistRequest()
 {
-    //Запросить у сервера данные для гистограммы
-
+    // эта функция не будет работать, смотри как реализованы рабочие функции
     TYPE_DATA t_data = DATA_HIST;
     QByteArray null;
     null.setNum(0);
@@ -344,8 +332,7 @@ void MainWindow::slDataHistRequest()
 
 void MainWindow::slDataRawRequest()
 {
-    //Запросить у сервера сырые данные
-
+    // эта функция не будет работать, смотри как реализованы рабочие функции
     TYPE_DATA t_data = DATA_RAW;
     QByteArray null;
     null.setNum(0);
@@ -355,7 +342,7 @@ void MainWindow::slDataRawRequest()
         ui->statusBar->showMessage("Клиент не подключен!");
 }
 
-void MainWindow::slSetVoltageRequest()
+void MainWindow::slSetVoltage()
 {
     QByteArray pkgData;
 
@@ -374,10 +361,6 @@ void MainWindow::slSetVoltageRequest()
     quint64 size_pkg = quint64(pkgData.size() - sizeof(quint64));
     out << size_pkg;
 
-    //qDebug() << "ba_data:" << ba_data;
-    //qDebug() << "Data To Server:" << pkgData;
-
-
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
         DataToServer(t_data, pkgData);
@@ -385,6 +368,90 @@ void MainWindow::slSetVoltageRequest()
     }
     else
         ui->statusBar->showMessage("Клиент не подключен!");
+}
+
+void MainWindow::slStopSetVoltage()
+{
+    QByteArray pkgData;
+    quint32 data = 3;
+    TYPE_DATA t_data = CMD;
+
+    QByteArray ba_data;
+    ba_data.setNum(data);
+
+    QDataStream out(&pkgData, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_6);
+    out << quint64(0);
+    out << t_data;
+    out << ba_data;
+    out.device()->seek(0);
+    quint64 size_pkg = quint64(pkgData.size() - sizeof(quint64));
+    out << size_pkg;
+
+    if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
+    {
+        DataToServer(t_data, pkgData);
+        ui->statusBar->showMessage("Серверу отправлена команда 'остановить установку напряжения'.");
+    }
+    else
+        ui->statusBar->showMessage("Клиент не подключен!");
+
+}
+
+void MainWindow::slStartHVScan()
+{
+    QByteArray pkgData;
+
+    int data = 4;
+    TYPE_DATA t_data = CMD;
+
+    QByteArray ba_data;
+    ba_data.setNum(data);
+
+    QDataStream out(&pkgData, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_6);
+    out << quint64(0);
+    out << t_data;
+    out << ba_data;
+    out.device()->seek(0);
+    quint64 size_pkg = quint64(pkgData.size() - sizeof(quint64));
+    out << size_pkg;
+
+    if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState){
+        DataToServer(t_data, pkgData);
+        ui->statusBar->showMessage("Запущен высоковольтный скан.");
+    }
+    else
+        ui->statusBar->showMessage("Клиент не подключен!");
+
+}
+
+void MainWindow::slStopHVScan()
+{
+    QByteArray pkgData;
+
+    int data = 5;
+    TYPE_DATA t_data = CMD;
+
+    QByteArray ba_data;
+    ba_data.setNum(data);
+
+    QDataStream out(&pkgData, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_6);
+    out << quint64(0);
+    out << t_data;
+    out << ba_data;
+    out.device()->seek(0);
+    quint64 size_pkg = quint64(pkgData.size() - sizeof(quint64));
+    out << size_pkg;
+
+    if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState){
+        DataToServer(t_data, pkgData);
+        ui->statusBar->showMessage("Высоковольтный скан остановлен.");
+    }
+    else
+        ui->statusBar->showMessage("Клиент не подключен!");
+
 }
 
 void MainWindow::GetJsonFromViewConstr(QByteArray JsonDoc)
@@ -420,29 +487,6 @@ void MainWindow::DataToServer(TYPE_DATA t_data, QByteArray data)
 {
     //  Передача данных серверу
     //  Блок данных |Size|Type|Data|
-
-    //Передавать всё в QByteArray
-    /*
-    QByteArray rawData;
-    QDataStream out(&rawData, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_6);
-
-    //  Size
-    out << quint64(0);
-
-    //  Type
-    out << t_data;
-
-    //  Data
-    out << data;
-
-    out.device()->seek(0);
-    quint64 size_pkg = quint64(rawData.size() - sizeof(quint64));
-    //quint64 size_pkg = quint64(rawData.size());
-    out << size_pkg;
-
-    quint64 sizeBlock = m_pTcpSocket->write(rawData);
-*/
 
     quint64 sizeBlock = m_pTcpSocket->write(data);
 

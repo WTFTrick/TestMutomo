@@ -101,8 +101,6 @@ private:
 private slots:
     void GetJsonFromViewConstr(QByteArray JsonDoc);
     void DrawPlot();
-    void StopServer();
-    void StartServer();
     void ScaleChanged();
     void mouseWheel();
     void slotReadyRead();
@@ -127,9 +125,15 @@ private slots:
     void check_DetecGrid(bool checked_state);
     void check_DeviceGrid(bool checked_state);
 
-    void slDataHistRequest();
-    void slDataRawRequest();
-    void slSetVoltageRequest();
+    void slStartDAQ();                          // запустить систему сбора данных на сервере
+    void slStopDAQ();                           // остановить систему сбора данных на сервере
+    void slDataHistRequest();                   // запросить данные гистограммы скорости счета
+    void slDataRawRequest();                    // запросить "сырые" данные
+    void slSetVoltage();                        // запустить установку необходимого напряжения
+    void slStopSetVoltage();                    // остановить установку заданного напряжения
+    void slStartHVScan();                       // запустить высоковольтный скан
+    void slStopHVScan();                        // остановить высоковольтный скан
+
 
 protected:
     void resizeEvent(QResizeEvent* event);

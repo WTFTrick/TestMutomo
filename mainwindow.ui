@@ -214,7 +214,10 @@
            <item>
             <widget class="QSpinBox" name="spVoltage">
              <property name="suffix">
-              <string> V</string>
+              <string> В</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
              </property>
              <property name="maximum">
               <number>3000</number>
@@ -222,21 +225,35 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pb_SetV">
+            <widget class="QPushButton" name="pbSetVoltage">
              <property name="text">
               <string>Установить</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pb_Start">
+            <widget class="QPushButton" name="pbStopSetVoltage">
+             <property name="text">
+              <string>Остановить</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pbStartHVScan">
              <property name="text">
               <string>Старт</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pb_Stop">
+            <widget class="QPushButton" name="pbStopHVScan">
              <property name="text">
               <string>Стоп</string>
              </property>
