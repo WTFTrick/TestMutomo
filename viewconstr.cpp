@@ -266,11 +266,11 @@ void viewConstr::createJSONConfiguration()
     QJsonDocument json_cfg( jsonMainObj );
 
     // Writing data in file config.json
-    /*QFile jsnFile("config.json");
+    QFile jsnFile("config.json");
     jsnFile.open(QFile::Append);
     QTextStream outJson(&jsnFile);
     outJson << json_cfg.toJson();
-    jsnFile.close();*/
+    jsnFile.close();
 
     // Send QByteArray to server
     QByteArray json_config = json_cfg.toJson();

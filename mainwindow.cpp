@@ -21,6 +21,11 @@ MainWindow::MainWindow() :
     setWindowTitle("MuTomo Клиент");
     setCentralWidget(ui->tabWidget);
 
+    ui->groupBox_scale->setLayout(ui->hl_scale);
+    ui->groupBox_data->setLayout(ui->hl_data);
+    ui->groupBox_vhps->setLayout(ui->hl_vhps);
+    ui->groupBox_voltage->setLayout(ui->hl_voltage);
+
     settings_dialog = new settings( this );
     settings_dialog->setModal(true);
 
