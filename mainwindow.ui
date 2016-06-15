@@ -59,7 +59,7 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <property name="spacing">
-          <number>6</number>
+          <number>10</number>
          </property>
          <item>
           <widget class="QGroupBox" name="groupBox_scale">
@@ -317,6 +317,9 @@
            </size>
           </property>
           <layout class="QHBoxLayout" name="groupBoxLayout2">
+           <property name="spacing">
+            <number>10</number>
+           </property>
            <item>
             <widget class="QGroupBox" name="groupBox_voltage">
              <property name="title">
@@ -327,8 +330,8 @@
                <rect>
                 <x>0</x>
                 <y>20</y>
-                <width>341</width>
-                <height>71</height>
+                <width>331</width>
+                <height>61</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="hl_voltage">
@@ -393,7 +396,7 @@
                 <x>0</x>
                 <y>20</y>
                 <width>341</width>
-                <height>71</height>
+                <height>61</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="hl_vhps">

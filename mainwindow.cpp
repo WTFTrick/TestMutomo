@@ -102,6 +102,7 @@ MainWindow::MainWindow() :
 
     bUpdatePlot = true;
     bUpdateViewConstr  = false;
+    fVisibleNmChannels = false;
 
     ui->pb_ResetRange->setFocus();
     vw->pb_toJson->setEnabled(false);
@@ -135,6 +136,8 @@ MainWindow::MainWindow() :
 
     ui->customPlot->addLayer("belowmain", ui->customPlot->layer("main"), QCustomPlot::limBelow);
     graph1->setLayer("belowmain");
+
+
 
     ui->tabWidget->setFocus();
 }
@@ -573,6 +576,8 @@ void MainWindow::DrawPlot()
         CreateLabels();
 
     DrawThresholdWidget();
+
+    CreateChannelLabels();
 }
 
 void MainWindow::slotConnected()
@@ -723,6 +728,7 @@ void MainWindow::yAxisChanged(QCPRange newRange)
 void MainWindow::ScaleChanged()
 {
     const unsigned char PixelLimit = 19;
+    const unsigned short PixelLimitForLabels = 975;
     double px_size = ui->customPlot->xAxis->coordToPixel(ChannelsOnBoard) - ui->customPlot->xAxis->coordToPixel(0);
 
     //qDebug() << "px_size =" << px_size;
@@ -731,6 +737,11 @@ void MainWindow::ScaleChanged()
         fVisibleLabels = true;
     else
         fVisibleLabels = false;
+
+    if (px_size >= PixelLimitForLabels)
+        fVisibleNmChannels = true;
+    else
+        fVisibleNmChannels = false;
 
     ui->customPlot->replot();
 }
@@ -782,12 +793,11 @@ void MainWindow::CreateLines()
 
 void MainWindow::CreateLabels()
 {
-
     // Add a QCPItemText (number of MT48 on customPlot)
     unsigned char CounterOfBoards = 0; // Counter for boards
     const unsigned char nmBoards = 48; // Number of boards
     const short coord_label_center_x = ChannelsOnBoard / 2;
-    double coord_label_center_y = calculating_height_of_lines / 5;
+    double coord_label_center_y = calculating_height_of_lines / 4;
 
     //qDebug() << "label_center_y" << label_center_y;
 
@@ -811,12 +821,36 @@ void MainWindow::CreateLabels()
                     NumberOfBoard->setColor(QColor(255, 0, 0));
                 else
                     NumberOfBoard->setColor(QColor(0, 0, 0));
+
             }
 
             CounterOfBoards++;
         }
     }
 
+}
+
+void MainWindow::CreateChannelLabels()
+{
+    if (fVisibleNmChannels)
+    {
+        const short coord_label_center_y = calculating_height_of_lines / 4;
+        int CounterForBoards = 0;
+
+        for (uint i = leftBound; i <= rightBound; i ++)
+        {
+            QString nmChannel = QString::number(CounterForBoards);
+
+            QCPItemText * nmChannelOnBoard = new QCPItemText(ui->customPlot);
+            ui->customPlot->addItem(nmChannelOnBoard);
+            nmChannelOnBoard->position->setCoords(i, yAxisLowerBound + coord_label_center_y);
+            nmChannelOnBoard->setText(nmChannel);
+            nmChannelOnBoard->setFont(QFont(font().family(), 10));
+            nmChannelOnBoard->setColor(Qt::black);
+
+            CounterForBoards++;
+        }
+    }
 }
 
 void MainWindow::DrawThresholdWidget()
@@ -860,6 +894,9 @@ void MainWindow::tabSelected()
         ScaleChanged();
     }
 
+    if (ui->tabWidget->currentIndex() == 1)
+        ui->statusBar->showMessage("Переход на вкладку высоковольтного скана");
+
     if (ui->tabWidget->currentIndex() == 2)
         bUpdateViewConstr = true;
 
@@ -874,11 +911,14 @@ void MainWindow::MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event)
         {
             double x = ui->customPlot->xAxis->pixelToCoord(event->x());
             double y = floor( x/ChannelsOnBoard );
-            double left = y*ChannelsOnBoard;
-            //qDebug() << y;
-            double right = left + ChannelsOnBoard;
-            ui->customPlot->xAxis->setRange(left , right);
+            leftBound = y*ChannelsOnBoard;
+            rightBound = leftBound + ChannelsOnBoard;
+
+            ui->customPlot->xAxis->setRange(leftBound , rightBound);
+
             ui->customPlot->replot();
+            ScaleChanged();
+            CreateChannelLabels();
         }
     }
 }

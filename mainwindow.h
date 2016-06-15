@@ -58,8 +58,9 @@ private:
     double YupperBound;
     double XlowerBound;
     double XupperBound;
-
     double lastPosition;
+    double leftBound;
+    double rightBound;
 
     QVector<QCPItemLine*> vecOfLines;
 
@@ -67,6 +68,7 @@ private:
     QCPItemLine *tickHLine;
     QCPItemLine *tickBLine;
     QCPItemText * NumberOfBoard;
+    QCPItemText * nmChannelOnBoard;
     QCPDataMap  *mapData;
     QCPGraph    *graph1;
     QCPDataMap* threhshold_data;
@@ -79,6 +81,7 @@ private:
     viewConstr* vw;                     // exemplar of viewConstr class, for creating second tab in TabWidget
     int diamCircle;                     // variable, that means diametr of threshold circle
 
+    bool fVisibleNmChannels;
     bool fDeviceGridVisible;
     bool fDetecGridVisible;
     bool PressedOnCircle;               // bool variable, if true - work MouseMove event and threshold line+circles move on Y axis
@@ -95,8 +98,7 @@ private:
     void CreateConnections();
     void ClearVectorForCheckingDevices();
     void DataToServer(TYPE_DATA t_data, QByteArray data);
-
-
+    void CreateChannelLabels();
 
 private slots:
     void GetJsonFromViewConstr(QByteArray JsonDoc);
