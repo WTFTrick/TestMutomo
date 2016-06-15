@@ -4,14 +4,11 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-QT       += network
-QT       += printsupport
+QT       += core gui network printsupport
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = TMutomo
 TEMPLATE = app
-
 
 SOURCES += main.cpp\
         mainwindow.cpp \

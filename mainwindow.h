@@ -134,7 +134,6 @@ private slots:
     void slStartHVScan();                       // запустить высоковольтный скан
     void slStopHVScan();                        // остановить высоковольтный скан
 
-
 protected:
     void resizeEvent(QResizeEvent* event);
     void changeEvent(QEvent *event);

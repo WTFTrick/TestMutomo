@@ -13,6 +13,7 @@ IPDialog::IPDialog(QWidget *parent) :
     ui->ip_lineEdit->setValidator( new QIntValidator(0, 255, this) );
     ui->ip_lineEdit->setInputMask("000.000.000.000;_");
     ipFile.setFileName("./IPAdress.txt");
+    ui->listWidget->setFocus();
     ReadFromFile();
     if (ui->listWidget->count() == 0)
     {
@@ -25,9 +26,9 @@ IPDialog::IPDialog(QWidget *parent) :
 
 IPDialog::~IPDialog()
 {
-    ipFile.close();
-    delete ui;
+    //ipFile.close();
     //close();
+    delete ui;
 }
 
 void IPDialog::on_pb_close_clicked()

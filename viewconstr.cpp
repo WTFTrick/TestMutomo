@@ -19,9 +19,9 @@ viewConstr::viewConstr(QWidget *parent) :
 
 viewConstr::~viewConstr()
 {
+    ClearVectorOfBrokenDevices();
     screen->deleteLater();
     gv->deleteLater();
-    ClearVectorOfBrokenDevices();
     delete scene;
     delete mainLayout;
     delete horLayout;

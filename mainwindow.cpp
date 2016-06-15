@@ -74,11 +74,9 @@ MainWindow::MainWindow() :
     ui->customPlot->addLayer("BG",ui->customPlot->layer("bg"), QCustomPlot::limBelow);
     ui->customPlot->setCurrentLayer("BG");
 
-    ui->pb_stopServer->setDisabled(true);
 
     vw = new viewConstr( this );
     ui->tabWidget->addTab(vw, tr("Конфигурация"));
-    ui->pb_ResetRange->setFocus();
 
     fVisibleLabels = false;
 
@@ -104,6 +102,16 @@ MainWindow::MainWindow() :
 
     bUpdatePlot = true;
     bUpdateViewConstr  = false;
+
+    ui->pb_ResetRange->setFocus();
+    vw->pb_toJson->setEnabled(false);
+    ui->pb_startServer->setEnabled(false);
+    ui->pb_stopServer->setEnabled(false);
+    ui->pbSetVoltage->setEnabled(false);
+    ui->pbStartHVScan->setEnabled(false);
+    ui->pbStopHVScan->setEnabled(false);
+    ui->pbStopSetVoltage->setEnabled(false);
+    ui->spVoltage->setEnabled(false);
 
     // Threshold line and circle
     // =========================================
@@ -200,8 +208,6 @@ void MainWindow::CreateConnections()
 
 void MainWindow::CreatePlot(QVector<quint32> *arrData)
 {
-    ui->pb_startServer->setEnabled(false);
-    ui->pb_stopServer->setEnabled(true);
     unsigned int maxY = 0;
     for (double i = 0; i < arrData->size(); i++)
     {
@@ -281,13 +287,21 @@ void MainWindow::slStartDAQ()
     {
         DataToServer(t_data, arrayStart);
 
-        ui->pb_stopServer->setDisabled(false);
-        ui->pb_startServer->setDisabled(true);
+        vw->pb_toJson->setEnabled(false);
+        ui->pb_stopServer->setEnabled(true);
+        ui->pb_startServer->setEnabled(false);
+        ui->pbSetVoltage->setEnabled(false);
+        ui->pbStartHVScan->setEnabled(false);
+        ui->pbStopHVScan->setEnabled(false);
+        ui->pbStopSetVoltage->setEnabled(false);
+        ui->spVoltage->setEnabled(false);
+
         ui->tabWidget->setFocus();
         ui->statusBar->showMessage("Серверу отправлена команда 'старт'.");
     }
     else
         ui->statusBar->showMessage("Клиент не подключен!");
+
 }
 
 void MainWindow::slStopDAQ()
@@ -314,8 +328,16 @@ void MainWindow::slStopDAQ()
     if (m_pTcpSocket->state() == QAbstractSocket::ConnectedState)
     {
         DataToServer(t_data, arrayStop);
-        ui->pb_startServer->setDisabled(false);
-        ui->pb_stopServer->setDisabled(true);
+
+        vw->pb_toJson->setEnabled(true);
+        ui->pb_startServer->setEnabled(true);
+        ui->pb_stopServer->setEnabled(false);
+        ui->pbSetVoltage->setEnabled(true);
+        ui->pbStartHVScan->setEnabled(true);
+        ui->pbStopHVScan->setEnabled(false);
+        ui->pbStopSetVoltage->setEnabled(false);
+        ui->spVoltage->setEnabled(true);
+
         ui->tabWidget->setFocus();
         ui->statusBar->showMessage("Серверу отправлена команда 'стоп'.");
     }
@@ -373,6 +395,16 @@ void MainWindow::slSetVoltage()
     }
     else
         ui->statusBar->showMessage("Клиент не подключен!");
+
+    ui->pbStopSetVoltage->setEnabled(true);
+    ui->spVoltage->setEnabled(false);
+    ui->pbSetVoltage->setEnabled(false);
+    ui->pbStartHVScan->setEnabled(false);
+    ui->pbStopHVScan->setEnabled(false);
+    vw->pb_toJson->setEnabled(false);
+    ui->pb_stopServer->setEnabled(false);
+    ui->pb_startServer->setEnabled(false);
+
 }
 
 void MainWindow::slStopSetVoltage()
@@ -400,6 +432,15 @@ void MainWindow::slStopSetVoltage()
     }
     else
         ui->statusBar->showMessage("Клиент не подключен!");
+
+    vw->pb_toJson->setEnabled(true);
+    ui->pbStopSetVoltage->setEnabled(false);
+    ui->spVoltage->setEnabled(true);
+    ui->pbSetVoltage->setEnabled(true);
+    ui->pbStartHVScan->setEnabled(true);
+    ui->pbStopHVScan->setEnabled(false);
+    ui->pb_stopServer->setEnabled(false);
+    ui->pb_startServer->setEnabled(true);
 
 }
 
@@ -429,6 +470,14 @@ void MainWindow::slStartHVScan()
     else
         ui->statusBar->showMessage("Клиент не подключен!");
 
+    ui->pbStartHVScan->setEnabled(false);
+    ui->spVoltage->setEnabled(false);
+    ui->pbStopHVScan->setEnabled(true);
+    ui->pbStopSetVoltage->setEnabled(false);
+    ui->pbSetVoltage->setEnabled(false);
+    vw->pb_toJson->setEnabled(false);
+    ui->pb_stopServer->setEnabled(false);
+    ui->pb_startServer->setEnabled(false);
 }
 
 void MainWindow::slStopHVScan()
@@ -456,6 +505,15 @@ void MainWindow::slStopHVScan()
     }
     else
         ui->statusBar->showMessage("Клиент не подключен!");
+
+    ui->pbSetVoltage->setEnabled(true);
+    ui->spVoltage->setEnabled(true);
+    ui->pbSetVoltage->setEnabled(true);
+    ui->pbStartHVScan->setEnabled(true);
+    ui->pbStopHVScan->setEnabled(false);
+    vw->pb_toJson->setEnabled(true);
+    ui->pb_stopServer->setEnabled(false);
+    ui->pb_startServer->setEnabled(true);
 
 }
 
@@ -522,10 +580,26 @@ void MainWindow::slotConnected()
     qDebug() << "Received the connected() signal";
     qDebug() << "Connection successfull";
     ui->statusBar->showMessage("Клиент подключился к серверу.");
+    ui->pb_startServer->setEnabled(true);
+    vw->pb_toJson->setEnabled(true);
+    ui->pbSetVoltage->setEnabled(true);
+    ui->pbStartHVScan->setEnabled(true);
+    ui->spVoltage->setEnabled(true);
+    ui->pbStopSetVoltage->setEnabled(false);
+    ui->actionConnect_to->setEnabled(false);
 }
 
 void MainWindow::slotDisconnected()
 {
+    ui->actionConnect_to->setEnabled(true);
+    vw->pb_toJson->setEnabled(false);
+    ui->pb_startServer->setEnabled(false);
+    ui->pb_stopServer->setEnabled(false);
+    ui->pbSetVoltage->setEnabled(false);
+    ui->pbStartHVScan->setEnabled(false);
+    ui->pbStopHVScan->setEnabled(false);
+    ui->pbStopSetVoltage->setEnabled(false);
+    ui->spVoltage->setEnabled(false);
     ui->statusBar->showMessage("Клиент отключился от сервера.");
 }
 
@@ -548,7 +622,7 @@ void MainWindow::connectToHost(QString str)
     m_pTcpSocket->connectToHost(strHost, nPort);
     connect(m_pTcpSocket, SIGNAL(connected()), SLOT(slotConnected()));
     connect(m_pTcpSocket, SIGNAL(readyRead()), SLOT(slotReadyRead()));
-    connect(m_pTcpSocket, SIGNAL(disconnected()), SLOT(slotReadyRead()));
+    connect(m_pTcpSocket, SIGNAL(disconnected()), SLOT(slotDisconnected()));
 }
 
 void MainWindow::mouseWheel()
@@ -788,6 +862,8 @@ void MainWindow::tabSelected()
 
     if (ui->tabWidget->currentIndex() == 2)
         bUpdateViewConstr = true;
+
+    ui->tabWidget->setFocus();
 }
 
 void MainWindow::MouseClickOnTextItem(QCPAbstractItem* item, QMouseEvent* event)
@@ -959,4 +1035,3 @@ void MainWindow::ClearVectorForCheckingDevices()
     for (int i = 0; i < 48; i++)
         vectorForCheckingDevices[i] = 0;
 }
-
