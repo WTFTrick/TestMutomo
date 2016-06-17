@@ -37,6 +37,7 @@ void viewConstr::CreateView()
     screen->setOrientationUpdateMask(Qt::PortraitOrientation| Qt::LandscapeOrientation| Qt::InvertedPortraitOrientation| Qt::InvertedLandscapeOrientation);
 
     pb_toJson = new QPushButton("Сохранить конфигурацию");
+    pb_toJson->setMinimumHeight( 27 );
     pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
 
     QSpacerItem *spacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);

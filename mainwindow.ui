@@ -232,6 +232,12 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>27</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Старт</string>
                </property>
@@ -244,6 +250,12 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>27</height>
+                </size>
                </property>
                <property name="text">
                 <string>Стоп</string>
@@ -350,6 +362,12 @@
                </item>
                <item>
                 <widget class="QSpinBox" name="spVoltage">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>27</height>
+                  </size>
+                 </property>
                  <property name="suffix">
                   <string> В</string>
                  </property>
@@ -363,8 +381,27 @@
                </item>
                <item>
                 <widget class="QPushButton" name="pbSetVoltage">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>27</height>
+                  </size>
+                 </property>
                  <property name="text">
                   <string>Установить</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pbStopSetVoltage">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>27</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Остановить</string>
                  </property>
                 </widget>
                </item>
@@ -415,6 +452,12 @@
                </item>
                <item>
                 <widget class="QPushButton" name="pbStartHVScan">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>27</height>
+                  </size>
+                 </property>
                  <property name="text">
                   <string>Старт</string>
                  </property>
@@ -422,15 +465,14 @@
                </item>
                <item>
                 <widget class="QPushButton" name="pbStopHVScan">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>27</height>
+                  </size>
+                 </property>
                  <property name="text">
                   <string>Стоп</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pbStopSetVoltage">
-                 <property name="text">
-                  <string>Остановить</string>
                  </property>
                 </widget>
                </item>
@@ -466,7 +508,7 @@
      <x>0</x>
      <y>0</y>
      <width>735</width>
-     <height>25</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMenu">
