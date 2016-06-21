@@ -3,7 +3,7 @@
 
 settings::settings(QWidget *parent) :
     QDialog(parent)
-  /*, ui(new Ui::settings)*/
+  , ui(new Ui::settings)
 {
     setupUi(this);
     InterfaceSettings();
@@ -12,7 +12,7 @@ settings::settings(QWidget *parent) :
 
 settings::~settings()
 {
-    //delete ui;
+    delete ui;
 }
 
 void settings::InterfaceSettings()

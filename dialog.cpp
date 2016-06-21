@@ -26,8 +26,6 @@ IPDialog::IPDialog(QWidget *parent) :
 
 IPDialog::~IPDialog()
 {
-    //ipFile.close();
-    //close();
     delete ui;
 }
 

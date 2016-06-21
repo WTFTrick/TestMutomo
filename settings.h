@@ -18,7 +18,7 @@ class settings : public QDialog, public Ui::settings
     Q_OBJECT
 
 public:
-    //Ui::settings *ui;
+    Ui::settings *ui;
     explicit settings(QWidget *parent = 0);
     ~settings();
     void InterfaceSettings();

@@ -46,7 +46,7 @@ private:
     enum TYPE_DATA {DATA_RAW, DATA_HIST, DATA_CONFIG_MUTOMO, CMD, SET_VOLTAGE};
     int nPort;
     int LinesCount;
-    const unsigned char ChannelsOnBoard;
+    const unsigned char ChannelsOnBoard = 49;
     quint32 value_threshold;
     quint32 m_nNextBlockSize;
     double xPosOfCircle;               // X coordinate of threshold circle;

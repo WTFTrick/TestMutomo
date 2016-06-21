@@ -7,7 +7,6 @@ MainWindow::MainWindow() :
     nPort(2323),
     m_nNextBlockSize(0),
     vectorForCheckingDevices(48),
-    ChannelsOnBoard(49),
     numberOfBrokenDevice(0),
     LinesCount(49),
     xPosOfCircle(2227.5),
@@ -21,19 +20,23 @@ MainWindow::MainWindow() :
     setWindowTitle("MuTomo Клиент");
     setCentralWidget(ui->tabWidget);
 
+
     ui->groupBox_scale->setLayout(ui->hl_scale);
     ui->groupBox_data->setLayout(ui->hl_data);
     ui->groupBox_vhps->setLayout(ui->hl_vhps);
     ui->groupBox_voltage->setLayout(ui->hl_voltage);
 
+
     settings_dialog = new settings( this );
     settings_dialog->setModal(true);
+
+    ip_dialog = new IPDialog( this );
 
     YlowerBound = 0;
     XlowerBound = 0;
     XupperBound = 2475;
 
-    if ( ! QFile::exists("settings.conf") )
+    if ( !QFile::exists("settings.conf") )
     {
         YupperBound = 150;
         strHost = "0.0.0.0";
@@ -59,24 +62,22 @@ MainWindow::MainWindow() :
     }
 
     graph1 = ui->customPlot->addGraph();
+    graph1->setLineStyle((QCPGraph::LineStyle)(2));
     mapData = graph1->data();
 
     ui->customPlot->installEventFilter(this);
-
     ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom );
     ui->customPlot->xAxis->setLabel("Номер канала");
     ui->customPlot->yAxis->setLabel("Частота, HZ");
     ui->customPlot->xAxis->setRange(XlowerBound, XupperBound);
     ui->customPlot->yAxis->setRange(YlowerBound, YupperBound);
-
-    graph1->setLineStyle((QCPGraph::LineStyle)(2));
-
     ui->customPlot->addLayer("BG",ui->customPlot->layer("bg"), QCustomPlot::limBelow);
     ui->customPlot->setCurrentLayer("BG");
 
 
-    vw = new viewConstr( this );
+    vw = new viewConstr();
     ui->tabWidget->addTab(vw, tr("Конфигурация"));
+
 
     fVisibleLabels = false;
 
@@ -85,8 +86,6 @@ MainWindow::MainWindow() :
     graphPen.setColor(QColor(0, 0, 0));
     graphPen.setWidthF(0.4);
     graph1->setPen(graphPen);
-
-    ip_dialog = new IPDialog( this );
 
     //MutomoHost = "10.162.1.110"
 
@@ -104,8 +103,7 @@ MainWindow::MainWindow() :
     bUpdateViewConstr  = false;
     fVisibleNmChannels = false;
 
-    ui->pb_ResetRange->setFocus();
-    vw->pb_toJson->setEnabled(false);
+    ui->pb_ResetRange->setFocus();    
     ui->pb_startServer->setEnabled(false);
     ui->pb_stopServer->setEnabled(false);
     ui->pbSetVoltage->setEnabled(false);
@@ -127,6 +125,7 @@ MainWindow::MainWindow() :
 
     thresholdCircle = ui->customPlot->addGraph();
     thresholdCircleData = thresholdCircle->data();
+
 
     thresholdCircle->setPen(QPen(Qt::red));
     thresholdCircle->setLineStyle(QCPGraph::lsNone);
@@ -153,10 +152,10 @@ MainWindow::~MainWindow()
     qsettings.setValue("settings/CheckBoxForDeviceGrid", settings_dialog->checkbxForDeviceGrid->isChecked());
     qsettings.sync();
 
-    delete vw;
+
     delete settings_dialog;
     delete ip_dialog;
-
+    delete vw;
     delete ui;
 }
 
@@ -290,7 +289,7 @@ void MainWindow::slStartDAQ()
     {
         DataToServer(t_data, arrayStart);
 
-        vw->pb_toJson->setEnabled(false);
+        vw->pbSaveConfig->setEnabled(false);
         ui->pb_stopServer->setEnabled(true);
         ui->pb_startServer->setEnabled(false);
         ui->pbSetVoltage->setEnabled(false);
@@ -332,7 +331,7 @@ void MainWindow::slStopDAQ()
     {
         DataToServer(t_data, arrayStop);
 
-        vw->pb_toJson->setEnabled(true);
+        vw->pbSaveConfig->setEnabled(true);
         ui->pb_startServer->setEnabled(true);
         ui->pb_stopServer->setEnabled(false);
         ui->pbSetVoltage->setEnabled(true);
@@ -404,7 +403,7 @@ void MainWindow::slSetVoltage()
     ui->pbSetVoltage->setEnabled(false);
     ui->pbStartHVScan->setEnabled(false);
     ui->pbStopHVScan->setEnabled(false);
-    vw->pb_toJson->setEnabled(false);
+    vw->pbSaveConfig->setEnabled(false);
     ui->pb_stopServer->setEnabled(false);
     ui->pb_startServer->setEnabled(false);
 
@@ -436,7 +435,7 @@ void MainWindow::slStopSetVoltage()
     else
         ui->statusBar->showMessage("Клиент не подключен!");
 
-    vw->pb_toJson->setEnabled(true);
+    vw->pbSaveConfig->setEnabled(true);
     ui->pbStopSetVoltage->setEnabled(false);
     ui->spVoltage->setEnabled(true);
     ui->pbSetVoltage->setEnabled(true);
@@ -478,7 +477,7 @@ void MainWindow::slStartHVScan()
     ui->pbStopHVScan->setEnabled(true);
     ui->pbStopSetVoltage->setEnabled(false);
     ui->pbSetVoltage->setEnabled(false);
-    vw->pb_toJson->setEnabled(false);
+    vw->pbSaveConfig->setEnabled(false);
     ui->pb_stopServer->setEnabled(false);
     ui->pb_startServer->setEnabled(false);
 }
@@ -514,7 +513,7 @@ void MainWindow::slStopHVScan()
     ui->pbSetVoltage->setEnabled(true);
     ui->pbStartHVScan->setEnabled(true);
     ui->pbStopHVScan->setEnabled(false);
-    vw->pb_toJson->setEnabled(true);
+    vw->pbSaveConfig->setEnabled(true);
     ui->pb_stopServer->setEnabled(false);
     ui->pb_startServer->setEnabled(true);
 
@@ -586,7 +585,7 @@ void MainWindow::slotConnected()
     qDebug() << "Connection successfull";
     ui->statusBar->showMessage("Клиент подключился к серверу.");
     ui->pb_startServer->setEnabled(true);
-    vw->pb_toJson->setEnabled(true);
+    vw->pbSaveConfig->setEnabled(true);
     ui->pbSetVoltage->setEnabled(true);
     ui->pbStartHVScan->setEnabled(true);
     ui->spVoltage->setEnabled(true);
@@ -597,7 +596,7 @@ void MainWindow::slotConnected()
 void MainWindow::slotDisconnected()
 {
     ui->actionConnect_to->setEnabled(true);
-    vw->pb_toJson->setEnabled(false);
+    vw->pbSaveConfig->setEnabled(false);
     ui->pb_startServer->setEnabled(false);
     ui->pb_stopServer->setEnabled(false);
     ui->pbSetVoltage->setEnabled(false);

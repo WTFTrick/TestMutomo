@@ -19,45 +19,40 @@ viewConstr::viewConstr(QWidget *parent) :
 
 viewConstr::~viewConstr()
 {
-    ClearVectorOfBrokenDevices();
-    screen->deleteLater();
-    gv->deleteLater();
+    for (int i = 0; i < ListCoordComboBox.size(); ++i){
+        delete ListCoordComboBox.at(i);
+    }
+    for (int i = 0; i < listComboBox.size(); ++i)
+        delete listComboBox.at(i);
+
     delete scene;
     delete mainLayout;
-    delete horLayout;
-    delete RectanglesForComboBoxes;
-    //close();
 }
 
 void viewConstr::CreateView()
 {
     //Create graphics view,scene, button and layout
-
     screen = QGuiApplication::primaryScreen();
     screen->setOrientationUpdateMask(Qt::PortraitOrientation| Qt::LandscapeOrientation| Qt::InvertedPortraitOrientation| Qt::InvertedLandscapeOrientation);
 
-    pb_toJson = new QPushButton("Сохранить конфигурацию");
-    pb_toJson->setMinimumHeight( 27 );
-    pb_toJson->setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
 
-    QSpacerItem *spacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-    horLayout = new QHBoxLayout;
-    horLayout->addItem(spacer);
-    horLayout->addWidget(pb_toJson);
-    horLayout->addItem(spacer);
-
-    scene = new QGraphicsScene(this);
-    gv = new QGraphicsView();
+    scene = new QGraphicsScene(  );
+    gv = new QGraphicsView( this );
     gv->setScene(scene);
     gv->setSceneRect(QRectF(125, 200 , 300, 300));
     gv->centerOn( 0 , 0 );
     gv->setAlignment(Qt::AlignCenter);
     gv->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     gv->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    mainLayout = new QVBoxLayout;
+
+    pbSaveConfig = new QPushButton("Сохранить конфигурацию");
+    pbSaveConfig->setMinimumHeight( 27 );
+    pbSaveConfig->setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
+
+    mainLayout = new QVBoxLayout( );
     mainLayout->addWidget(gv);
-    mainLayout->addLayout(horLayout);
+    mainLayout->addWidget( pbSaveConfig );
+    mainLayout->setAlignment(pbSaveConfig, Qt::AlignHCenter);
     setLayout(mainLayout);
 
     QBrush TBrush(Qt::transparent);
@@ -66,8 +61,8 @@ void viewConstr::CreateView()
     outlinePen.setWidth(0.5);
     // Add variables for drawing comboboxes, spinboxes and rectangles
 
+    const quint8 height = 60;
     int width = step * nmOfBoardsOnDetector;
-    quint8 height = 60;
     int empty_area = count / 2.25;  // empty area between blocks of detectors, where can be radiograph object
     int xcb = width + 15;           // x coordinate for combobox, which containt x and y values
     QSize ComboBoxFixedSize(60, 50);
@@ -75,8 +70,7 @@ void viewConstr::CreateView()
     int nullX = 1;
 
     // Drawing a rectangles
-    for (int i = 0; i < count; i = i + step)
-    {
+    for (int i = 0; i < count; i = i + step){
         if (i != empty_area)
             scene->addRect(nullX, i, width, height, outlinePen,TBrush);
     }
@@ -89,29 +83,28 @@ void viewConstr::CreateView()
             if ((j < width) && (i != empty_area))
             {
                 QString s_numberOfBoardMT = QString::number( counterForComboBox );
+                VectorOfRectanglesOverComboBoxes[counterForComboBox] = scene->addRect(j + 8, i + 5, 63, 53,  transparentPen, TBrush);
 
-                RectanglesForComboBoxes = new QGraphicsRectItem();
-                RectanglesForComboBoxes = scene->addRect(j + 8, i + 5, 63, 53,  transparentPen, TBrush);
-                VectorOfRectanglesOverComboBoxes[counterForComboBox] = RectanglesForComboBoxes;
-
-                QComboBox* cmb = new QComboBox();
-                listComboBox << cmb;
+                QComboBox* cmb = new QComboBox( );
                 cmb->setFixedSize( ComboBoxFixedSize );
                 cmb->addItem(  s_numberOfBoardMT );
-                gpw = scene->addWidget( cmb );
                 cmb->move(j+10,i+6);
+
+                listComboBox << cmb;
+                gpw = scene->addWidget( cmb );
                 scene->update();
                 counterForComboBox++;
             }
         }
     }
 
+
     //Drawing a comboboxes (which contain x and y) and spinboxes
     for (int k = 0; k < count; k += step)
     {
         if (k != empty_area)
         {
-            QComboBox* cmb_coord = new QComboBox();
+            QComboBox* cmb_coord = new QComboBox( );
             ListCoordComboBox << cmb_coord;
             cmb_coord->setFixedSize( ComboBoxFixedSize );
             cmb_coord->addItem( "X" );
@@ -153,7 +146,7 @@ bool viewConstr::event(QEvent *event)
 
 void viewConstr::CreateConnections()
 {
-    connect(pb_toJson, SIGNAL(clicked(bool)), this, SLOT(createJSONConfiguration()));
+    connect(pbSaveConfig, SIGNAL(clicked(bool)), this, SLOT(createJSONConfiguration()));
     connect(screen, SIGNAL(orientationChanged(Qt::ScreenOrientation)), this, SLOT(onRotate(Qt::ScreenOrientation)));
 }
 

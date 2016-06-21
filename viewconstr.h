@@ -1,7 +1,7 @@
 #ifndef VIEWCONSTR_H
 #define VIEWCONSTR_H
 
-#include <QMainWindow>
+#include <QGuiApplication>
 #include <QWidget>
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -11,9 +11,16 @@
 #include <QSpinBox>
 #include <QRect>
 
-#include "mainwindow.h"
+#include <QScreen>
 
-class MainWindow;
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+
+#include <QPushButton>
+#include <QLayout>
+#include <QTcpSocket>
+
 
 class viewConstr : public QWidget
 {
@@ -23,35 +30,32 @@ public:
     explicit viewConstr(QWidget *parent = 0);
     ~viewConstr();
 
+
+
     QJsonDocument docJSON;
 
     bool OrientationChange;
 
     QList< QComboBox* > listComboBox;
-    QList< QSpinBox* > ListSpinBox;
     QList< QComboBox* > ListCoordComboBox;
 
     QVector<bool> VectorOfbadBoards;
     QVector<QGraphicsRectItem*> VectorOfRectanglesOverComboBoxes;
 
-    QGraphicsRectItem* RectanglesForComboBoxes;
-    QScreen * screen;
+    QScreen* screen;
 
     QGraphicsView * gv;
     QGraphicsScene *scene;
     QGraphicsRectItem *rectangle;
     QGraphicsProxyWidget* gpw;
     QTransform transform;
-    QPushButton* pb_toJson;
+    QPushButton* pbSaveConfig;
     quint16 count;                  //count need for drawing, area from 0 to count, where will be draw a rectangles
     quint8 step;                    //step for cycle, which will be draw a rectangles
     quint8 nmOfBoardsOnDetector;    //Number of devices on detector
     quint8 countOfBoards;
 
-    QVBoxLayout *mainLayout;
-    QHBoxLayout *horLayout;
-
-    QGridLayout *gridLayout;
+    QVBoxLayout* mainLayout;
 
     QTcpSocket* m_pTcpSocket;
 
